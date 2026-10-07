@@ -1,0 +1,6 @@
+{
+  "name": "Zarorat Hub - Free Planner Generator & Blog",
+  "description": "Build a free weekly, budget, work, study, or project planner in seconds. Customize it, print it, or save it as a PDF.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

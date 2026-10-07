@@ -1,0 +1,88 @@
+{
+  "entities": {
+    "Article": {
+      "title": "Article",
+      "description": "A blog article on Zarorat Hub Planner Hub",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "slug": {
+          "type": "string",
+          "maxLength": 128
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 200
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 500
+        },
+        "content": {
+          "type": "string",
+          "maxLength": 50000
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "readingTime": {
+          "type": "string",
+          "maxLength": 30
+        },
+        "author": {
+          "type": "string",
+          "maxLength": 60
+        },
+        "publishedAt": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "updatedAt": {
+          "type": "string",
+          "maxLength": 40
+        },
+        "isPublished": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "number"
+        },
+        "imageUrl": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": ["slug", "title", "content", "author", "isPublished"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "Administrator user record",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "maxLength": 120
+        },
+        "createdAt": {
+          "type": "string",
+          "maxLength": 40
+        }
+      },
+      "required": ["email"]
+    }
+  },
+  "firestore": {
+    "/articles/{articleId}": {
+      "schema": "Article",
+      "description": "Collection of blog articles"
+    },
+    "/admins/{adminUid}": {
+      "schema": "Admin",
+      "description": "Collection of admin users"
+    }
+  }
+}

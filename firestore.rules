@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        (request.auth.token.email == 'mralexander461@gmail.com' && request.auth.token.email_verified == true) ||
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+      );
+    }
+
+    function isValidArticle(data) {
+      return data.keys().hasAll(['slug', 'title', 'content', 'author', 'isPublished']) &&
+             data.keys().hasOnly(['id', 'slug', 'title', 'subtitle', 'content', 'category', 'readingTime', 'author', 'publishedAt', 'updatedAt', 'isPublished', 'order', 'imageUrl']) &&
+             data.slug is string && data.slug.size() <= 128 &&
+             data.title is string && data.title.size() <= 200 &&
+             (!('subtitle' in data) || (data.subtitle is string && data.subtitle.size() <= 500)) &&
+             data.content is string && data.content.size() <= 50000 &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 60)) &&
+             (!('readingTime' in data) || (data.readingTime is string && data.readingTime.size() <= 30)) &&
+             data.author is string && data.author.size() <= 60 &&
+             data.isPublished is bool &&
+             (!('order' in data) || data.order is number) &&
+             (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500));
+    }
+
+    match /articles/{articleId} {
+      allow read: if true;
+      allow create: if isValidId(articleId) && isAdmin() && isValidArticle(incoming());
+      allow update: if isValidId(articleId) && isAdmin() && isValidArticle(incoming());
+      allow delete: if isValidId(articleId) && isAdmin();
+    }
+
+    match /admins/{adminUid} {
+      allow read: if isSignedIn() && (request.auth.uid == adminUid || isAdmin());
+      allow write: if isAdmin();
+    }
+  }
+}
