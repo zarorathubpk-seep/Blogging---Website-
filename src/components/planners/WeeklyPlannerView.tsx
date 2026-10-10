@@ -12,24 +12,27 @@ export const WeeklyPlannerView: React.FC<WeeklyPlannerViewProps> = ({ data, onCh
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragSource, setDragSource] = useState<{ dayIndex?: number; isPriority?: boolean } | null>(null);
 
-  // Calculate task counts
+  const topPriorities = data?.topPriorities || [];
+  const days = data?.days || [];
+
+  // Calculate task counts safely
   const totalTasks =
-    data.topPriorities.length +
-    data.days.reduce((acc, day) => acc + day.tasks.length, 0);
+    topPriorities.length +
+    days.reduce((acc, day) => acc + (day?.tasks || []).length, 0);
   const completedTasks =
-    data.topPriorities.filter((t) => t.done).length +
-    data.days.reduce((acc, day) => acc + day.tasks.filter((t) => t.done).length, 0);
+    topPriorities.filter((t) => t.done).length +
+    days.reduce((acc, day) => acc + (day?.tasks || []).filter((t) => t.done).length, 0);
 
   // Priorities manipulation
   const togglePriorityDone = (id: string) => {
-    const updated = data.topPriorities.map((item) =>
+    const updated = topPriorities.map((item) =>
       item.id === id ? { ...item, done: !item.done } : item
     );
     onChange({ ...data, topPriorities: updated });
   };
 
   const updatePriorityText = (id: string, text: string) => {
-    const updated = data.topPriorities.map((item) =>
+    const updated = topPriorities.map((item) =>
       item.id === id ? { ...item, text } : item
     );
     onChange({ ...data, topPriorities: updated });
@@ -41,20 +44,20 @@ export const WeeklyPlannerView: React.FC<WeeklyPlannerViewProps> = ({ data, onCh
       text: '',
       done: false,
     };
-    onChange({ ...data, topPriorities: [...data.topPriorities, newItem] });
+    onChange({ ...data, topPriorities: [...topPriorities, newItem] });
   };
 
   const removePriorityRow = (id: string) => {
     onChange({
       ...data,
-      topPriorities: data.topPriorities.filter((item) => item.id !== id),
+      topPriorities: topPriorities.filter((item) => item.id !== id),
     });
   };
 
   const movePriority = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= data.topPriorities.length) return;
-    const items = [...data.topPriorities];
+    if (targetIndex < 0 || targetIndex >= topPriorities.length) return;
+    const items = [...topPriorities];
     const [moved] = items.splice(index, 1);
     items.splice(targetIndex, 0, moved);
     onChange({ ...data, topPriorities: items });
@@ -62,47 +65,52 @@ export const WeeklyPlannerView: React.FC<WeeklyPlannerViewProps> = ({ data, onCh
 
   // Day tasks manipulation
   const toggleDayTaskDone = (dayIndex: number, taskId: string) => {
-    const updatedDays = [...data.days];
-    updatedDays[dayIndex].tasks = updatedDays[dayIndex].tasks.map((task) =>
+    const updatedDays = [...days];
+    if (!updatedDays[dayIndex]) return;
+    updatedDays[dayIndex].tasks = (updatedDays[dayIndex].tasks || []).map((task) =>
       task.id === taskId ? { ...task, done: !task.done } : task
     );
     onChange({ ...data, days: updatedDays });
   };
 
   const updateDayTaskText = (dayIndex: number, taskId: string, text: string) => {
-    const updatedDays = [...data.days];
-    updatedDays[dayIndex].tasks = updatedDays[dayIndex].tasks.map((task) =>
+    const updatedDays = [...days];
+    if (!updatedDays[dayIndex]) return;
+    updatedDays[dayIndex].tasks = (updatedDays[dayIndex].tasks || []).map((task) =>
       task.id === taskId ? { ...task, text } : task
     );
     onChange({ ...data, days: updatedDays });
   };
 
   const addDayTaskRow = (dayIndex: number) => {
-    const updatedDays = [...data.days];
+    const updatedDays = [...days];
+    if (!updatedDays[dayIndex]) return;
     const newTask: TaskItem = {
       id: `task-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
       text: '',
       done: false,
     };
-    updatedDays[dayIndex].tasks.push(newTask);
+    updatedDays[dayIndex].tasks = [...(updatedDays[dayIndex].tasks || []), newTask];
     onChange({ ...data, days: updatedDays });
   };
 
   const removeDayTaskRow = (dayIndex: number, taskId: string) => {
-    const updatedDays = [...data.days];
-    updatedDays[dayIndex].tasks = updatedDays[dayIndex].tasks.filter(
+    const updatedDays = [...days];
+    if (!updatedDays[dayIndex]) return;
+    updatedDays[dayIndex].tasks = (updatedDays[dayIndex].tasks || []).filter(
       (task) => task.id !== taskId
     );
     onChange({ ...data, days: updatedDays });
   };
 
   const moveDayTask = (dayIndex: number, taskIndex: number, direction: 'up' | 'down') => {
+    const updatedDays = [...days];
+    if (!updatedDays[dayIndex]) return;
+    const tasks = [...(updatedDays[dayIndex].tasks || [])];
     const targetIndex = direction === 'up' ? taskIndex - 1 : taskIndex + 1;
-    const tasks = [...data.days[dayIndex].tasks];
     if (targetIndex < 0 || targetIndex >= tasks.length) return;
     const [moved] = tasks.splice(taskIndex, 1);
     tasks.splice(targetIndex, 0, moved);
-    const updatedDays = [...data.days];
     updatedDays[dayIndex].tasks = tasks;
     onChange({ ...data, days: updatedDays });
   };

@@ -9,10 +9,14 @@ interface StudyPlannerViewProps {
 }
 
 export const StudyPlannerView: React.FC<StudyPlannerViewProps> = ({ data, onChange }) => {
-  const totalTasks = data.studySessions.length + data.revisionChecklist.length;
+  const studySessions = data?.studySessions || [];
+  const revisionChecklist = data?.revisionChecklist || [];
+  const examDates = data?.examDates || [];
+
+  const totalTasks = studySessions.length + revisionChecklist.length;
   const completedTasks =
-    data.studySessions.filter((s) => s.completed).length +
-    data.revisionChecklist.filter((r) => r.done).length;
+    studySessions.filter((s) => s.completed).length +
+    revisionChecklist.filter((r) => r.done).length;
 
   // Study sessions
   const addStudySession = () => {
@@ -24,20 +28,20 @@ export const StudyPlannerView: React.FC<StudyPlannerViewProps> = ({ data, onChan
       durationMinutes: 60,
       completed: false,
     };
-    onChange({ ...data, studySessions: [...data.studySessions, newSession] });
+    onChange({ ...data, studySessions: [...studySessions, newSession] });
   };
 
   const updateStudySession = (id: string, field: keyof StudySessionItem, val: any) => {
     onChange({
       ...data,
-      studySessions: data.studySessions.map((s) => (s.id === id ? { ...s, [field]: val } : s)),
+      studySessions: studySessions.map((s) => (s.id === id ? { ...s, [field]: val } : s)),
     });
   };
 
   const removeStudySession = (id: string) => {
     onChange({
       ...data,
-      studySessions: data.studySessions.filter((s) => s.id !== id),
+      studySessions: studySessions.filter((s) => s.id !== id),
     });
   };
 
@@ -50,33 +54,33 @@ export const StudyPlannerView: React.FC<StudyPlannerViewProps> = ({ data, onChan
       location: 'Hall A',
       targetGrade: 'A',
     };
-    onChange({ ...data, examDates: [...data.examDates, newExam] });
+    onChange({ ...data, examDates: [...examDates, newExam] });
   };
 
   const updateExamDate = (id: string, field: keyof ExamDateItem, val: any) => {
     onChange({
       ...data,
-      examDates: data.examDates.map((e) => (e.id === id ? { ...e, [field]: val } : e)),
+      examDates: examDates.map((e) => (e.id === id ? { ...e, [field]: val } : e)),
     });
   };
 
   const removeExamDate = (id: string) => {
     onChange({
       ...data,
-      examDates: data.examDates.filter((e) => e.id !== id),
+      examDates: examDates.filter((e) => e.id !== id),
     });
   };
 
   // Revision checklist
   const addRevisionItem = () => {
     const newItem: TaskItem = { id: `rc-${Date.now()}`, text: '', done: false };
-    onChange({ ...data, revisionChecklist: [...data.revisionChecklist, newItem] });
+    onChange({ ...data, revisionChecklist: [...revisionChecklist, newItem] });
   };
 
   const toggleRevisionDone = (id: string) => {
     onChange({
       ...data,
-      revisionChecklist: data.revisionChecklist.map((r) =>
+      revisionChecklist: revisionChecklist.map((r) =>
         r.id === id ? { ...r, done: !r.done } : r
       ),
     });
@@ -85,14 +89,14 @@ export const StudyPlannerView: React.FC<StudyPlannerViewProps> = ({ data, onChan
   const updateRevisionText = (id: string, text: string) => {
     onChange({
       ...data,
-      revisionChecklist: data.revisionChecklist.map((r) => (r.id === id ? { ...r, text } : r)),
+      revisionChecklist: revisionChecklist.map((r) => (r.id === id ? { ...r, text } : r)),
     });
   };
 
   const removeRevisionItem = (id: string) => {
     onChange({
       ...data,
-      revisionChecklist: data.revisionChecklist.filter((r) => r.id !== id),
+      revisionChecklist: revisionChecklist.filter((r) => r.id !== id),
     });
   };
 

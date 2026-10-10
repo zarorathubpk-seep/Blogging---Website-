@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { Article } from '../types/article';
 import { SUGGESTED_NEXT_ARTICLES } from '../data/defaultArticles';
 import { AuthorBox } from '../components/AuthorBox';
+import { AppImage } from '../components/AppImage';
+import { resolveArticleImage } from '../utils/assets';
 import { BookOpen, Clock, Calendar, ArrowRight, Sparkles, Search, ChevronRight } from 'lucide-react';
 
 interface BlogListPageProps {
@@ -110,20 +112,20 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
 
         {/* Articles Grid with Visual Thumbnails */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filtered.map((article) => (
-            <article
-              key={article.id}
-              onClick={() => onSelectArticle(article.slug)}
-              className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs hover:shadow-md hover:border-emerald-300 transition cursor-pointer flex flex-col justify-between group"
-            >
-              <div>
-                {/* Article Image Banner */}
-                {article.imageUrl && (
+          {filtered.map((article) => {
+            const resolvedImg = resolveArticleImage(article.slug, article.imageUrl);
+            return (
+              <article
+                key={article.id}
+                onClick={() => onSelectArticle(article.slug)}
+                className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs hover:shadow-md hover:border-emerald-300 transition cursor-pointer flex flex-col justify-between group"
+              >
+                <div>
+                  {/* Article Image Banner */}
                   <div className="w-full h-44 overflow-hidden bg-slate-100 relative">
-                    <img
-                      src={article.imageUrl}
+                    <AppImage
+                      src={resolvedImg}
                       alt={article.title}
-                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
                     />
                     <div className="absolute top-3 left-3">
@@ -132,9 +134,8 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
                       </span>
                     </div>
                   </div>
-                )}
 
-                <div className="p-5">
+                  <div className="p-5">
                   <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
                     <span className="flex items-center gap-1 text-[11px]">
                       <Clock className="w-3.5 h-3.5" />
@@ -163,7 +164,8 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
                 </span>
               </div>
             </article>
-          ))}
+          );
+        })}
         </div>
 
         {filtered.length === 0 && (

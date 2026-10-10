@@ -9,42 +9,47 @@ interface OfficeWorkPlannerViewProps {
 }
 
 export const OfficeWorkPlannerView: React.FC<OfficeWorkPlannerViewProps> = ({ data, onChange }) => {
+  const threeOutcomes = data?.threeOutcomes || [];
+  const schedule = data?.schedule || [];
+  const followUps = data?.followUps || [];
+  const shutdownRoutine = data?.shutdownRoutine || [];
+
   const totalTasks =
-    data.threeOutcomes.length +
-    data.schedule.length +
-    data.followUps.length +
-    data.shutdownRoutine.length;
+    threeOutcomes.length +
+    schedule.length +
+    followUps.length +
+    shutdownRoutine.length;
 
   const completedTasks =
-    data.threeOutcomes.filter((t) => t.done).length +
-    data.schedule.filter((t) => t.done).length +
-    data.followUps.filter((t) => t.resolved).length +
-    data.shutdownRoutine.filter((t) => t.done).length;
+    threeOutcomes.filter((t) => t.done).length +
+    schedule.filter((t) => t.done).length +
+    followUps.filter((t) => t.resolved).length +
+    shutdownRoutine.filter((t) => t.done).length;
 
   // Outcomes
   const toggleOutcomeDone = (id: string) => {
     onChange({
       ...data,
-      threeOutcomes: data.threeOutcomes.map((o) => (o.id === id ? { ...o, done: !o.done } : o)),
+      threeOutcomes: threeOutcomes.map((o) => (o.id === id ? { ...o, done: !o.done } : o)),
     });
   };
 
   const updateOutcomeText = (id: string, text: string) => {
     onChange({
       ...data,
-      threeOutcomes: data.threeOutcomes.map((o) => (o.id === id ? { ...o, text } : o)),
+      threeOutcomes: threeOutcomes.map((o) => (o.id === id ? { ...o, text } : o)),
     });
   };
 
   const addOutcomeRow = () => {
     const newOutcome: TaskItem = { id: `oo-${Date.now()}`, text: '', done: false };
-    onChange({ ...data, threeOutcomes: [...data.threeOutcomes, newOutcome] });
+    onChange({ ...data, threeOutcomes: [...threeOutcomes, newOutcome] });
   };
 
   const removeOutcome = (id: string) => {
     onChange({
       ...data,
-      threeOutcomes: data.threeOutcomes.filter((o) => o.id !== id),
+      threeOutcomes: threeOutcomes.filter((o) => o.id !== id),
     });
   };
 
@@ -52,7 +57,7 @@ export const OfficeWorkPlannerView: React.FC<OfficeWorkPlannerViewProps> = ({ da
   const updateScheduleRow = (id: string, field: keyof OfficeDayRow, val: any) => {
     onChange({
       ...data,
-      schedule: data.schedule.map((row) => (row.id === id ? { ...row, [field]: val } : row)),
+      schedule: schedule.map((row) => (row.id === id ? { ...row, [field]: val } : row)),
     });
   };
 
@@ -65,13 +70,13 @@ export const OfficeWorkPlannerView: React.FC<OfficeWorkPlannerViewProps> = ({ da
       focusBlock: '',
       done: false,
     };
-    onChange({ ...data, schedule: [...data.schedule, newRow] });
+    onChange({ ...data, schedule: [...schedule, newRow] });
   };
 
   const removeScheduleRow = (id: string) => {
     onChange({
       ...data,
-      schedule: data.schedule.filter((r) => r.id !== id),
+      schedule: schedule.filter((r) => r.id !== id),
     });
   };
 
@@ -79,14 +84,14 @@ export const OfficeWorkPlannerView: React.FC<OfficeWorkPlannerViewProps> = ({ da
   const toggleFollowUpResolved = (id: string) => {
     onChange({
       ...data,
-      followUps: data.followUps.map((f) => (f.id === id ? { ...f, resolved: !f.resolved } : f)),
+      followUps: followUps.map((f) => (f.id === id ? { ...f, resolved: !f.resolved } : f)),
     });
   };
 
   const updateFollowUp = (id: string, field: keyof OfficeFollowUpItem, val: any) => {
     onChange({
       ...data,
-      followUps: data.followUps.map((f) => (f.id === id ? { ...f, [field]: val } : f)),
+      followUps: followUps.map((f) => (f.id === id ? { ...f, [field]: val } : f)),
     });
   };
 
@@ -98,13 +103,13 @@ export const OfficeWorkPlannerView: React.FC<OfficeWorkPlannerViewProps> = ({ da
       checkBackDate: '',
       resolved: false,
     };
-    onChange({ ...data, followUps: [...data.followUps, newF] });
+    onChange({ ...data, followUps: [...followUps, newF] });
   };
 
   const removeFollowUpRow = (id: string) => {
     onChange({
       ...data,
-      followUps: data.followUps.filter((f) => f.id !== id),
+      followUps: followUps.filter((f) => f.id !== id),
     });
   };
 
@@ -112,26 +117,26 @@ export const OfficeWorkPlannerView: React.FC<OfficeWorkPlannerViewProps> = ({ da
   const toggleShutdownDone = (id: string) => {
     onChange({
       ...data,
-      shutdownRoutine: data.shutdownRoutine.map((s) => (s.id === id ? { ...s, done: !s.done } : s)),
+      shutdownRoutine: shutdownRoutine.map((s) => (s.id === id ? { ...s, done: !s.done } : s)),
     });
   };
 
   const updateShutdownText = (id: string, text: string) => {
     onChange({
       ...data,
-      shutdownRoutine: data.shutdownRoutine.map((s) => (s.id === id ? { ...s, text } : s)),
+      shutdownRoutine: shutdownRoutine.map((s) => (s.id === id ? { ...s, text } : s)),
     });
   };
 
   const addShutdownRow = () => {
     const newS: TaskItem = { id: `sdr-${Date.now()}`, text: '', done: false };
-    onChange({ ...data, shutdownRoutine: [...data.shutdownRoutine, newS] });
+    onChange({ ...data, shutdownRoutine: [...shutdownRoutine, newS] });
   };
 
   const removeShutdownRow = (id: string) => {
     onChange({
       ...data,
-      shutdownRoutine: data.shutdownRoutine.filter((s) => s.id !== id),
+      shutdownRoutine: shutdownRoutine.filter((s) => s.id !== id),
     });
   };
 

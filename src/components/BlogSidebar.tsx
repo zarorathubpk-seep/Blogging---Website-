@@ -1,6 +1,8 @@
 import React from 'react';
 import { Article } from '../types/article';
 import { PlannerType } from '../types/planner';
+import { resolveArticleImage } from '../utils/assets';
+import { AppImage } from './AppImage';
 import { ArrowRight, Sparkles, BookOpen, Clock, HeartHandshake } from 'lucide-react';
 
 interface BlogSidebarProps {
@@ -38,39 +40,39 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
         </div>
 
         <div className="space-y-3.5">
-          {articles.slice(0, 5).map((article) => (
-            <div
-              key={article.id}
-              className="group cursor-pointer pb-3 border-b border-slate-100 last:border-b-0 last:pb-0 flex items-start gap-3"
-              onClick={() => onSelectArticle(article.slug)}
-            >
-              {article.imageUrl && (
-                <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-200">
-                  <img
-                    src={article.imageUrl}
+          {articles.slice(0, 5).map((article) => {
+            const resolvedImg = resolveArticleImage(article.slug, article.imageUrl);
+            return (
+              <div
+                key={article.id}
+                className="group cursor-pointer pb-3 border-b border-slate-100 last:border-b-0 last:pb-0 flex items-start gap-3"
+                onClick={() => onSelectArticle(article.slug)}
+              >
+                <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
+                  <AppImage
+                    src={resolvedImg}
                     alt={article.title}
-                    referrerPolicy="no-referrer"
                     className="w-full h-full object-cover group-hover:scale-105 transition"
                   />
                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-0.5">
-                  <span className="font-semibold text-emerald-800 uppercase tracking-wider">
-                    {article.category}
-                  </span>
-                  <span>•</span>
-                  <span className="flex items-center gap-0.5">
-                    <Clock className="w-2.5 h-2.5" />
-                    {article.readingTime}
-                  </span>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-0.5">
+                    <span className="font-semibold text-emerald-800 uppercase tracking-wider">
+                      {article.category}
+                    </span>
+                    <span>•</span>
+                    <span className="flex items-center gap-0.5">
+                      <Clock className="w-2.5 h-2.5" />
+                      {article.readingTime}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition leading-snug line-clamp-2">
+                    {article.title}
+                  </h4>
                 </div>
-                <h4 className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition leading-snug line-clamp-2">
-                  {article.title}
-                </h4>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <button

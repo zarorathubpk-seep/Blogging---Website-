@@ -44,8 +44,9 @@ export const PlannerActionToolbar: React.FC<PlannerActionToolbarProps> = ({
       const dataUrl = await toPng(node, {
         quality: 0.95,
         backgroundColor: '#ffffff',
+        skipFonts: true,
+        cacheBust: true,
         filter: (child: HTMLElement) => {
-          // Exclude elements marked print:hidden if desired or keep full view
           return !child?.classList?.contains('hide-from-export');
         },
       });
@@ -59,6 +60,8 @@ export const PlannerActionToolbar: React.FC<PlannerActionToolbarProps> = ({
       setTimeout(() => setDownloadSuccess(false), 3000);
     } catch (err) {
       console.error('Error generating image export:', err);
+      // Fallback: trigger print dialog if direct canvas capture is blocked
+      window.print();
     } finally {
       setIsExportingImage(false);
     }

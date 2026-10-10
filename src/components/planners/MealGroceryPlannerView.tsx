@@ -12,14 +12,17 @@ export const MealGroceryPlannerView: React.FC<MealGroceryPlannerViewProps> = ({
   data,
   onChange,
 }) => {
-  const totalGroceries = data.groceries.length;
-  const completedGroceries = data.groceries.filter((g) => g.done).length;
+  const groceries = data?.groceries || [];
+  const meals = data?.meals || [];
+
+  const totalGroceries = groceries.length;
+  const completedGroceries = groceries.filter((g) => g.done).length;
 
   // Meal plan
   const updateMealDay = (id: string, field: keyof MealDayPlan, val: string) => {
     onChange({
       ...data,
-      meals: data.meals.map((m) => (m.id === id ? { ...m, [field]: val } : m)),
+      meals: meals.map((m) => (m.id === id ? { ...m, [field]: val } : m)),
     });
   };
 
@@ -32,27 +35,27 @@ export const MealGroceryPlannerView: React.FC<MealGroceryPlannerViewProps> = ({
       quantity: '1',
       done: false,
     };
-    onChange({ ...data, groceries: [...data.groceries, newItem] });
+    onChange({ ...data, groceries: [...groceries, newItem] });
   };
 
   const toggleGroceryDone = (id: string) => {
     onChange({
       ...data,
-      groceries: data.groceries.map((g) => (g.id === id ? { ...g, done: !g.done } : g)),
+      groceries: groceries.map((g) => (g.id === id ? { ...g, done: !g.done } : g)),
     });
   };
 
   const updateGrocery = (id: string, field: keyof GroceryItem, val: any) => {
     onChange({
       ...data,
-      groceries: data.groceries.map((g) => (g.id === id ? { ...g, [field]: val } : g)),
+      groceries: groceries.map((g) => (g.id === id ? { ...g, [field]: val } : g)),
     });
   };
 
   const removeGrocery = (id: string) => {
     onChange({
       ...data,
-      groceries: data.groceries.filter((g) => g.id !== id),
+      groceries: groceries.filter((g) => g.id !== id),
     });
   };
 

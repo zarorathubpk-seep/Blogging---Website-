@@ -16,11 +16,16 @@ export const BudgetPlannerView: React.FC<BudgetPlannerViewProps> = ({
   currentCurrency,
   onCurrencyChange,
 }) => {
-  // Calculations
-  const totalIncome = data.income.reduce((sum, item) => sum + (Number(item.planned) || 0), 0);
-  const totalBills = data.fixedBills.reduce((sum, item) => sum + (Number(item.planned) || 0), 0);
-  const totalWants = data.spendingWants.reduce((sum, item) => sum + (Number(item.planned) || 0), 0);
-  const totalSavings = data.savingsGoals.reduce((sum, item) => sum + (Number(item.planned) || 0), 0);
+  // Calculations with safe fallbacks
+  const incomeList = data?.income || [];
+  const billsList = data?.fixedBills || [];
+  const wantsList = data?.spendingWants || [];
+  const savingsList = data?.savingsGoals || [];
+
+  const totalIncome = incomeList.reduce((sum, item) => sum + (Number(item?.planned) || 0), 0);
+  const totalBills = billsList.reduce((sum, item) => sum + (Number(item?.planned) || 0), 0);
+  const totalWants = wantsList.reduce((sum, item) => sum + (Number(item?.planned) || 0), 0);
+  const totalSavings = savingsList.reduce((sum, item) => sum + (Number(item?.planned) || 0), 0);
   const totalExpenses = totalBills + totalWants;
   const remainingCash = totalIncome - (totalExpenses + totalSavings);
 
@@ -36,7 +41,7 @@ export const BudgetPlannerView: React.FC<BudgetPlannerViewProps> = ({
     field: 'name' | 'planned' | 'category',
     val: string | number
   ) => {
-    const list = data[section].map((item) =>
+    const list = (data[section] || []).map((item) =>
       item.id === id ? { ...item, [field]: field === 'planned' ? Number(val) || 0 : val } : item
     );
     onChange({ ...data, [section]: list });
@@ -50,13 +55,13 @@ export const BudgetPlannerView: React.FC<BudgetPlannerViewProps> = ({
       planned: 0,
       actual: 0,
     };
-    onChange({ ...data, [section]: [...data[section], newItem] });
+    onChange({ ...data, [section]: [...(data[section] || []), newItem] });
   };
 
   const removeItem = (section: 'income' | 'fixedBills' | 'spendingWants' | 'savingsGoals', id: string) => {
     onChange({
       ...data,
-      [section]: data[section].filter((item) => item.id !== id),
+      [section]: (data[section] || []).filter((item) => item.id !== id),
     });
   };
 

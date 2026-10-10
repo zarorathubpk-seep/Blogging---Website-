@@ -12,13 +12,16 @@ export const HabitGoalPlannerView: React.FC<HabitGoalPlannerViewProps> = ({
   data,
   onChange,
 }) => {
-  const totalDaysAcrossHabits = data.habits.length * 7;
-  const completedHabitChecks = data.habits.reduce(
-    (acc, h) => acc + h.daysCompleted.filter(Boolean).length,
+  const habits = data?.habits || [];
+  const actionSteps = data?.actionSteps || [];
+
+  const totalDaysAcrossHabits = habits.length * 7;
+  const completedHabitChecks = habits.reduce(
+    (acc, h) => acc + (h?.daysCompleted || []).filter(Boolean).length,
     0
   );
-  const totalActionSteps = data.actionSteps.length;
-  const completedActionSteps = data.actionSteps.filter((a) => a.done).length;
+  const totalActionSteps = actionSteps.length;
+  const completedActionSteps = actionSteps.filter((a) => a.done).length;
 
   const totalPoints = totalDaysAcrossHabits + totalActionSteps;
   const completedPoints = completedHabitChecks + completedActionSteps;
@@ -26,27 +29,27 @@ export const HabitGoalPlannerView: React.FC<HabitGoalPlannerViewProps> = ({
   // Action steps
   const addActionStep = () => {
     const newStep: TaskItem = { id: `as-${Date.now()}`, text: '', done: false };
-    onChange({ ...data, actionSteps: [...data.actionSteps, newStep] });
+    onChange({ ...data, actionSteps: [...actionSteps, newStep] });
   };
 
   const toggleActionDone = (id: string) => {
     onChange({
       ...data,
-      actionSteps: data.actionSteps.map((a) => (a.id === id ? { ...a, done: !a.done } : a)),
+      actionSteps: actionSteps.map((a) => (a.id === id ? { ...a, done: !a.done } : a)),
     });
   };
 
   const updateActionText = (id: string, text: string) => {
     onChange({
       ...data,
-      actionSteps: data.actionSteps.map((a) => (a.id === id ? { ...a, text } : a)),
+      actionSteps: actionSteps.map((a) => (a.id === id ? { ...a, text } : a)),
     });
   };
 
   const removeActionStep = (id: string) => {
     onChange({
       ...data,
-      actionSteps: data.actionSteps.filter((a) => a.id !== id),
+      actionSteps: actionSteps.filter((a) => a.id !== id),
     });
   };
 
@@ -58,29 +61,29 @@ export const HabitGoalPlannerView: React.FC<HabitGoalPlannerViewProps> = ({
       frequency: 'Daily',
       daysCompleted: [false, false, false, false, false, false, false],
     };
-    onChange({ ...data, habits: [...data.habits, newHabit] });
+    onChange({ ...data, habits: [...habits, newHabit] });
   };
 
   const updateHabitName = (id: string, name: string) => {
     onChange({
       ...data,
-      habits: data.habits.map((h) => (h.id === id ? { ...h, habitName: name } : h)),
+      habits: habits.map((h) => (h.id === id ? { ...h, habitName: name } : h)),
     });
   };
 
   const updateHabitFreq = (id: string, freq: string) => {
     onChange({
       ...data,
-      habits: data.habits.map((h) => (h.id === id ? { ...h, frequency: freq } : h)),
+      habits: habits.map((h) => (h.id === id ? { ...h, frequency: freq } : h)),
     });
   };
 
   const toggleHabitDay = (habitId: string, dayIdx: number) => {
     onChange({
       ...data,
-      habits: data.habits.map((h) => {
+      habits: habits.map((h) => {
         if (h.id !== habitId) return h;
-        const newDays = [...h.daysCompleted];
+        const newDays = [...(h.daysCompleted || [false, false, false, false, false, false, false])];
         newDays[dayIdx] = !newDays[dayIdx];
         return { ...h, daysCompleted: newDays };
       }),
@@ -90,7 +93,7 @@ export const HabitGoalPlannerView: React.FC<HabitGoalPlannerViewProps> = ({
   const removeHabit = (id: string) => {
     onChange({
       ...data,
-      habits: data.habits.filter((h) => h.id !== id),
+      habits: habits.filter((h) => h.id !== id),
     });
   };
 

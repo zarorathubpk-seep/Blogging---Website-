@@ -1,5 +1,7 @@
 import React from 'react';
 import { PlannerType } from '../types/planner';
+import { PLANNER_PREVIEW_IMAGES } from '../utils/assets';
+import { AppImage } from './AppImage';
 import {
   CalendarDays,
   Clock,
@@ -90,16 +92,23 @@ export const PlannerTypeCards: React.FC<PlannerTypeCardsProps> = ({
   return (
     <div className="mb-6 print:hidden">
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-          Select Planner Type
-        </h2>
-        <span className="text-xs text-slate-500">8 tailored layouts ready to edit</span>
+        <div>
+          <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
+            Select Planner Type
+          </h2>
+          <p className="text-xs text-slate-500">Choose from 8 browser-based planning systems</p>
+        </div>
+        <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+          Ready to Edit & Print
+        </span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {PLANNER_CARDS.map((card) => {
           const Icon = card.icon;
           const isActive = activeType === card.type;
+          const previewImg = PLANNER_PREVIEW_IMAGES[card.type];
+
           return (
             <button
               key={card.type}
@@ -111,44 +120,69 @@ export const PlannerTypeCards: React.FC<PlannerTypeCardsProps> = ({
                   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
               }}
-              className={`p-3 rounded-2xl text-left border transition relative flex flex-col justify-between group ${
+              className={`rounded-2xl text-left border transition relative flex flex-col justify-between overflow-hidden group ${
                 isActive
-                  ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20 shadow-xs'
-                  : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/60 shadow-2xs'
+                  ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-500/25 shadow-md'
+                  : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs hover:shadow-xs'
               }`}
             >
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <div
-                    className={`w-7 h-7 rounded-lg flex items-center justify-center transition ${
-                      isActive
-                        ? 'bg-emerald-600 text-white'
-                        : 'bg-slate-100 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4" />
+              {/* Preview Image Thumbnail Header */}
+              {previewImg && (
+                <div className="w-full h-24 overflow-hidden bg-slate-100 relative">
+                  <AppImage
+                    src={previewImg}
+                    alt={`${card.title} preview`}
+                    className="w-full h-full object-cover group-hover:scale-104 transition duration-300"
+                  />
+                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 via-transparent to-transparent flex items-end justify-between p-2">
+                    <span
+                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs ${
+                        isActive
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-white/90 text-slate-800 backdrop-blur-xs'
+                      }`}
+                    >
+                      {card.badge}
+                    </span>
                   </div>
+                </div>
+              )}
+
+              <div className="p-3 flex-1 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <div
+                      className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition ${
+                        isActive
+                          ? 'bg-emerald-600 text-white'
+                          : 'bg-slate-100 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700'
+                      }`}
+                    >
+                      <Icon className="w-3 h-3" />
+                    </div>
+                    <h3
+                      className={`font-bold text-xs leading-tight ${
+                        isActive ? 'text-emerald-950 font-extrabold' : 'text-slate-900'
+                      }`}
+                    >
+                      {card.title}
+                    </h3>
+                  </div>
+                  <p className="text-[11px] text-slate-500 leading-normal line-clamp-2 mt-1">
+                    {card.desc}
+                  </p>
+                </div>
+
+                <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
                   <span
-                    className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
-                      isActive
-                        ? 'bg-emerald-200/70 text-emerald-900'
-                        : 'bg-slate-100 text-slate-500'
+                    className={`font-semibold ${
+                      isActive ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'
                     }`}
                   >
-                    {card.badge}
+                    {isActive ? '● Active' : 'Click to edit'}
                   </span>
                 </div>
-                <h3
-                  className={`font-bold text-xs leading-tight mb-1 ${
-                    isActive ? 'text-emerald-950' : 'text-slate-900'
-                  }`}
-                >
-                  {card.title}
-                </h3>
               </div>
-              <p className="text-[11px] text-slate-500 leading-normal line-clamp-3 mt-1">
-                {card.desc}
-              </p>
             </button>
           );
         })}

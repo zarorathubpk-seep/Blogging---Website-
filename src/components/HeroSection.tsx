@@ -1,5 +1,7 @@
 import React from 'react';
 import { Sparkles, ShieldCheck, Printer, Smartphone } from 'lucide-react';
+import { AppImage } from './AppImage';
+import { ASSET_IMAGES } from '../utils/assets';
 
 export const HeroSection: React.FC = () => {
   return (
@@ -39,22 +41,22 @@ export const HeroSection: React.FC = () => {
 
         {/* Visual Hero Image Banner Showcase */}
         <div className="relative mx-auto max-w-4xl rounded-3xl overflow-hidden border border-slate-200/90 shadow-lg group">
-          <img
-            src="/src/assets/images/hero_planner_workspace_1791414654531.jpg"
-            alt="Minimalist workspace desk with printed weekly planner notebook, ink pen, and laptop in natural morning sunlight"
-            referrerPolicy="no-referrer"
+          <AppImage
+            src={ASSET_IMAGES.completeCollection}
+            alt="Complete planner system flat lay with weekly schedule grid, monthly budget ledger, daily time blocks, and stationery"
+            fallbackSrc={ASSET_IMAGES.heroWorkspace}
             className="w-full h-56 sm:h-80 md:h-96 object-cover object-center group-hover:scale-101 transition duration-500"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-slate-950/70 via-transparent to-transparent flex items-end justify-between p-4 sm:p-6 text-white text-left">
+          <div className="absolute inset-0 bg-linear-to-t from-slate-950/75 via-transparent to-transparent flex items-end justify-between p-4 sm:p-6 text-white text-left">
             <div>
-              <span className="text-[11px] font-bold tracking-wider uppercase bg-emerald-600 text-white px-2.5 py-0.5 rounded-full inline-block mb-1">
+              <span className="text-[11px] font-bold tracking-wider uppercase bg-emerald-600 text-white px-2.5 py-0.5 rounded-full inline-block mb-1 shadow-2xs">
                 Distraction-Free Planning
               </span>
               <p className="text-sm sm:text-base font-semibold drop-shadow-sm">
                 Clean, printable planning frameworks for personal life and office work
               </p>
             </div>
-            <span className="hidden sm:inline-block text-xs text-slate-200 font-mono bg-black/40 backdrop-blur-xs px-3 py-1 rounded-lg">
+            <span className="hidden sm:inline-block text-xs text-slate-200 font-mono bg-black/50 backdrop-blur-xs px-3 py-1 rounded-lg border border-white/10">
               US & UK Ready
             </span>
           </div>

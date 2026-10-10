@@ -121,7 +121,7 @@ Whichever you pick, give it two full weeks before you judge it. New habits take 
     publishedAt: 'October 4, 2026',
     order: 3,
     isPublished: true,
-    imageUrl: '/src/assets/images/budget_financial_plan_179141491755.jpg',
+    imageUrl: '/src/assets/images/budget_financial_plan_1791414691755.jpg',
     content: `Budgeting feels hard when it is complicated. One popular, simple approach is the 50/30/20 rule. It splits your after-tax income into three groups:
 
 - **50% for needs:** rent or mortgage, groceries, utilities, transport, insurance.
@@ -267,7 +267,7 @@ We live in a culture that celebrates rigid perfection. When people buy a fresh p
     publishedAt: 'October 7, 2026',
     order: 6,
     isPublished: true,
-    imageUrl: '/src/assets/images/hero_planner_workspace_1791414654531.jpg',
+    imageUrl: '/src/assets/images/complete_planner_collection_1791663700296.jpg',
     content: `A weekly review is the habit that keeps every other plan working. It takes about ten minutes.
 
 Without a regular review, to-do lists accumulate stale items, deadlines sneak up unannounced, and Monday mornings feel like being hit by a wave. A gentle 10-minute review turns Monday from an ambush into a deliberate execution.

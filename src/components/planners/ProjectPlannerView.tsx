@@ -9,15 +9,18 @@ interface ProjectPlannerViewProps {
 }
 
 export const ProjectPlannerView: React.FC<ProjectPlannerViewProps> = ({ data, onChange }) => {
-  const totalTasks = data.tasks.length + data.milestones.length;
+  const tasks = data?.tasks || [];
+  const milestones = data?.milestones || [];
+
+  const totalTasks = tasks.length + milestones.length;
   const completedTasks =
-    data.tasks.filter((t) => t.status === 'Done').length +
-    data.milestones.filter((m) => m.done).length;
+    tasks.filter((t) => t.status === 'Done').length +
+    milestones.filter((m) => m.done).length;
 
   const updateTask = (id: string, field: keyof ProjectTaskItem, val: any) => {
     onChange({
       ...data,
-      tasks: data.tasks.map((t) => (t.id === id ? { ...t, [field]: val } : t)),
+      tasks: tasks.map((t) => (t.id === id ? { ...t, [field]: val } : t)),
     });
   };
 
@@ -30,40 +33,40 @@ export const ProjectPlannerView: React.FC<ProjectPlannerViewProps> = ({ data, on
       status: 'Not Started',
       priority: 'Medium',
     };
-    onChange({ ...data, tasks: [...data.tasks, newTask] });
+    onChange({ ...data, tasks: [...tasks, newTask] });
   };
 
   const removeTask = (id: string) => {
     onChange({
       ...data,
-      tasks: data.tasks.filter((t) => t.id !== id),
+      tasks: tasks.filter((t) => t.id !== id),
     });
   };
 
   // Milestones
   const addMilestone = () => {
     const newM: TaskItem = { id: `pm-${Date.now()}`, text: '', done: false };
-    onChange({ ...data, milestones: [...data.milestones, newM] });
+    onChange({ ...data, milestones: [...milestones, newM] });
   };
 
   const toggleMilestone = (id: string) => {
     onChange({
       ...data,
-      milestones: data.milestones.map((m) => (m.id === id ? { ...m, done: !m.done } : m)),
+      milestones: milestones.map((m) => (m.id === id ? { ...m, done: !m.done } : m)),
     });
   };
 
   const updateMilestoneText = (id: string, text: string) => {
     onChange({
       ...data,
-      milestones: data.milestones.map((m) => (m.id === id ? { ...m, text } : m)),
+      milestones: milestones.map((m) => (m.id === id ? { ...m, text } : m)),
     });
   };
 
   const removeMilestone = (id: string) => {
     onChange({
       ...data,
-      milestones: data.milestones.filter((m) => m.id !== id),
+      milestones: milestones.filter((m) => m.id !== id),
     });
   };
 

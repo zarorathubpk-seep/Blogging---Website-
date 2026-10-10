@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   PlannerType,
   StoredPlannerState,
@@ -7,12 +7,22 @@ import {
 import { Article } from '../types/article';
 import { HeroSection } from '../components/HeroSection';
 import { HowItWorks } from '../components/HowItWorks';
-import { PlannerTypeCards } from '../components/PlannerTypeCards';
+import { PlannerTypeCards, PLANNER_CARDS } from '../components/PlannerTypeCards';
 import { PlannerActionToolbar } from '../components/PlannerActionToolbar';
 import { ToolTipsBox } from '../components/ToolTipsBox';
 import { BlogSidebar } from '../components/BlogSidebar';
 import { FaqSection } from '../components/FaqSection';
 import { AuthorBox } from '../components/AuthorBox';
+import {
+  DEFAULT_WEEKLY_PLANNER,
+  DEFAULT_DAILY_PLANNER,
+  DEFAULT_BUDGET_PLANNER,
+  DEFAULT_OFFICE_PLANNER,
+  DEFAULT_PROJECT_PLANNER,
+  DEFAULT_STUDY_PLANNER,
+  DEFAULT_MEAL_PLANNER,
+  DEFAULT_HABIT_PLANNER,
+} from '../data/defaultPlanners';
 
 // Individual views
 import { WeeklyPlannerView } from '../components/planners/WeeklyPlannerView';
@@ -39,7 +49,14 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
   articles,
   onSelectArticle,
 }) => {
-  const [activeType, setActiveType] = useState<PlannerType>(state.activeType || 'weekly');
+  const [activeType, setActiveType] = useState<PlannerType>(state?.activeType || 'weekly');
+
+  // Keep activeType in sync if updated from external controls (Sidebar, Footer, etc.)
+  useEffect(() => {
+    if (state?.activeType && state.activeType !== activeType) {
+      setActiveType(state.activeType);
+    }
+  }, [state?.activeType]);
 
   const handleSelectType = (type: PlannerType) => {
     setActiveType(type);
@@ -50,14 +67,16 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
     onUpdateState({
       ...state,
       currency,
-      budget: { ...state.budget, currency },
+      budget: { ...(state?.budget || DEFAULT_BUDGET_PLANNER), currency },
     });
   };
 
-  const lastSavedFormatted = new Date(state.lastUpdated || Date.now()).toLocaleTimeString(
+  const lastSavedFormatted = new Date(state?.lastUpdated || Date.now()).toLocaleTimeString(
     [],
     { hour: '2-digit', minute: '2-digit' }
   );
+
+  const activeCardConfig = PLANNER_CARDS.find((c) => c.type === activeType) || PLANNER_CARDS[0];
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -69,7 +88,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
 
       {/* Main Interactive Section */}
       <main id="planner-tool-section" className="py-8 sm:py-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Planner Type Cards */}
+        {/* Planner Type Cards with visual headers */}
         <PlannerTypeCards activeType={activeType} onSelectType={handleSelectType} />
 
         {/* 2-Column Responsive Layout: 65% Tool / 35% Sidebar */}
@@ -83,6 +102,19 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
               lastSavedText={lastSavedFormatted}
             />
 
+            {/* Current Active Mode Indicator */}
+            <div className="flex items-center justify-between px-2 pt-1 pb-2">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                  Active Tool: {activeCardConfig.title}
+                </span>
+              </div>
+              <span className="text-[11px] text-slate-500 hidden sm:inline">
+                {activeCardConfig.desc}
+              </span>
+            </div>
+
             {/* Printable & Interactive Planner Canvas */}
             <div
               id="planner-print-container"
@@ -90,58 +122,58 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
             >
               {activeType === 'weekly' && (
                 <WeeklyPlannerView
-                  data={state.weekly}
+                  data={state?.weekly || DEFAULT_WEEKLY_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, weekly: updated })}
                 />
               )}
 
               {activeType === 'daily' && (
                 <DailyPlannerView
-                  data={state.daily}
+                  data={state?.daily || DEFAULT_DAILY_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, daily: updated })}
                 />
               )}
 
               {activeType === 'budget' && (
                 <BudgetPlannerView
-                  data={state.budget}
+                  data={state?.budget || DEFAULT_BUDGET_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, budget: updated })}
-                  currentCurrency={state.currency}
+                  currentCurrency={state?.currency || 'USD'}
                   onCurrencyChange={handleCurrencyChange}
                 />
               )}
 
               {activeType === 'office' && (
                 <OfficeWorkPlannerView
-                  data={state.office}
+                  data={state?.office || DEFAULT_OFFICE_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, office: updated })}
                 />
               )}
 
               {activeType === 'project' && (
                 <ProjectPlannerView
-                  data={state.project}
+                  data={state?.project || DEFAULT_PROJECT_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, project: updated })}
                 />
               )}
 
               {activeType === 'study' && (
                 <StudyPlannerView
-                  data={state.study}
+                  data={state?.study || DEFAULT_STUDY_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, study: updated })}
                 />
               )}
 
               {activeType === 'meal' && (
                 <MealGroceryPlannerView
-                  data={state.meal}
+                  data={state?.meal || DEFAULT_MEAL_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, meal: updated })}
                 />
               )}
 
               {activeType === 'habit' && (
                 <HabitGoalPlannerView
-                  data={state.habit}
+                  data={state?.habit || DEFAULT_HABIT_PLANNER}
                   onChange={(updated) => onUpdateState({ ...state, habit: updated })}
                 />
               )}

@@ -9,11 +9,15 @@ interface DailyPlannerViewProps {
 }
 
 export const DailyPlannerView: React.FC<DailyPlannerViewProps> = ({ data, onChange }) => {
-  const totalTasks = data.timeBlocks.length + data.todoList.length + data.dailyWins.length;
+  const timeBlocks = data?.timeBlocks || [];
+  const todoList = data?.todoList || [];
+  const dailyWins = data?.dailyWins || [];
+
+  const totalTasks = timeBlocks.length + todoList.length + dailyWins.length;
   const completedTasks =
-    data.timeBlocks.filter((t) => t.done).length +
-    data.todoList.filter((t) => t.done).length +
-    data.dailyWins.filter((t) => t.done).length;
+    timeBlocks.filter((t) => t.done).length +
+    todoList.filter((t) => t.done).length +
+    dailyWins.filter((t) => t.done).length;
 
   // Time blocks
   const addTimeBlock = () => {
@@ -23,34 +27,34 @@ export const DailyPlannerView: React.FC<DailyPlannerViewProps> = ({ data, onChan
       activity: '',
       done: false,
     };
-    onChange({ ...data, timeBlocks: [...data.timeBlocks, newBlock] });
+    onChange({ ...data, timeBlocks: [...timeBlocks, newBlock] });
   };
 
   const updateTimeBlock = (id: string, field: 'time' | 'activity', val: string) => {
     onChange({
       ...data,
-      timeBlocks: data.timeBlocks.map((b) => (b.id === id ? { ...b, [field]: val } : b)),
+      timeBlocks: timeBlocks.map((b) => (b.id === id ? { ...b, [field]: val } : b)),
     });
   };
 
   const toggleTimeBlockDone = (id: string) => {
     onChange({
       ...data,
-      timeBlocks: data.timeBlocks.map((b) => (b.id === id ? { ...b, done: !b.done } : b)),
+      timeBlocks: timeBlocks.map((b) => (b.id === id ? { ...b, done: !b.done } : b)),
     });
   };
 
   const removeTimeBlock = (id: string) => {
     onChange({
       ...data,
-      timeBlocks: data.timeBlocks.filter((b) => b.id !== id),
+      timeBlocks: timeBlocks.filter((b) => b.id !== id),
     });
   };
 
   const moveTimeBlock = (index: number, dir: 'up' | 'down') => {
     const target = dir === 'up' ? index - 1 : index + 1;
-    if (target < 0 || target >= data.timeBlocks.length) return;
-    const blocks = [...data.timeBlocks];
+    if (target < 0 || target >= timeBlocks.length) return;
+    const blocks = [...timeBlocks];
     const [moved] = blocks.splice(index, 1);
     blocks.splice(target, 0, moved);
     onChange({ ...data, timeBlocks: blocks });
@@ -63,34 +67,34 @@ export const DailyPlannerView: React.FC<DailyPlannerViewProps> = ({ data, onChan
       text: '',
       done: false,
     };
-    onChange({ ...data, todoList: [...data.todoList, newItem] });
+    onChange({ ...data, todoList: [...todoList, newItem] });
   };
 
   const updateTodoText = (id: string, text: string) => {
     onChange({
       ...data,
-      todoList: data.todoList.map((t) => (t.id === id ? { ...t, text } : t)),
+      todoList: todoList.map((t) => (t.id === id ? { ...t, text } : t)),
     });
   };
 
   const toggleTodoDone = (id: string) => {
     onChange({
       ...data,
-      todoList: data.todoList.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
+      todoList: todoList.map((t) => (t.id === id ? { ...t, done: !t.done } : t)),
     });
   };
 
   const removeTodoItem = (id: string) => {
     onChange({
       ...data,
-      todoList: data.todoList.filter((t) => t.id !== id),
+      todoList: todoList.filter((t) => t.id !== id),
     });
   };
 
   const moveTodo = (index: number, dir: 'up' | 'down') => {
     const target = dir === 'up' ? index - 1 : index + 1;
-    if (target < 0 || target >= data.todoList.length) return;
-    const items = [...data.todoList];
+    if (target < 0 || target >= todoList.length) return;
+    const items = [...todoList];
     const [moved] = items.splice(index, 1);
     items.splice(target, 0, moved);
     onChange({ ...data, todoList: items });
@@ -103,27 +107,27 @@ export const DailyPlannerView: React.FC<DailyPlannerViewProps> = ({ data, onChan
       text: '',
       done: false,
     };
-    onChange({ ...data, dailyWins: [...data.dailyWins, newWin] });
+    onChange({ ...data, dailyWins: [...dailyWins, newWin] });
   };
 
   const updateWinText = (id: string, text: string) => {
     onChange({
       ...data,
-      dailyWins: data.dailyWins.map((w) => (w.id === id ? { ...w, text } : w)),
+      dailyWins: dailyWins.map((w) => (w.id === id ? { ...w, text } : w)),
     });
   };
 
   const toggleWinDone = (id: string) => {
     onChange({
       ...data,
-      dailyWins: data.dailyWins.map((w) => (w.id === id ? { ...w, done: !w.done } : w)),
+      dailyWins: dailyWins.map((w) => (w.id === id ? { ...w, done: !w.done } : w)),
     });
   };
 
   const removeDailyWin = (id: string) => {
     onChange({
       ...data,
-      dailyWins: data.dailyWins.filter((w) => w.id !== id),
+      dailyWins: dailyWins.filter((w) => w.id !== id),
     });
   };
 
