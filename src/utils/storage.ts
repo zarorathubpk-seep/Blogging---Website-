@@ -1,11 +1,14 @@
 import { StoredPlannerState, PlannerType, Currency } from '../types/planner';
 import { DEFAULT_PLANNER_STATE } from '../data/defaultPlanners';
 
-const STORAGE_KEY = 'zarorat_hub_planner_data_v1';
+const PRIMARY_STORAGE_KEY = 'toolcrest_planner_data_v1';
+const LEGACY_STORAGE_KEY = 'zarorat_hub_planner_data_v1';
 
 export function loadPlannerState(): StoredPlannerState {
   try {
-    const item = localStorage.getItem(STORAGE_KEY);
+    const item =
+      localStorage.getItem(PRIMARY_STORAGE_KEY) ||
+      localStorage.getItem(LEGACY_STORAGE_KEY);
     if (!item) return DEFAULT_PLANNER_STATE;
     const parsed = JSON.parse(item);
     return {
@@ -29,7 +32,7 @@ export function loadPlannerState(): StoredPlannerState {
 export function savePlannerState(state: StoredPlannerState): void {
   try {
     localStorage.setItem(
-      STORAGE_KEY,
+      PRIMARY_STORAGE_KEY,
       JSON.stringify({
         ...state,
         lastUpdated: new Date().toISOString(),
@@ -43,7 +46,8 @@ export function savePlannerState(state: StoredPlannerState): void {
 export function resetPlannerState(plannerType?: PlannerType): StoredPlannerState {
   if (!plannerType) {
     try {
-      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(PRIMARY_STORAGE_KEY);
+      localStorage.removeItem(LEGACY_STORAGE_KEY);
     } catch {
       // ignore
     }

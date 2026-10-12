@@ -52,7 +52,7 @@ export const PlannerActionToolbar: React.FC<PlannerActionToolbarProps> = ({
       });
 
       const link = document.createElement('a');
-      link.download = `zarorat-hub-${plannerType}-planner.png`;
+      link.download = `toolcrest-${plannerType}-planner.png`;
       link.href = dataUrl;
       link.click();
 

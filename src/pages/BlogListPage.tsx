@@ -61,7 +61,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
             <span>Practical Productivity & Routine Guides</span>
           </div>
           <h1 className="text-3xl sm:text-5xl font-extrabold text-slate-900 tracking-tight">
-            Zarorat Hub Planner Blog
+            ToolCrest Knowledge Center & Blog
           </h1>
           <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
             Straightforward guides to help you organize your week, your work, and your money. Written in plain, friendly English for readers in the United States and the United Kingdom.

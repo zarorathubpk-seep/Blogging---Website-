@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Article } from '../types/article';
 import { AuthorBox } from '../components/AuthorBox';
+import { AppImage } from '../components/AppImage';
+import { resolveArticleImage } from '../utils/assets';
 import {
   Clock,
   Calendar,
@@ -66,7 +68,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
   const handleShareEmail = () => {
     const subject = encodeURIComponent(article.title);
-    const body = encodeURIComponent(`Read this article on Zarorat Hub:\n\n${window.location.href}`);
+    const body = encodeURIComponent(`Read this article on ToolCrest:\n\n${window.location.href}`);
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
@@ -230,16 +232,13 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
         {/* Article Header Card */}
         <header className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs">
           {/* Hero Banner Image */}
-          {article.imageUrl && (
-            <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-slate-100">
-              <img
-                src={article.imageUrl}
-                alt={article.title}
-                referrerPolicy="no-referrer"
-                className="w-full h-full object-cover object-center"
-              />
-            </div>
-          )}
+          <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-slate-100">
+            <AppImage
+              src={resolveArticleImage(article.slug, article.imageUrl)}
+              alt={article.title}
+              className="w-full h-full object-cover object-center"
+            />
+          </div>
 
           <div className="p-6 sm:p-8 space-y-4">
             <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
@@ -383,16 +382,13 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                 }}
                 className="rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-slate-50/50 transition cursor-pointer flex flex-col justify-between group overflow-hidden"
               >
-                {rel.imageUrl && (
-                  <div className="w-full h-28 overflow-hidden bg-slate-100">
-                    <img
-                      src={rel.imageUrl}
-                      alt={rel.title}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover group-hover:scale-105 transition"
-                    />
-                  </div>
-                )}
+                <div className="w-full h-28 overflow-hidden bg-slate-100">
+                  <AppImage
+                    src={resolveArticleImage(rel.slug, rel.imageUrl)}
+                    alt={rel.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                  />
+                </div>
                 <div className="p-3.5">
                   <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block mb-1">
                     {rel.category}

@@ -10,13 +10,13 @@ export const AuthorBox: React.FC = () => {
         </div>
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h4 className="font-extrabold text-sm text-slate-900">Zarorat Hub Team</h4>
+            <h4 className="font-extrabold text-sm text-slate-900">ToolCrest Team</h4>
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Editorial Staff
+              <CheckCircle2 className="w-3 h-3 text-emerald-600" /> Editorial & Technical Staff
             </span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed">
-            Zarorat Hub Planner Hub offers free tools and simple guides to help you organize your week, your work, and your money. Everything on this page is free to use, and we write our guides to be clear and practical for readers across the United States and the United Kingdom.
+            ToolCrest offers free online browser tools, document utilities, and in-depth guides to help you organize your week, your work, and your documents. Everything executes 100% locally in your web browser.
           </p>
         </div>
       </div>

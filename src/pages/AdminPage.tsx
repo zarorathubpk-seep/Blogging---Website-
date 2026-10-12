@@ -32,6 +32,8 @@ import {
   Unlock,
   Image as ImageIcon,
 } from 'lucide-react';
+import { AppImage } from '../components/AppImage';
+import { resolveArticleImage } from '../utils/assets';
 
 interface AdminPageProps {
   articles: Article[];
@@ -39,8 +41,9 @@ interface AdminPageProps {
   onNavigate: (path: string) => void;
 }
 
-const DEFAULT_ADMIN_PASSWORD = 'zarorat2026';
-const ADMIN_SESSION_KEY = 'zarorat_hub_admin_auth_v1';
+const DEFAULT_ADMIN_PASSWORD = 'toolcrest2026';
+const LEGACY_ADMIN_PASSWORD = 'zarorat2026';
+const ADMIN_SESSION_KEY = 'toolcrest_admin_auth_v1';
 
 export const AdminPage: React.FC<AdminPageProps> = ({
   articles,
@@ -71,7 +74,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({
 
   const handlePasswordLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput.trim() === DEFAULT_ADMIN_PASSWORD || passwordInput.trim() === 'zarorat-admin-2026') {
+    const clean = passwordInput.trim();
+    if (
+      clean === DEFAULT_ADMIN_PASSWORD ||
+      clean === LEGACY_ADMIN_PASSWORD ||
+      clean === 'toolcrest-admin' ||
+      clean === 'zarorat-admin-2026'
+    ) {
       setIsPasscodeAuthenticated(true);
       sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
       setFeedback({
@@ -82,7 +91,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     } else {
       setFeedback({
         type: 'error',
-        message: 'Incorrect password. Please use the master password: zarorat2026',
+        message: 'Incorrect password. Please use the master password: toolcrest2026 (or zarorat2026)',
       });
     }
   };
@@ -92,7 +101,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
     sessionStorage.setItem(ADMIN_SESSION_KEY, 'true');
     setFeedback({
       type: 'success',
-      message: 'Portal unlocked with default password (zarorat2026).',
+      message: 'Portal unlocked successfully with administrator passcode.',
     });
   };
 
@@ -179,7 +188,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
       content: `### 1. Introduction\nWrite your guide here with clear practical advice.\n\n### 2. Step-by-Step Action\n- First actionable step\n- Second actionable step\n\n### 3. Review & Reflection\nCheck your progress weekly.`,
       category: 'Weekly Planning',
       readingTime: '4 min read',
-      author: 'Zarorat Hub Team',
+      author: 'ToolCrest Team',
       publishedAt: new Date().toLocaleDateString('en-US', {
         month: 'long',
         day: 'numeric',
@@ -233,16 +242,17 @@ export const AdminPage: React.FC<AdminPageProps> = ({
             </div>
 
             {/* Password Credentials Box */}
-            <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl text-xs space-y-1.5">
+            <div className="p-4 bg-emerald-50/90 border border-emerald-200 rounded-2xl text-xs space-y-2">
               <div className="flex items-center gap-1.5 font-bold text-emerald-950">
                 <KeyRound className="w-4 h-4 text-emerald-700" />
                 <span>Admin Password Information:</span>
               </div>
               <div className="text-slate-700 leading-normal">
-                Your portal password is:{' '}
-                <code className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-300 text-emerald-900 select-all">
-                  zarorat2026
+                Your portal passcode is:{' '}
+                <code className="font-mono font-bold bg-white px-2 py-0.5 rounded border border-emerald-300 text-emerald-900 select-all mr-1">
+                  toolcrest2026
                 </code>
+                <span className="text-slate-500 text-[11px]">(or legacy: <code className="font-mono text-slate-700">zarorat2026</code>)</span>
               </div>
             </div>
 
@@ -257,7 +267,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                     type="password"
                     value={passwordInput}
                     onChange={(e) => setPasswordInput(e.target.value)}
-                    placeholder="Enter admin password (zarorat2026)..."
+                    placeholder="Enter password (toolcrest2026 or zarorat2026)..."
                     className="w-full text-xs sm:text-sm bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                   />
                 </div>
@@ -273,9 +283,9 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                 <button
                   type="button"
                   onClick={handleQuickUnlock}
-                  className="w-full py-2 px-3 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition"
+                  className="w-full py-2 px-3 text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xl transition flex items-center justify-center gap-1.5"
                 >
-                  Quick Unlock with <span className="font-mono font-bold">zarorat2026</span>
+                  <KeyRound className="w-3.5 h-3.5" /> Quick 1-Click Unlock (<span className="font-mono font-bold">toolcrest2026</span>)
                 </button>
               </div>
             </form>
@@ -311,7 +321,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                   </h1>
                 </div>
                 <p className="text-xs text-slate-500">
-                  Password Authenticated (<span className="font-mono text-emerald-700 font-bold">zarorat2026</span>) • Full Editor Privileges
+                  Password Authenticated (<span className="font-mono text-emerald-700 font-bold">toolcrest2026</span>) • Full Editor Privileges
                 </p>
               </div>
 
@@ -545,7 +555,7 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                       Articles in Database ({articles.length})
                     </h2>
                     <p className="text-xs text-slate-500">
-                      Master password <code className="font-mono text-emerald-700">zarorat2026</code> is active
+                      Master password <code className="font-mono text-emerald-700">toolcrest2026</code> is active
                     </p>
                   </div>
                   <button
@@ -573,18 +583,13 @@ export const AdminPage: React.FC<AdminPageProps> = ({
                       {articles.map((item) => (
                         <tr key={item.id} className="hover:bg-slate-50">
                           <td className="p-2.5">
-                            {item.imageUrl ? (
-                              <img
-                                src={item.imageUrl}
+                            <div className="w-12 h-9 rounded overflow-hidden border border-slate-200 bg-slate-100">
+                              <AppImage
+                                src={resolveArticleImage(item.slug, item.imageUrl)}
                                 alt={item.title}
-                                referrerPolicy="no-referrer"
-                                className="w-12 h-9 rounded object-cover border border-slate-200"
+                                className="w-full h-full object-cover"
                               />
-                            ) : (
-                              <div className="w-12 h-9 rounded bg-slate-100 flex items-center justify-center text-[10px] text-slate-400">
-                                None
-                              </div>
-                            )}
+                            </div>
                           </td>
                           <td className="p-2.5 font-bold text-slate-900">
                             {item.title}

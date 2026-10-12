@@ -48,7 +48,7 @@ export const FaqSection: React.FC = () => {
             Frequently Asked Questions
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Everything you need to know about Zarorat Hub Planner Generator
+            Everything you need to know about ToolCrest Online Tools & Planner Generators
           </p>
         </div>
 

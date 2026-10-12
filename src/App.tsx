@@ -5,23 +5,58 @@ import { Article } from './types/article';
 import { INITIAL_ARTICLES } from './data/defaultArticles';
 import { subscribeArticles } from './services/articleService';
 import { updatePageSeo } from './utils/seo';
+import { TOOLS_DATA } from './data/toolsData';
 
 // Components & Pages
 import { Header } from './components/Header';
 import { Footer } from './components/Footer';
+import { HomePage } from './pages/HomePage';
+import { ToolPage } from './pages/ToolPage';
 import { PlannerPage } from './pages/PlannerPage';
 import { BlogListPage } from './pages/BlogListPage';
 import { ArticlePage } from './pages/ArticlePage';
+import { PrivacyPolicyPage } from './pages/PrivacyPolicyPage';
+import { AboutUsPage } from './pages/AboutUsPage';
+import { ContactUsPage } from './pages/ContactUsPage';
+import { TermsPage } from './pages/TermsPage';
+import { DisclaimerPage } from './pages/DisclaimerPage';
+import { CookiePolicyPage } from './pages/CookiePolicyPage';
 import { AdminPage } from './pages/AdminPage';
 import { SitemapPage } from './pages/SitemapPage';
+import { ToolSelectorModal } from './components/ToolSelectorModal';
+import { Sparkles } from 'lucide-react';
 
 export default function App() {
   const [plannerState, setPlannerState] = useState<StoredPlannerState>(() => loadPlannerState());
   const [articles, setArticles] = useState<Article[]>(INITIAL_ARTICLES);
+  const [isToolSelectorOpen, setIsToolSelectorOpen] = useState<boolean>(false);
   const [currentPath, setCurrentPath] = useState<string>(() => {
     const path = window.location.pathname;
-    return path === '/' || path === '' ? '/planner' : path;
+    return path || '/';
   });
+
+  // Auto-prompt visitor to pick a tool on first homepage visit
+  useEffect(() => {
+    const dismissed = localStorage.getItem('toolcrest_welcome_popup_dismissed_v1');
+    if (!dismissed && (currentPath === '/' || currentPath === '')) {
+      const timer = setTimeout(() => {
+        setIsToolSelectorOpen(true);
+      }, 1200);
+      return () => clearTimeout(timer);
+    }
+  }, [currentPath]);
+
+  // Global keyboard shortcut: Cmd+K / Ctrl+K
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsToolSelectorOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   // Keep articles subscribed to Firestore
   useEffect(() => {
@@ -44,15 +79,18 @@ export default function App() {
     savePlannerState(updated);
   }, []);
 
-  const handleResetPlanner = useCallback((allPlanners?: boolean) => {
-    if (allPlanners) {
-      const resetAll = resetPlannerState();
-      setPlannerState(resetAll);
-    } else {
-      const resetCurrent = resetPlannerState(plannerState.activeType);
-      setPlannerState(resetCurrent);
-    }
-  }, [plannerState.activeType]);
+  const handleResetPlanner = useCallback(
+    (allPlanners?: boolean) => {
+      if (allPlanners) {
+        const resetAll = resetPlannerState();
+        setPlannerState(resetAll);
+      } else {
+        const resetCurrent = resetPlannerState(plannerState.activeType);
+        setPlannerState(resetCurrent);
+      }
+    },
+    [plannerState.activeType]
+  );
 
   const handleCurrencyChange = useCallback((cur: Currency) => {
     setPlannerState((prev) => {
@@ -78,7 +116,7 @@ export default function App() {
   useEffect(() => {
     const onPopState = () => {
       const path = window.location.pathname;
-      setCurrentPath(path === '/' || path === '' ? '/planner' : path);
+      setCurrentPath(path || '/');
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -86,36 +124,80 @@ export default function App() {
 
   // Update dynamic SEO on path change
   useEffect(() => {
-    if (currentPath === '/planner' || currentPath === '/') {
+    if (currentPath === '/' || currentPath === '') {
       updatePageSeo({
-        title: 'Free Weekly Planner Generator | Zarorat Hub',
+        title: 'ToolCrest — All Your Essential Online Tools in One Place',
+        description:
+          'Free browser tools for PDF merge, split, compress, sign, QR code generation, unit conversions, and productivity planners. 100% private, no sign-up.',
+      });
+    } else if (currentPath === '/planner') {
+      updatePageSeo({
+        title: 'Free Weekly & Budget Planner Generator | ToolCrest',
         description:
           'Build a free weekly, budget, work, study, or project planner in seconds. Customize it, print it, or save it as a PDF.',
       });
+    } else if (currentPath.startsWith('/tools/')) {
+      const slug = currentPath.replace('/tools/', '');
+      const tool = TOOLS_DATA.find((t) => t.slug === slug);
+      if (tool) {
+        updatePageSeo({
+          title: `${tool.name} — Free Online Tool | ToolCrest`,
+          description: tool.shortDesc,
+        });
+      }
     } else if (currentPath === '/blog') {
       updatePageSeo({
-        title: 'Planner Blog & Productivity Guides | Zarorat Hub',
+        title: 'ToolCrest Blog & Productivity Guides',
         description:
-          'Practical guides on weekly planning, the 50/30/20 budget method, office work schedules, and Sunday review routines.',
+          'Practical guides on weekly planning, PDF workflows, 50/30/20 budget method, office work schedules, and Sunday review routines.',
       });
     } else if (currentPath.startsWith('/blog/')) {
       const slug = currentPath.replace('/blog/', '');
       const found = articles.find((a) => a.slug === slug);
       if (found) {
         updatePageSeo({
-          title: `${found.title} | Zarorat Hub`,
+          title: `${found.title} | ToolCrest`,
           description: found.subtitle || found.title,
         });
       }
+    } else if (currentPath === '/privacy-policy') {
+      updatePageSeo({
+        title: 'Privacy Policy | ToolCrest',
+        description: 'ToolCrest privacy policy. Client-side processing, zero server file retention, and GDPR compliance.',
+      });
+    } else if (currentPath === '/about-us') {
+      updatePageSeo({
+        title: 'About Us | ToolCrest',
+        description: 'About ToolCrest online tools and productivity blogging platform.',
+      });
+    } else if (currentPath === '/contact-us') {
+      updatePageSeo({
+        title: 'Contact Us | ToolCrest',
+        description: 'Get in touch with ToolCrest technical and editorial support team.',
+      });
+    } else if (currentPath === '/terms-and-conditions' || currentPath === '/terms') {
+      updatePageSeo({
+        title: 'Terms & Conditions | ToolCrest',
+        description: 'Terms and conditions for using ToolCrest free online tools and content.',
+      });
+    } else if (currentPath === '/disclaimer') {
+      updatePageSeo({
+        title: 'Disclaimer | ToolCrest',
+        description: 'General disclaimer regarding tools, calculators, and informational articles.',
+      });
+    } else if (currentPath === '/cookie-policy') {
+      updatePageSeo({
+        title: 'Cookie Policy | ToolCrest',
+        description: 'Detailed cookie and local storage policy for ToolCrest and advertising partners.',
+      });
     } else if (currentPath === '/sitemap') {
       updatePageSeo({
-        title: 'HTML Sitemap | Zarorat Hub Planner Hub',
-        description:
-          'Directory of free planner generators, budgeting sheets, and productivity articles.',
+        title: 'HTML Sitemap | ToolCrest',
+        description: 'Directory of free online tools, PDF utilities, planners, and guide articles.',
       });
     } else if (currentPath === '/admin') {
       updatePageSeo({
-        title: 'Admin Console | Zarorat Hub',
+        title: 'Admin Article Portal | ToolCrest',
         description: 'Manage articles and sync data in Firestore.',
       });
     }
@@ -123,6 +205,22 @@ export default function App() {
 
   // Route matching
   const renderCurrentView = () => {
+    // 1. Tool Page
+    if (currentPath.startsWith('/tools/')) {
+      const slug = currentPath.replace('/tools/', '');
+      return (
+        <ToolPage
+          toolSlug={slug}
+          onNavigate={navigate}
+          plannerState={plannerState}
+          onUpdatePlannerState={handleUpdatePlannerState}
+          onResetPlanner={handleResetPlanner}
+          articles={articles}
+        />
+      );
+    }
+
+    // 2. Blog Single Article
     if (currentPath.startsWith('/blog/')) {
       const slug = currentPath.replace('/blog/', '');
       const currentArticle =
@@ -139,6 +237,7 @@ export default function App() {
       );
     }
 
+    // 3. Blog List
     if (currentPath === '/blog') {
       return (
         <BlogListPage
@@ -149,6 +248,40 @@ export default function App() {
       );
     }
 
+    // 4. Planner Page (Free Planner Generator with 8 planners)
+    if (currentPath === '/planner') {
+      return (
+        <PlannerPage
+          state={plannerState}
+          onUpdateState={handleUpdatePlannerState}
+          onResetPlanner={handleResetPlanner}
+          articles={articles}
+          onSelectArticle={(slug) => navigate(`/blog/${slug}`)}
+        />
+      );
+    }
+
+    // 5. Monetization & Legal Pages
+    if (currentPath === '/privacy-policy') {
+      return <PrivacyPolicyPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/about-us') {
+      return <AboutUsPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/contact-us') {
+      return <ContactUsPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/terms-and-conditions' || currentPath === '/terms') {
+      return <TermsPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/disclaimer') {
+      return <DisclaimerPage onNavigate={navigate} />;
+    }
+    if (currentPath === '/cookie-policy') {
+      return <CookiePolicyPage onNavigate={navigate} />;
+    }
+
+    // 6. Admin Page
     if (currentPath === '/admin') {
       return (
         <AdminPage
@@ -159,6 +292,7 @@ export default function App() {
       );
     }
 
+    // 7. Sitemap Page
     if (currentPath === '/sitemap') {
       return (
         <SitemapPage
@@ -173,14 +307,12 @@ export default function App() {
       );
     }
 
-    // Default: Planner page (/planner or /)
+    // Default: Homepage (Tool selection first)
     return (
-      <PlannerPage
-        state={plannerState}
-        onUpdateState={handleUpdatePlannerState}
-        onResetPlanner={handleResetPlanner}
+      <HomePage
+        onNavigate={navigate}
+        onSelectTool={(slug) => navigate(`/tools/${slug}`)}
         articles={articles}
-        onSelectArticle={(slug) => navigate(`/blog/${slug}`)}
       />
     );
   };
@@ -192,9 +324,31 @@ export default function App() {
         onNavigate={navigate}
         currency={plannerState.currency}
         onCurrencyChange={handleCurrencyChange}
+        onOpenToolSelector={() => setIsToolSelectorOpen(true)}
       />
 
       <div className="flex-1">{renderCurrentView()}</div>
+
+      {/* Floating Tool Launcher Button */}
+      <button
+        type="button"
+        onClick={() => setIsToolSelectorOpen(true)}
+        className="fixed bottom-5 right-5 z-40 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs px-3.5 py-2.5 rounded-full shadow-lg border border-emerald-500/50 flex items-center gap-2 hover:scale-105 active:scale-95 transition print:hidden"
+        title="Quick Tool Launcher (Cmd+K)"
+      >
+        <Sparkles className="w-4 h-4 text-emerald-300" />
+        <span>Tools Finder</span>
+        <kbd className="hidden sm:inline-block font-mono text-[10px] bg-emerald-800/90 px-1.5 py-0.5 rounded border border-emerald-600/70">
+          ⌘K
+        </kbd>
+      </button>
+
+      {/* Tool Selector Modal Popup */}
+      <ToolSelectorModal
+        isOpen={isToolSelectorOpen}
+        onClose={() => setIsToolSelectorOpen(false)}
+        onSelectTool={(slug) => navigate(`/tools/${slug}`)}
+      />
 
       <Footer
         onNavigate={navigate}
