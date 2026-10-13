@@ -7,11 +7,13 @@ import {
   Clock,
   Mic,
   FileText,
-  ChevronRight,
   Sparkles,
   BarChart3,
-  ShieldCheck,
+  HelpCircle,
 } from 'lucide-react';
+import { TOOLS_DATA } from '../../data/toolsData';
+import { ToolHeader } from './ToolHeader';
+import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 
 interface TextCounterToolProps {
@@ -19,6 +21,18 @@ interface TextCounterToolProps {
 }
 
 export const TextCounterTool: React.FC<TextCounterToolProps> = ({ onNavigate }) => {
+  const toolItem = TOOLS_DATA.find((t) => t.id === 'text-counter') || {
+    id: 'text-counter',
+    name: 'Word & Character Counter',
+    slug: 'text-counter',
+    category: 'productivity' as const,
+    categoryLabel: 'Productivity',
+    shortDesc: 'Analyze words, characters, reading time, and keyword frequency in real-time.',
+    longDesc: 'Instant text analysis engine measuring words, characters with/without spaces, sentences, paragraphs, reading speed, and keyword density.',
+    iconName: 'AlignLeft',
+    keywords: ['word', 'character', 'counter', 'reading', 'time', 'keywords'],
+  };
+
   const [text, setText] = useState<string>(
     'ToolCrest is a modern, high-performance browser tools suite and knowledge platform. All calculations, conversions, and document processing happen 100% locally on your machine.'
   );
@@ -92,9 +106,7 @@ export const TextCounterTool: React.FC<TextCounterToolProps> = ({ onNavigate }) 
       await navigator.clipboard.writeText(text);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } catch {
-      // Fallback
-    }
+    } catch {}
   };
 
   const handleCaseChange = (type: 'upper' | 'lower' | 'title' | 'sentence') => {
@@ -117,159 +129,121 @@ export const TextCounterTool: React.FC<TextCounterToolProps> = ({ onNavigate }) 
     }
   };
 
+  const textFaqs = [
+    {
+      q: 'How does reading time calculation work?',
+      a: 'Average adult reading speed across modern research is ~225 words per minute. Speaking time is calculated at ~130 words per minute for clear presentations.',
+    },
+    {
+      q: 'Is my pasted text kept private?',
+      a: 'Yes, 100%. The analysis occurs directly in client memory. No characters or pasted documents are ever uploaded to any cloud server.',
+    },
+    {
+      q: 'What are common character limits for social platforms?',
+      a: 'Twitter/X is 280 characters, LinkedIn posts allow 3,000 characters, and Instagram captions allow up to 2,200 characters.',
+    },
+  ];
+
   return (
-    <div className="py-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-xs text-slate-500">
-        <button
-          type="button"
-          onClick={() => onNavigate('/')}
-          className="hover:text-emerald-700 transition"
-        >
-          Tools
-        </button>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-800 font-semibold">Word & Character Counter</span>
-      </nav>
+    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+      {/* 1. UNIFIED TOOL HEADER */}
+      <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
-      {/* Header */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold shadow-2xs">
-              <AlignLeft className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  Word & Character Counter
-                </h1>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                  Real-Time
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-                Analyze words, characters, sentences, estimated reading time, and keyword density instantly as you type.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-xl border border-emerald-200/80">
-            <ShieldCheck className="w-4 h-4" /> 100% In-Browser Privacy
-          </div>
-        </div>
-      </div>
-
-      {/* Stat Cards Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-6 gap-3">
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs text-center">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Words
-          </span>
-          <span className="text-2xl sm:text-3xl font-black text-slate-900">
-            {stats.words.toLocaleString()}
+      {/* 2. STATS KPI GRID */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Words</span>
+          <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tabular-nums">
+            {stats.words}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs text-center">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Characters
-          </span>
-          <span className="text-2xl sm:text-3xl font-black text-emerald-600">
-            {stats.characters.toLocaleString()}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Characters</span>
+          <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tabular-nums">
+            {stats.characters}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs text-center">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            No Spaces
-          </span>
-          <span className="text-2xl sm:text-3xl font-black text-slate-900">
-            {stats.charactersNoSpaces.toLocaleString()}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">No Spaces</span>
+          <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tabular-nums">
+            {stats.charactersNoSpaces}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs text-center">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Sentences
-          </span>
-          <span className="text-2xl sm:text-3xl font-black text-slate-900">
-            {stats.sentences.toLocaleString()}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Sentences</span>
+          <span className="text-2xl sm:text-3xl font-black text-slate-900 font-mono tabular-nums">
+            {stats.sentences}
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs text-center">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Paragraphs
-          </span>
-          <span className="text-2xl sm:text-3xl font-black text-slate-900">
-            {stats.paragraphs.toLocaleString()}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Reading</span>
+          <span className="text-2xl sm:text-3xl font-black text-emerald-700 font-mono tabular-nums flex items-center justify-center gap-1">
+            <Clock className="w-4 h-4 text-emerald-600 inline" /> {stats.readingTimeMinutes}m
           </span>
         </div>
 
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-2xs text-center">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block mb-1">
-            Read Time
-          </span>
-          <span className="text-xl sm:text-2xl font-black text-indigo-600 flex items-center justify-center gap-1">
-            <Clock className="w-4 h-4 text-indigo-400" />
-            {stats.readingTimeMinutes}m
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-4 shadow-xs text-center">
+          <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block">Speaking</span>
+          <span className="text-2xl sm:text-3xl font-black text-indigo-700 font-mono tabular-nums flex items-center justify-center gap-1">
+            <Mic className="w-4 h-4 text-indigo-600 inline" /> {stats.speakingTimeMinutes}m
           </span>
         </div>
       </div>
 
-      {/* Editor & Actions */}
+      {/* 3. TEXT EDITOR WORKSPACE */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xs space-y-4">
-        {/* Quick Toolbar */}
+        {/* Formatting Toolbar */}
         <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-500 mr-2">Case Conversion:</span>
-            <button
-              type="button"
-              onClick={() => handleCaseChange('sentence')}
-              className="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
-            >
-              Sentence case
-            </button>
-            <button
-              type="button"
-              onClick={() => handleCaseChange('title')}
-              className="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
-            >
-              Title Case
-            </button>
+          <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
               onClick={() => handleCaseChange('upper')}
-              className="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
             >
               UPPERCASE
             </button>
             <button
               type="button"
               onClick={() => handleCaseChange('lower')}
-              className="px-2.5 py-1 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
             >
               lowercase
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCaseChange('title')}
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+            >
+              Title Case
+            </button>
+            <button
+              type="button"
+              onClick={() => handleCaseChange('sentence')}
+              className="px-2.5 py-1 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition"
+            >
+              Sentence case
             </button>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
-              onClick={handleCopy}
-              className="px-3 py-1.5 text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl shadow-xs transition flex items-center gap-1.5"
+              onClick={() => setText('')}
+              className="px-3 py-1 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-lg transition flex items-center gap-1"
             >
-              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-              {copied ? 'Copied!' : 'Copy Text'}
+              <RotateCcw className="w-3.5 h-3.5" /> Clear
             </button>
             <button
               type="button"
-              onClick={() => setText('')}
-              className="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-slate-100 rounded-lg transition"
-              title="Clear all text"
+              onClick={handleCopy}
+              className="px-3.5 py-1.5 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg transition flex items-center gap-1.5 shadow-2xs"
             >
-              <RotateCcw className="w-4 h-4" />
+              {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span>{copied ? 'Copied' : 'Copy Text'}</span>
             </button>
           </div>
         </div>
@@ -279,30 +253,18 @@ export const TextCounterTool: React.FC<TextCounterToolProps> = ({ onNavigate }) 
           rows={10}
           value={text}
           onChange={(e) => setText(e.target.value)}
-          placeholder="Paste or start typing your content here to inspect words, character count, and keyword density..."
-          className="w-full text-sm leading-relaxed p-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden transition resize-y font-sans"
+          placeholder="Type or paste your text here to begin instant real-time analysis..."
+          className="w-full text-sm leading-relaxed text-slate-800 bg-slate-50/50 border border-slate-200 rounded-2xl p-4 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden transition resize-y font-sans"
         />
-
-        {/* Bottom Helper Bar */}
-        <div className="flex flex-wrap items-center justify-between text-xs text-slate-500 pt-2">
-          <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5 text-slate-400" /> Silent Reading: ~{stats.readingTimeMinutes} min
-            </span>
-            <span className="flex items-center gap-1">
-              <Mic className="w-3.5 h-3.5 text-slate-400" /> Speech Presentation: ~{stats.speakingTimeMinutes} min
-            </span>
-          </div>
-          <span>Auto-saved in memory • No characters sent to cloud</span>
-        </div>
       </div>
 
-      {/* Keyword Density & SEO Analysis */}
+      {/* 4. KEYWORD DENSITY */}
       {stats.topKeywords.length > 0 && (
         <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xs space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-              <BarChart3 className="w-4 h-4 text-emerald-600" /> Top Keyword Density
+              <BarChart3 className="w-4 h-4 text-emerald-600" />
+              <span>Top Keyword Frequency & Density</span>
             </h3>
             <span className="text-xs text-slate-400">Excludes common stop words</span>
           </div>
@@ -316,7 +278,7 @@ export const TextCounterTool: React.FC<TextCounterToolProps> = ({ onNavigate }) 
                 <span className="font-bold text-xs text-slate-900 block truncate">
                   "{item.keyword}"
                 </span>
-                <span className="text-xs text-emerald-700 font-extrabold">
+                <span className="text-xs text-emerald-700 font-extrabold font-mono">
                   {item.count}x <span className="text-[10px] text-slate-400 font-normal">({item.percent}%)</span>
                 </span>
               </div>
@@ -325,32 +287,59 @@ export const TextCounterTool: React.FC<TextCounterToolProps> = ({ onNavigate }) 
         </div>
       )}
 
-      {/* Guide & FAQs */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-        <h2 className="text-lg font-bold text-slate-900">
-          How to Use the ToolCrest Word Counter for SEO & Writing
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-xs text-slate-600 leading-relaxed">
-          <div className="space-y-1.5">
-            <h4 className="font-bold text-slate-900 text-sm">Blog & Article Writing</h4>
-            <p>
-              Target recommended word counts: short blog posts typically span 800–1,200 words, while in-depth pillar guides often reach 2,000–3,500 words.
+      {/* 5. HOW TO USE GUIDE */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-emerald-600" />
+          <span>How to Optimize Text Length for SEO & Content</span>
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+              1
+            </span>
+            <h4 className="font-bold text-sm text-slate-900">Blog Posts & Articles</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Standard blog articles average 1,000–1,500 words, while cornerstone guides frequently target 2,500+ words.
             </p>
           </div>
-          <div className="space-y-1.5">
-            <h4 className="font-bold text-slate-900 text-sm">Social Media Character Limits</h4>
-            <p>
-              Monitor character lengths for social posts: Twitter/X (280 characters), LinkedIn posts (3,000), and Instagram captions (2,200).
+
+          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+              2
+            </span>
+            <h4 className="font-bold text-sm text-slate-900">Social Character Caps</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Keep Twitter/X posts under 280 characters and meta descriptions between 150–160 characters.
             </p>
           </div>
-          <div className="space-y-1.5">
-            <h4 className="font-bold text-slate-900 text-sm">Reading & Speech Pacing</h4>
-            <p>
-              Average human silent reading speed is around 225 words per minute, whereas comfortable public speaking ranges between 130 and 150 words per minute.
+
+          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+              3
+            </span>
+            <h4 className="font-bold text-sm text-slate-900">Case Transformation</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Instantly toggle between UPPERCASE, Title Case, and sentence case with one click before copying.
             </p>
           </div>
         </div>
       </div>
+
+      {/* 6. FAQS */}
+      <FaqSection
+        title="Frequently Asked Questions: Text Counter"
+        subtitle="Common queries about reading metrics, word limits, and security."
+        faqs={textFaqs}
+      />
+
+      {/* 7. RELATED TOOLS */}
+      <RelatedToolsSection
+        currentToolSlug="text-counter"
+        category="productivity"
+        onNavigate={onNavigate}
+      />
     </div>
   );
 };

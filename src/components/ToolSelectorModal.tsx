@@ -23,28 +23,13 @@ import {
   Check,
 } from 'lucide-react';
 
+import { TOOL_ICON_MAP, getCategoryStyles } from './tools/ToolCard';
+
 interface ToolSelectorModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectTool: (slug: string) => void;
 }
-
-// Map tool IDs to Lucide icons
-const QUICK_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  'merge-pdf': Layers,
-  'split-pdf': Split,
-  'compress-pdf': Minimize2,
-  'sign-pdf': PenTool,
-  'qr-generator': QrCode,
-  'unit-converter': ArrowLeftRight,
-  'time-zone-converter': Clock,
-  'weekly-planner': CalendarDays,
-  'budget-planner': PiggyBank,
-  'text-counter': AlignLeft,
-  'loan-calculator': Calculator,
-  'password-generator': KeyRound,
-  'markdown-previewer': FileCode2,
-};
 
 export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
   isOpen,
@@ -215,16 +200,17 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {filteredTools.map((tool) => {
-                const IconComp = QUICK_ICON_MAP[tool.id] || Layers;
+                const IconComp = TOOL_ICON_MAP[tool.iconName] || Layers;
+                const styles = getCategoryStyles(tool.category);
                 return (
                   <button
                     key={tool.id}
                     type="button"
                     onClick={() => handleChoose(tool.slug)}
-                    className="p-3.5 rounded-2xl border border-slate-200/90 hover:border-emerald-500 hover:bg-emerald-50/40 text-left transition group flex items-start gap-3.5 shadow-2xs hover:shadow-xs"
+                    className="p-3.5 rounded-2xl border border-slate-200/90 hover:border-emerald-500 hover:bg-slate-50/80 text-left transition group flex items-start gap-3.5 shadow-2xs hover:shadow-xs"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-slate-100 group-hover:bg-emerald-100 text-slate-700 group-hover:text-emerald-700 flex items-center justify-center shrink-0 transition">
-                      <IconComp className="w-5 h-5" />
+                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 transition ${styles.iconBg}`}>
+                      <IconComp className="w-5 h-5 stroke-[2.2]" />
                     </div>
 
                     <div className="flex-1 min-w-0">
@@ -233,12 +219,12 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
                           {tool.name}
                         </span>
                         {tool.badge && (
-                          <span className="text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 shrink-0">
+                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
                             {tool.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 line-clamp-2 mt-0.5 leading-relaxed">
+                      <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 leading-relaxed">
                         {tool.shortDesc}
                       </p>
                     </div>

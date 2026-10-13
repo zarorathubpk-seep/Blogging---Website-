@@ -46,6 +46,9 @@ import {
 
 import { AdvancedSplitPdfTool } from './AdvancedSplitPdfTool';
 import { PdfDownloadSection } from './PdfDownloadSection';
+import { ToolHeader } from './ToolHeader';
+import { RelatedToolsSection } from './RelatedToolsSection';
+import { FaqSection } from '../FaqSection';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
 
 interface PdfToolViewProps {
@@ -349,46 +352,8 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
 
   return (
     <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-      {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-2 text-xs text-slate-500">
-        <button
-          type="button"
-          onClick={() => onNavigate('/')}
-          className="hover:text-emerald-700 transition"
-        >
-          Tools
-        </button>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-        <span className="text-slate-700 font-semibold">{tool.name}</span>
-      </nav>
-
-      {/* Header Banner */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center justify-center font-bold shadow-2xs">
-              <FileCheck className="w-6 h-6" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  {tool.name}
-                </h1>
-                {tool.badge && (
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                    {tool.badge}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1">{tool.longDesc}</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2 text-xs text-emerald-800 bg-emerald-50/80 px-3 py-1.5 rounded-xl border border-emerald-200">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>100% Client-Side • Private & Fast</span>
-          </div>
-        </div>
-      </div>
+      {/* 1. UNIFIED TOOL HEADER */}
+      <ToolHeader tool={tool} onNavigate={onNavigate} />
 
       {/* Main Interactive Tool Workbench */}
       <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
@@ -832,6 +797,33 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Frequently Asked Questions */}
+      <FaqSection
+        title={`Frequently Asked Questions: ${tool.name}`}
+        subtitle="Learn more about document privacy, browser capabilities, and output quality."
+        faqs={[
+          {
+            q: 'Is my PDF uploaded to any external server?',
+            a: 'No. ToolCrest processes all documents 100% locally in your browser using WebAssembly and client-side JavaScript. Your files never leave your machine.',
+          },
+          {
+            q: 'Is there any file size or page limit?',
+            a: 'ToolCrest supports documents up to 50MB and hundreds of pages directly in your browser without throttling or scan limits.',
+          },
+          {
+            q: 'Can I rename the output file before downloading?',
+            a: 'Yes. Every tool features an editable file name input field before downloading, automatically sanitized with proper file extensions.',
+          },
+        ]}
+      />
+
+      {/* Related Tools Recommendations */}
+      <RelatedToolsSection
+        currentToolSlug={tool.slug}
+        category={tool.category}
+        onNavigate={onNavigate}
+      />
     </div>
   );
 };

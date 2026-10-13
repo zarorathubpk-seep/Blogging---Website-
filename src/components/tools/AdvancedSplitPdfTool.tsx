@@ -23,7 +23,12 @@ import {
   Grid,
   FileCheck,
   Zap,
+  HelpCircle,
 } from 'lucide-react';
+import { TOOLS_DATA } from '../../data/toolsData';
+import { ToolHeader } from './ToolHeader';
+import { RelatedToolsSection } from './RelatedToolsSection';
+import { FaqSection } from '../FaqSection';
 import {
   getPdfDocumentSummary,
   renderPageThumbnail,
@@ -333,46 +338,25 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
 
   return (
     <div className="py-8 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-      {/* Breadcrumb Navigation */}
-      <nav className="flex items-center gap-2 text-xs text-slate-500">
-        <button
-          type="button"
-          onClick={() => onNavigate('/')}
-          className="hover:text-emerald-700 transition"
-        >
-          Tools
-        </button>
-        <span className="text-slate-400">/</span>
-        <span className="text-slate-700 font-semibold">Split PDF</span>
-      </nav>
-
-      {/* Header Banner */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-3">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center font-bold shadow-2xs">
-              <Split className="w-7 h-7" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-                  Advanced Split PDF
-                </h1>
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                  5 Modes
-                </span>
-              </div>
-              <p className="text-xs sm:text-sm text-slate-600 mt-1 max-w-2xl">
-                Extract individual pages, specify multiple custom ranges, split every page into a ZIP, or export selected pages to PNG/JPG with custom file naming.
-              </p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-emerald-700 bg-emerald-50/80 px-3 py-1.5 rounded-xl border border-emerald-200/80">
-            <ShieldCheck className="w-4 h-4" /> 100% In-Browser Privacy
-          </div>
-        </div>
-      </div>
+      {/* 1. UNIFIED TOOL HEADER */}
+      <ToolHeader
+        tool={
+          TOOLS_DATA.find((t) => t.id === 'split-pdf') || {
+            id: 'split-pdf',
+            name: 'Advanced Split PDF',
+            slug: 'split-pdf',
+            category: 'pdf',
+            categoryLabel: 'PDF Suite',
+            shortDesc: 'Extract individual pages, custom page ranges, or split every page into a ZIP.',
+            longDesc: 'Complete control over PDF pages: select visual thumbnails, custom ranges, split every page, or export pages as high-resolution images.',
+            iconName: 'Split',
+            badge: 'Popular',
+            keywords: ['split', 'extract', 'pdf', 'ranges'],
+          }
+        }
+        onNavigate={onNavigate}
+        badge="5 Split Modes"
+      />
 
       {/* Upload Dropzone if no file selected */}
       {!file && (
@@ -900,6 +884,77 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
           )}
         </div>
       )}
+
+      {/* 3. HOW TO USE ADVANCED SPLIT PDF */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-emerald-600" />
+          <span>How to Split PDF Files (5 Powerful Modes)</span>
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
+          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+              1
+            </span>
+            <h4 className="font-bold text-sm text-slate-900">Select Mode & Pages</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Click individual page thumbnails, type custom page ranges (e.g. 1-4, 8-10), or select split every single page.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+              2
+            </span>
+            <h4 className="font-bold text-sm text-slate-900">Choose Output Format</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Merge selected pages into one unified document, extract separate PDFs, or export pages as PNG/JPG images in a ZIP archive.
+            </p>
+          </div>
+
+          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+              3
+            </span>
+            <h4 className="font-bold text-sm text-slate-900">Customize File Name</h4>
+            <p className="text-xs text-slate-600 leading-relaxed">
+              Enter your preferred custom file name before downloading. ToolCrest auto-sanitizes and applies proper file extensions.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. FAQS */}
+      <FaqSection
+        title="Frequently Asked Questions: Advanced Split PDF"
+        subtitle="Learn more about page selection, range splitting, and image export capabilities."
+        faqs={[
+          {
+            q: 'Can I select non-consecutive pages (e.g., 1, 3, 5, 9)?',
+            a: 'Yes! In "Select Pages" mode, click any page thumbnails in any combination to extract exactly the pages you need.',
+          },
+          {
+            q: 'How does multiple custom range splitting work?',
+            a: 'In "Page Ranges" mode, click "Add Another Range" to define simultaneous page intervals (e.g., 1-3, 5-7, 10-12) and choose whether to merge them or download separate files.',
+          },
+          {
+            q: 'Are exported PNG and JPG images full resolution?',
+            a: 'Yes. Our high-resolution rendering pipeline exports crisp images with customizable 1x to 3x DPI settings, bundled cleanly in a single ZIP download.',
+          },
+          {
+            q: 'Can I name the output ZIP or PDF files before downloading?',
+            a: 'Yes. Every split mode includes an editable File Name box with real-time sanitized feedback before you click Download.',
+          },
+        ]}
+      />
+
+      {/* 5. RELATED TOOLS */}
+      <RelatedToolsSection
+        currentToolSlug="split-pdf"
+        category="pdf"
+        onNavigate={onNavigate}
+      />
     </div>
   );
 };

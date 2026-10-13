@@ -8,6 +8,7 @@ import {
 import { Article } from '../types/article';
 import { resolveArticleImage } from '../utils/assets';
 import { AppImage } from '../components/AppImage';
+import { ToolCard } from '../components/tools/ToolCard';
 import {
   Search,
   Star,
@@ -164,60 +165,14 @@ export const HomePage: React.FC<HomePageProps> = ({
   }, []);
 
   const renderToolCard = (tool: ToolItem) => {
-    const IconComponent = TOOL_ICON_MAP[tool.iconName] || Layers;
-    const isFav = favoriteIds.includes(tool.id);
-
     return (
-      <div
+      <ToolCard
         key={tool.id}
-        onClick={() => onSelectTool(tool.slug)}
-        className="group relative bg-white border border-slate-200/90 hover:border-emerald-400 rounded-3xl p-5 shadow-xs hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between"
-      >
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <div className="w-11 h-11 rounded-2xl bg-slate-50 group-hover:bg-emerald-50 text-slate-700 group-hover:text-emerald-700 border border-slate-200/80 group-hover:border-emerald-200 flex items-center justify-center transition shadow-2xs">
-              <IconComponent className="w-5 h-5 group-hover:scale-110 transition duration-300" />
-            </div>
-
-            <div className="flex items-center gap-1.5">
-              {tool.badge && (
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50/90 border border-emerald-200 px-2 py-0.5 rounded-full uppercase tracking-wider">
-                  {tool.badge}
-                </span>
-              )}
-              <button
-                type="button"
-                onClick={(e) => toggleFavorite(e, tool.id)}
-                className={`p-1.5 rounded-xl transition ${
-                  isFav
-                    ? 'text-amber-500 hover:text-amber-600 bg-amber-50'
-                    : 'text-slate-300 hover:text-amber-400 hover:bg-slate-50'
-                }`}
-                title={isFav ? 'Remove from favorites' : 'Add to favorites'}
-              >
-                <Star className={`w-4 h-4 ${isFav ? 'fill-amber-400' : ''}`} />
-              </button>
-            </div>
-          </div>
-
-          <h3 className="font-extrabold text-sm sm:text-base text-slate-900 group-hover:text-emerald-800 transition leading-snug">
-            {tool.name}
-          </h3>
-
-          <p className="text-xs text-slate-600 mt-1.5 leading-relaxed line-clamp-2">
-            {tool.shortDesc}
-          </p>
-        </div>
-
-        <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between text-xs">
-          <span className="text-[11px] font-semibold text-slate-400 group-hover:text-slate-600">
-            {tool.categoryLabel}
-          </span>
-          <span className="font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-0.5 transition">
-            Use Tool <ArrowRight className="w-3.5 h-3.5" />
-          </span>
-        </div>
-      </div>
+        tool={tool}
+        onSelect={onSelectTool}
+        isFavorite={favoriteIds.includes(tool.id)}
+        onToggleFavorite={toggleFavorite}
+      />
     );
   };
 
@@ -412,7 +367,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                   Explore Full Tools Directory
                 </h2>
                 <p className="text-xs text-slate-500">
-                  Browse our complete suite of 24 PDF tools, converters, calculators, and planners
+                  Browse our complete suite of 35+ PDF tools, converters, financial calculators, and planners
                 </p>
               </div>
 

@@ -1,59 +1,73 @@
 import React, { useState } from 'react';
 import { ChevronDown, HelpCircle } from 'lucide-react';
 
-interface FaqItem {
+export interface FaqItem {
   q: string;
   a: string;
 }
 
 export const FAQ_ITEMS: FaqItem[] = [
   {
-    q: 'Is this planner free?',
-    a: 'Yes. All planners on this page are free to use.',
+    q: 'Are ToolCrest tools free to use?',
+    a: 'Yes. All tools on ToolCrest are 100% free with no hidden subscriptions or scan limits.',
   },
   {
-    q: 'Do I need an account?',
-    a: 'No. Nothing is sent to a server. Your plan stays in your browser.',
+    q: 'Do I need an account or registration?',
+    a: 'No. Nothing is sent to an external server. Your files and computations stay private in your browser.',
   },
   {
-    q: 'Can I print or save my planner?',
-    a: 'Yes. Use the Print or Save as PDF button after generating your plan.',
+    q: 'Can I print or save output files with custom names?',
+    a: 'Yes. All tools offer custom output file naming and instant local file downloads.',
   },
   {
-    q: 'Can I edit my plan later?',
-    a: 'Yes. Your plan is saved in your browser on this device, so you can come back and edit it.',
+    q: 'Can I edit or reload my plan later?',
+    a: 'Yes. Your plan is saved in your browser storage on this device, so you can revisit and edit anytime.',
   },
   {
-    q: 'Is this financial or professional advice?',
-    a: 'No. The budget planner is a simple organizing tool. For personal financial decisions, speak with a qualified professional.',
+    q: 'Is this financial or professional legal advice?',
+    a: 'No. ToolCrest calculators and organizers are productivity tools. For personal decisions, speak with a qualified advisor.',
   },
 ];
 
-export const FaqSection: React.FC = () => {
+interface FaqSectionProps {
+  title?: string;
+  subtitle?: string;
+  faqs?: FaqItem[];
+  className?: string;
+}
+
+export const FaqSection: React.FC<FaqSectionProps> = ({
+  title = 'Frequently Asked Questions',
+  subtitle = 'Everything you need to know about ToolCrest Online Tools & Privacy',
+  faqs = FAQ_ITEMS,
+  className = '',
+}) => {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggle = (idx: number) => {
     setOpenIndex(openIndex === idx ? null : idx);
   };
 
+  const activeFaqs = faqs && faqs.length > 0 ? faqs : FAQ_ITEMS;
+
   return (
-    <section id="faq" className="py-12 bg-slate-50 border-t border-slate-200/80 print:hidden">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6">
-        <div className="text-center mb-8">
+    <section id="faq" className={`py-8 bg-slate-50/60 border border-slate-200/80 rounded-3xl p-6 sm:p-8 print:hidden ${className}`}>
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-6">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/60 text-slate-700 text-xs font-semibold mb-2">
-            <HelpCircle className="w-3.5 h-3.5" />
+            <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
             <span>Frequently Asked Questions</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Frequently Asked Questions
+          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+            {title}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Everything you need to know about ToolCrest Online Tools & Planner Generators
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl mx-auto">
+            {subtitle}
           </p>
         </div>
 
         <div className="space-y-3">
-          {FAQ_ITEMS.map((item, idx) => {
+          {activeFaqs.map((item, idx) => {
             const isOpen = openIndex === idx;
             return (
               <div
@@ -63,7 +77,7 @@ export const FaqSection: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => toggle(idx)}
-                  className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 font-bold text-sm text-slate-800 hover:text-emerald-700 transition"
+                  className="w-full text-left p-4 sm:p-4.5 flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-800 hover:text-emerald-700 transition"
                 >
                   <span>{item.q}</span>
                   <ChevronDown
@@ -73,7 +87,7 @@ export const FaqSection: React.FC = () => {
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 text-xs sm:text-sm text-slate-600 leading-relaxed border-t border-slate-100">
+                  <div className="px-4 pb-4 sm:px-4.5 sm:pb-4.5 pt-0 text-xs text-slate-600 leading-relaxed border-t border-slate-100">
                     {item.a}
                   </div>
                 )}
