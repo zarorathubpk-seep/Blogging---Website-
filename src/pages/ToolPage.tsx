@@ -8,6 +8,7 @@ import { TextCounterTool } from '../components/tools/TextCounterTool';
 import { LoanCalculatorTool } from '../components/tools/LoanCalculatorTool';
 import { PasswordGeneratorTool } from '../components/tools/PasswordGeneratorTool';
 import { MarkdownEditorTool } from '../components/tools/MarkdownEditorTool';
+import { AdvancedSplitPdfTool } from '../components/tools/AdvancedSplitPdfTool';
 import { PlannerType, StoredPlannerState } from '../types/planner';
 import { PlannerPage } from './PlannerPage';
 import { Article } from '../types/article';
@@ -109,6 +110,11 @@ export const ToolPage: React.FC<ToolPageProps> = ({
   // Markdown Live Editor
   if (tool.id === 'markdown-previewer') {
     return <MarkdownEditorTool onNavigate={onNavigate} />;
+  }
+
+  // Advanced Split PDF Tool (5 Modes, Visual Thumbnails, Ranges, ZIPs, Image Exports)
+  if (tool.id === 'split-pdf' || tool.id === 'extract-pdf-pages') {
+    return <AdvancedSplitPdfTool onNavigate={onNavigate} />;
   }
 
   // PDF Suite Tools

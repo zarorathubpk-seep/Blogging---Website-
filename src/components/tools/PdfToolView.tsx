@@ -44,6 +44,10 @@ import {
   Plus,
 } from 'lucide-react';
 
+import { AdvancedSplitPdfTool } from './AdvancedSplitPdfTool';
+import { PdfDownloadSection } from './PdfDownloadSection';
+import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
+
 interface PdfToolViewProps {
   tool: ToolItem;
   onNavigate: (path: string) => void;
@@ -55,6 +59,11 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   onNavigate,
   onSelectTool,
 }) => {
+  // Delegate directly to Advanced Split PDF tool for split and extract operations
+  if (tool.id === 'split-pdf' || tool.id === 'extract-pdf-pages') {
+    return <AdvancedSplitPdfTool onNavigate={onNavigate} />;
+  }
+
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [processedBytes, setProcessedBytes] = useState<Uint8Array | null>(null);
@@ -748,33 +757,43 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           </div>
         )}
 
-        {/* Action Buttons: Run & Download */}
-        <div className="flex flex-wrap items-center gap-3 pt-2">
-          <button
-            type="button"
-            onClick={handleExecute}
-            disabled={isProcessing}
-            className="flex-1 py-3 px-5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-99 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isProcessing ? (
-              <Loader2 className="w-4 h-4 animate-spin" />
-            ) : (
-              <Zap className="w-4 h-4 text-emerald-200" />
-            )}
-            {isProcessing ? 'Processing File...' : `Run ${tool.name}`}
-          </button>
-
-          {processedBytes && (
+        {/* Action Buttons: Run Tool */}
+        {!processedBytes && (
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <button
               type="button"
-              onClick={handleDownload}
-              className="py-3 px-6 text-xs sm:text-sm font-bold text-emerald-950 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 rounded-2xl shadow-xs transition flex items-center gap-2"
+              onClick={handleExecute}
+              disabled={isProcessing}
+              className="flex-1 py-3 px-5 text-xs sm:text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 active:scale-99 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Download className="w-4 h-4 text-emerald-700" />
-              Download Result PDF
+              {isProcessing ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Zap className="w-4 h-4 text-emerald-200" />
+              )}
+              {isProcessing ? 'Processing File...' : `Run ${tool.name}`}
             </button>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Download Section with Editable File Name */}
+        {processedBytes && (
+          <div className="pt-2">
+            <PdfDownloadSection
+              processedBytes={processedBytes}
+              defaultFileName={getSuggestedDefaultFileName(selectedFiles[0]?.name, tool.slug)}
+              targetExtension={
+                tool.id === 'pdf-to-images' || tool.id === 'extract-pdf-images' ? 'zip' : 'pdf'
+              }
+              statusMessage={successInfo}
+              originalSizeBytes={selectedFiles[0]?.size}
+              onReset={() => {
+                setProcessedBytes(null);
+                setSuccessInfo(null);
+              }}
+            />
+          </div>
+        )}
       </div>
 
       {/* Step by step Instructions */}
