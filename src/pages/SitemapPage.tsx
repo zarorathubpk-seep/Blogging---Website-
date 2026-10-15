@@ -35,18 +35,29 @@ export const SitemapPage: React.FC<SitemapPageProps> = ({
         </nav>
 
         {/* Header */}
-        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
-              <Map className="w-5 h-5" />
+        <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-emerald-100 text-emerald-800 rounded-xl">
+                <Map className="w-5 h-5" />
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                ToolCrest Website Sitemap
+              </h1>
             </div>
-            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-              ToolCrest Website Sitemap
-            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Complete index of 35+ online tools, PDF manipulation engines, planners, published articles, and legal documents.
+            </p>
           </div>
-          <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-            Index of all online tools, PDF manipulation utilities, planning generators, guides, and legal pages.
-          </p>
+          <a
+            href="/sitemap.xml"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200/80 rounded-xl text-xs font-bold text-emerald-800 flex items-center gap-1.5 self-start sm:self-auto transition shrink-0"
+          >
+            <FileText className="w-4 h-4 text-emerald-600" />
+            <span>View XML Sitemap (/sitemap.xml)</span>
+          </a>
         </div>
 
         {/* Section 1: All Online Tools */}

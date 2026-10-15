@@ -43,7 +43,7 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
         <section className="space-y-2">
           <h2 className="text-base font-bold text-slate-900">1. Acceptance of Terms</h2>
           <p>
-            By accessing or using the website <strong>ToolCrest</strong> (toolcrest.com and associated domains), you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, you must discontinue use of the site immediately.
+            By accessing or using the website <strong>ToolCrest</strong> (toolcrest.site and associated domains), you agree to be bound by these Terms and Conditions. If you do not agree with any part of these terms, you must discontinue use of the site immediately.
           </p>
         </section>
 

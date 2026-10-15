@@ -1,4 +1,5 @@
 User-agent: *
 Allow: /
+Disallow: /admin
 
-Sitemap: https://toolcrest.com/sitemap.xml
+Sitemap: https://toolcrest.site/sitemap.xml

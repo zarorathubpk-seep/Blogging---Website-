@@ -5,6 +5,7 @@ import { Article } from './types/article';
 import { INITIAL_ARTICLES } from './data/defaultArticles';
 import { subscribeArticles } from './services/articleService';
 import { updatePageSeo } from './utils/seo';
+import { trackPageView } from './utils/analytics';
 import { TOOLS_DATA } from './data/toolsData';
 
 // Components & Pages
@@ -24,6 +25,7 @@ import { CookiePolicyPage } from './pages/CookiePolicyPage';
 import { AdminPage } from './pages/AdminPage';
 import { SitemapPage } from './pages/SitemapPage';
 import { ToolSelectorModal } from './components/ToolSelectorModal';
+import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { Sparkles } from 'lucide-react';
 
 export default function App() {
@@ -129,12 +131,14 @@ export default function App() {
         title: 'ToolCrest — All Your Essential Online Tools in One Place',
         description:
           'Free browser tools for PDF merge, split, compress, sign, QR code generation, unit conversions, and productivity planners. 100% private, no sign-up.',
+        canonicalPath: '/',
       });
     } else if (currentPath === '/planner') {
       updatePageSeo({
         title: 'Free Weekly & Budget Planner Generator | ToolCrest',
         description:
           'Build a free weekly, budget, work, study, or project planner in seconds. Customize it, print it, or save it as a PDF.',
+        canonicalPath: '/planner',
       });
     } else if (currentPath.startsWith('/tools/')) {
       const slug = currentPath.replace('/tools/', '');
@@ -143,6 +147,7 @@ export default function App() {
         updatePageSeo({
           title: `${tool.name} — Free Online Tool | ToolCrest`,
           description: tool.shortDesc,
+          canonicalPath: `/tools/${slug}`,
         });
       }
     } else if (currentPath === '/blog') {
@@ -150,6 +155,7 @@ export default function App() {
         title: 'ToolCrest Blog & Productivity Guides',
         description:
           'Practical guides on weekly planning, PDF workflows, 50/30/20 budget method, office work schedules, and Sunday review routines.',
+        canonicalPath: '/blog',
       });
     } else if (currentPath.startsWith('/blog/')) {
       const slug = currentPath.replace('/blog/', '');
@@ -158,49 +164,62 @@ export default function App() {
         updatePageSeo({
           title: `${found.title} | ToolCrest`,
           description: found.subtitle || found.title,
+          canonicalPath: `/blog/${slug}`,
         });
       }
-    } else if (currentPath === '/privacy-policy') {
+    } else if (currentPath === '/privacy-policy' || currentPath === '/privacy') {
       updatePageSeo({
         title: 'Privacy Policy | ToolCrest',
         description: 'ToolCrest privacy policy. Client-side processing, zero server file retention, and GDPR compliance.',
+        canonicalPath: '/privacy-policy',
       });
-    } else if (currentPath === '/about-us') {
+    } else if (currentPath === '/about-us' || currentPath === '/about') {
       updatePageSeo({
         title: 'About Us | ToolCrest',
         description: 'About ToolCrest online tools and productivity blogging platform.',
+        canonicalPath: '/about-us',
       });
-    } else if (currentPath === '/contact-us') {
+    } else if (currentPath === '/contact-us' || currentPath === '/contact') {
       updatePageSeo({
         title: 'Contact Us | ToolCrest',
         description: 'Get in touch with ToolCrest technical and editorial support team.',
+        canonicalPath: '/contact-us',
       });
     } else if (currentPath === '/terms-and-conditions' || currentPath === '/terms') {
       updatePageSeo({
         title: 'Terms & Conditions | ToolCrest',
         description: 'Terms and conditions for using ToolCrest free online tools and content.',
+        canonicalPath: '/terms-and-conditions',
       });
     } else if (currentPath === '/disclaimer') {
       updatePageSeo({
         title: 'Disclaimer | ToolCrest',
         description: 'General disclaimer regarding tools, calculators, and informational articles.',
+        canonicalPath: '/disclaimer',
       });
     } else if (currentPath === '/cookie-policy') {
       updatePageSeo({
         title: 'Cookie Policy | ToolCrest',
         description: 'Detailed cookie and local storage policy for ToolCrest and advertising partners.',
+        canonicalPath: '/cookie-policy',
       });
     } else if (currentPath === '/sitemap') {
       updatePageSeo({
         title: 'HTML Sitemap | ToolCrest',
         description: 'Directory of free online tools, PDF utilities, planners, and guide articles.',
+        canonicalPath: '/sitemap',
       });
     } else if (currentPath === '/admin') {
       updatePageSeo({
         title: 'Admin Article Portal | ToolCrest',
         description: 'Manage articles and sync data in Firestore.',
+        canonicalPath: '/admin',
+        noindex: true,
       });
     }
+
+    // Google Analytics 4 page view tracking across all tool pages, blog pages, and custom routes
+    trackPageView(currentPath, document.title);
   }, [currentPath, articles]);
 
   // Route matching
@@ -349,6 +368,9 @@ export default function App() {
         onClose={() => setIsToolSelectorOpen(false)}
         onSelectTool={(slug) => navigate(`/tools/${slug}`)}
       />
+
+      {/* GDPR & ePrivacy Cookie & Analytics Consent Banner */}
+      <CookieConsentBanner onNavigate={navigate} />
 
       <Footer
         onNavigate={navigate}
