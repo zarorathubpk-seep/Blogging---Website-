@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Cookie, ShieldCheck, X } from 'lucide-react';
-import { setAnalyticsConsent } from '../utils/analytics';
+import { setAnalyticsConsent, isCookieYesActive, getCookieYesConsent } from '../utils/analytics';
 
 interface CookieConsentBannerProps {
   onNavigate: (path: string) => void;
@@ -11,10 +11,20 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onNavi
 
   useEffect(() => {
     try {
+      // If CookieYes is installed or active on the site, suppress fallback banner
+      if (isCookieYesActive() || getCookieYesConsent() !== null) {
+        return;
+      }
+
       const stored = localStorage.getItem('toolcrest_analytics_consent');
       if (!stored) {
         // Show after a brief delay so it doesn't jarringly block the viewport on initial render
-        const timer = setTimeout(() => setIsVisible(true), 1500);
+        const timer = setTimeout(() => {
+          // Double-check CookieYes hasn't dynamically loaded in the meantime
+          if (!isCookieYesActive()) {
+            setIsVisible(true);
+          }
+        }, 1500);
         return () => clearTimeout(timer);
       }
     } catch {

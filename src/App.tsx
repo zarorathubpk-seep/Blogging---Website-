@@ -217,10 +217,15 @@ export default function App() {
         noindex: true,
       });
     }
-
-    // Google Analytics 4 page view tracking across all tool pages, blog pages, and custom routes
-    trackPageView(currentPath, document.title);
   }, [currentPath, articles]);
+
+  // Track Google Analytics 4 page views strictly on route changes (prevent duplicate events)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      trackPageView(currentPath, document.title);
+    }, 50);
+    return () => clearTimeout(timer);
+  }, [currentPath]);
 
   // Route matching
   const renderCurrentView = () => {

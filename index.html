@@ -12,17 +12,83 @@
     <meta property="og:url" content="https://toolcrest.site/" />
     <meta property="og:site_name" content="ToolCrest" />
     <meta property="og:type" content="website" />
-    <!-- Google tag (gtag.js) - Google Analytics 4 -->
+    <!-- 1. Google Consent Mode v2 Default (Must precede CookieYes and Google tags) -->
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+
+      // Establish Google Consent Mode v2 baseline defaults
+      gtag('consent', 'default', {
+        'analytics_storage': 'denied',
+        'ad_storage': 'denied',
+        'ad_user_data': 'denied',
+        'ad_personalization': 'denied',
+        'functionality_storage': 'granted',
+        'personalization_storage': 'denied',
+        'security_storage': 'granted',
+        'wait_for_update': 500
+      });
+
+      gtag('set', 'ads_data_redaction', true);
+      gtag('set', 'url_passthrough', true);
+
+      // Pre-check CookieYes cookie if visitor previously consented
+      try {
+        var ckyMatch = document.cookie.match(/(?:^|;\s*)cookieyes-consent=([^;]+)/);
+        if (ckyMatch) {
+          var ckyVal = decodeURIComponent(ckyMatch[1]);
+          var isAnalyticsYes = ckyVal.indexOf('analytics:yes') !== -1;
+          var isAdsYes = ckyVal.indexOf('advertisement:yes') !== -1;
+          if (isAnalyticsYes) {
+            gtag('consent', 'update', {
+              'analytics_storage': 'granted',
+              'ad_storage': isAdsYes ? 'granted' : 'denied',
+              'ad_user_data': isAdsYes ? 'granted' : 'denied',
+              'ad_personalization': isAdsYes ? 'granted' : 'denied'
+            });
+          }
+        }
+      } catch (e) {}
+    </script>
+
+    <!-- 2. CookieYes Integration & Consent Listener -->
+    <script>
+      document.addEventListener('cookieyes_consent_update', function (eventData) {
+        try {
+          var detail = eventData ? eventData.detail : null;
+          var accepted = (detail && Array.isArray(detail.accepted)) ? detail.accepted : [];
+          var analyticsGranted = accepted.indexOf('analytics') !== -1;
+          var adsGranted = accepted.indexOf('advertisement') !== -1;
+          var functionalGranted = accepted.indexOf('functional') !== -1;
+
+          gtag('consent', 'update', {
+            'analytics_storage': analyticsGranted ? 'granted' : 'denied',
+            'ad_storage': adsGranted ? 'granted' : 'denied',
+            'ad_user_data': adsGranted ? 'granted' : 'denied',
+            'ad_personalization': adsGranted ? 'granted' : 'denied',
+            'personalization_storage': functionalGranted ? 'granted' : 'denied',
+            'functionality_storage': 'granted'
+          });
+        } catch (err) {}
+      });
+    </script>
+
+    <!-- 3. Google tag (gtag.js) - Google Analytics 4 -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-EM9BQ097R4"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
       function gtag(){dataLayer.push(arguments);}
       gtag('js', new Date());
 
-      // Configure GA4 with send_page_view disabled to allow React SPA router to track route transitions accurately without duplicate initial hits
+      // Auto-detect DebugView for Google Tag Assistant and GA4 Debugging
+      var isGaDebug = window.location.search.indexOf('gtm_debug=') !== -1 ||
+                      window.location.search.indexOf('debug_mode=true') !== -1 ||
+                      window.location.search.indexOf('ga_debug') !== -1;
+
       gtag('config', 'G-EM9BQ097R4', {
-        send_page_view: false,
-        anonymize_ip: true
+        send_page_view: false, // Prevents duplicate initial hit; tracked precisely by React SPA router & consent handler
+        anonymize_ip: true,
+        debug_mode: isGaDebug
       });
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
