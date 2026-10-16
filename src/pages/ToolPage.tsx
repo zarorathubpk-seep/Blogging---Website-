@@ -9,6 +9,8 @@ import { LoanCalculatorTool } from '../components/tools/LoanCalculatorTool';
 import { PasswordGeneratorTool } from '../components/tools/PasswordGeneratorTool';
 import { MarkdownEditorTool } from '../components/tools/MarkdownEditorTool';
 import { AdvancedSplitPdfTool } from '../components/tools/AdvancedSplitPdfTool';
+import { OrganizePdfTool } from '../components/tools/OrganizePdfTool';
+import { ScanToPdfTool } from '../components/tools/ScanToPdfTool';
 import { PlannerType, StoredPlannerState } from '../types/planner';
 import { PlannerPage } from './PlannerPage';
 import { Article } from '../types/article';
@@ -115,6 +117,16 @@ export const ToolPage: React.FC<ToolPageProps> = ({
   // Advanced Split PDF Tool (5 Modes, Visual Thumbnails, Ranges, ZIPs, Image Exports)
   if (tool.id === 'split-pdf' || tool.id === 'extract-pdf-pages') {
     return <AdvancedSplitPdfTool onNavigate={onNavigate} />;
+  }
+
+  // Visual Page Organization
+  if (tool.id === 'organize-pdf') {
+    return <OrganizePdfTool onNavigate={onNavigate} />;
+  }
+
+  // Camera / Document Scanner
+  if (tool.id === 'scan-to-pdf') {
+    return <ScanToPdfTool onNavigate={onNavigate} />;
   }
 
   // PDF Suite Tools
