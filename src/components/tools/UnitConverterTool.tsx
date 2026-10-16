@@ -4,13 +4,18 @@ import {
   Scale,
   Ruler,
   Thermometer,
+  HardDrive,
+  Clock,
   Grid,
   Droplets,
   Gauge,
-  HelpCircle,
+  Activity,
+  Zap,
   Copy,
   Check,
-  Sparkles,
+  RotateCcw,
+  Sliders,
+  ChevronDown,
 } from 'lucide-react';
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
@@ -21,9 +26,19 @@ interface UnitConverterToolProps {
   onNavigate: (path: string) => void;
 }
 
-type UnitCategory = 'weight' | 'distance' | 'temperature' | 'area' | 'volume' | 'speed';
+export type UnitCategory =
+  | 'weight'
+  | 'distance'
+  | 'temperature'
+  | 'digital'
+  | 'time'
+  | 'area'
+  | 'volume'
+  | 'speed'
+  | 'pressure'
+  | 'energy';
 
-interface UnitDef {
+export interface UnitDef {
   id: string;
   name: string;
   symbol: string;
@@ -31,7 +46,7 @@ interface UnitDef {
   fromBase: (b: number) => number;
 }
 
-const UNITS_MAP: Record<UnitCategory, UnitDef[]> = {
+export const UNITS_MAP: Record<UnitCategory, UnitDef[]> = {
   weight: [
     { id: 'kg', name: 'Kilograms', symbol: 'kg', toBase: (v) => v, fromBase: (b) => b },
     { id: 'lb', name: 'Pounds', symbol: 'lb', toBase: (v) => v * 0.45359237, fromBase: (b) => b / 0.45359237 },
@@ -39,6 +54,7 @@ const UNITS_MAP: Record<UnitCategory, UnitDef[]> = {
     { id: 'oz', name: 'Ounces', symbol: 'oz', toBase: (v) => v * 0.028349523, fromBase: (b) => b / 0.028349523 },
     { id: 'st', name: 'Stone (UK)', symbol: 'st', toBase: (v) => v * 6.35029318, fromBase: (b) => b / 6.35029318 },
     { id: 't', name: 'Metric Tons', symbol: 't', toBase: (v) => v * 1000, fromBase: (b) => b / 1000 },
+    { id: 'mg', name: 'Milligrams', symbol: 'mg', toBase: (v) => v / 1e6, fromBase: (b) => b * 1e6 },
   ],
   distance: [
     { id: 'm', name: 'Meters', symbol: 'm', toBase: (v) => v, fromBase: (b) => b },
@@ -47,12 +63,30 @@ const UNITS_MAP: Record<UnitCategory, UnitDef[]> = {
     { id: 'ft', name: 'Feet', symbol: 'ft', toBase: (v) => v * 0.3048, fromBase: (b) => b / 0.3048 },
     { id: 'in', name: 'Inches', symbol: 'in', toBase: (v) => v * 0.0254, fromBase: (b) => b / 0.0254 },
     { id: 'cm', name: 'Centimeters', symbol: 'cm', toBase: (v) => v * 0.01, fromBase: (b) => b * 100 },
+    { id: 'mm', name: 'Millimeters', symbol: 'mm', toBase: (v) => v * 0.001, fromBase: (b) => b * 1000 },
     { id: 'yd', name: 'Yards', symbol: 'yd', toBase: (v) => v * 0.9144, fromBase: (b) => b / 0.9144 },
   ],
   temperature: [
     { id: 'c', name: 'Celsius', symbol: '°C', toBase: (v) => v, fromBase: (b) => b },
     { id: 'f', name: 'Fahrenheit', symbol: '°F', toBase: (v) => ((v - 32) * 5) / 9, fromBase: (b) => (b * 9) / 5 + 32 },
     { id: 'k', name: 'Kelvin', symbol: 'K', toBase: (v) => v - 273.15, fromBase: (b) => b + 273.15 },
+  ],
+  digital: [
+    { id: 'mb', name: 'Megabytes (MB)', symbol: 'MB', toBase: (v) => v * 1024 * 1024, fromBase: (b) => b / (1024 * 1024) },
+    { id: 'b', name: 'Bytes (B)', symbol: 'B', toBase: (v) => v, fromBase: (b) => b },
+    { id: 'kb', name: 'Kilobytes (KB)', symbol: 'KB', toBase: (v) => v * 1024, fromBase: (b) => b / 1024 },
+    { id: 'gb', name: 'Gigabytes (GB)', symbol: 'GB', toBase: (v) => v * 1024 ** 3, fromBase: (b) => b / 1024 ** 3 },
+    { id: 'tb', name: 'Terabytes (TB)', symbol: 'TB', toBase: (v) => v * 1024 ** 4, fromBase: (b) => b / 1024 ** 4 },
+    { id: 'pb', name: 'Petabytes (PB)', symbol: 'PB', toBase: (v) => v * 1024 ** 5, fromBase: (b) => b / 1024 ** 5 },
+  ],
+  time: [
+    { id: 'h', name: 'Hours', symbol: 'h', toBase: (v) => v * 3600, fromBase: (b) => b / 3600 },
+    { id: 's', name: 'Seconds', symbol: 's', toBase: (v) => v, fromBase: (b) => b },
+    { id: 'ms', name: 'Milliseconds', symbol: 'ms', toBase: (v) => v / 1000, fromBase: (b) => b * 1000 },
+    { id: 'min', name: 'Minutes', symbol: 'min', toBase: (v) => v * 60, fromBase: (b) => b / 60 },
+    { id: 'd', name: 'Days', symbol: 'days', toBase: (v) => v * 86400, fromBase: (b) => b / 86400 },
+    { id: 'wk', name: 'Weeks', symbol: 'weeks', toBase: (v) => v * 604800, fromBase: (b) => b / 604800 },
+    { id: 'yr', name: 'Years (365 days)', symbol: 'yr', toBase: (v) => v * 31536000, fromBase: (b) => b / 31536000 },
   ],
   area: [
     { id: 'm2', name: 'Square Meters', symbol: 'm²', toBase: (v) => v, fromBase: (b) => b },
@@ -75,15 +109,34 @@ const UNITS_MAP: Record<UnitCategory, UnitDef[]> = {
     { id: 'ms', name: 'Meters / Second', symbol: 'm/s', toBase: (v) => v * 3.6, fromBase: (b) => b / 3.6 },
     { id: 'kn', name: 'Knots (Nautical)', symbol: 'kn', toBase: (v) => v * 1.852, fromBase: (b) => b / 1.852 },
   ],
+  pressure: [
+    { id: 'bar', name: 'Bar', symbol: 'bar', toBase: (v) => v * 100000, fromBase: (b) => b / 100000 },
+    { id: 'pa', name: 'Pascals', symbol: 'Pa', toBase: (v) => v, fromBase: (b) => b },
+    { id: 'kpa', name: 'Kilopascals', symbol: 'kPa', toBase: (v) => v * 1000, fromBase: (b) => b / 1000 },
+    { id: 'psi', name: 'Pounds / Sq Inch (PSI)', symbol: 'psi', toBase: (v) => v * 6894.757, fromBase: (b) => b / 6894.757 },
+    { id: 'atm', name: 'Standard Atmospheres', symbol: 'atm', toBase: (v) => v * 101325, fromBase: (b) => b / 101325 },
+  ],
+  energy: [
+    { id: 'kwh', name: 'Kilowatt-hours', symbol: 'kWh', toBase: (v) => v * 3600000, fromBase: (b) => b / 3600000 },
+    { id: 'j', name: 'Joules', symbol: 'J', toBase: (v) => v, fromBase: (b) => b },
+    { id: 'kj', name: 'Kilojoules', symbol: 'kJ', toBase: (v) => v * 1000, fromBase: (b) => b / 1000 },
+    { id: 'cal', name: 'Calories', symbol: 'cal', toBase: (v) => v * 4.184, fromBase: (b) => b / 4.184 },
+    { id: 'kcal', name: 'Kilocalories (Food kcal)', symbol: 'kcal', toBase: (v) => v * 4184, fromBase: (b) => b / 4184 },
+    { id: 'wh', name: 'Watt-hours', symbol: 'Wh', toBase: (v) => v * 3600, fromBase: (b) => b / 3600 },
+  ],
 };
 
 const CATEGORY_ITEMS: { id: UnitCategory; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: 'weight', label: 'Weight & Mass', icon: Scale },
   { id: 'distance', label: 'Length & Distance', icon: Ruler },
   { id: 'temperature', label: 'Temperature', icon: Thermometer },
+  { id: 'digital', label: 'Digital Storage', icon: HardDrive },
+  { id: 'time', label: 'Time & Duration', icon: Clock },
   { id: 'area', label: 'Area', icon: Grid },
   { id: 'volume', label: 'Volume & Capacity', icon: Droplets },
   { id: 'speed', label: 'Speed & Velocity', icon: Gauge },
+  { id: 'pressure', label: 'Pressure', icon: Activity },
+  { id: 'energy', label: 'Energy & Power', icon: Zap },
 ];
 
 export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate }) => {
@@ -92,8 +145,8 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
     name: 'Unit Converter',
     slug: 'unit-converter',
     category: 'converters' as const,
-    categoryLabel: 'Converter',
-    shortDesc: 'Convert metric and imperial units of weight, distance, temperature, and volume.',
+    categoryLabel: 'Converters',
+    shortDesc: 'Convert metric and imperial units of weight, distance, temperature, volume, and storage.',
     longDesc: 'Accurate instant converter for metric and imperial standards with reciprocal calculations and breakdown formulas.',
     iconName: 'ArrowLeftRight',
     keywords: ['unit', 'converter', 'metric', 'imperial'],
@@ -103,6 +156,7 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
   const [inputValue, setInputValue] = useState<string>('1');
   const [sourceUnitId, setSourceUnitId] = useState<string>('kg');
   const [targetUnitId, setTargetUnitId] = useState<string>('lb');
+  const [precision, setPrecision] = useState<number>(-1); // -1 = auto
   const [copied, setCopied] = useState<boolean>(false);
 
   const units = UNITS_MAP[activeCategory];
@@ -131,208 +185,253 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
     setTargetUnitId(prevSource);
   };
 
-  const formattedResult =
-    convertedResult !== null
-      ? Number.isInteger(convertedResult)
-        ? convertedResult.toString()
-        : convertedResult.toFixed(4).replace(/\.?0+$/, '')
-      : '0';
+  const handleReset = () => {
+    setInputValue('1');
+    const catUnits = UNITS_MAP[activeCategory];
+    setSourceUnitId(catUnits[0].id);
+    setTargetUnitId(catUnits[1]?.id || catUnits[0].id);
+  };
+
+  const formatResult = (val: number | null): string => {
+    if (val === null) return '0';
+    if (precision === -1) {
+      if (Number.isInteger(val)) return val.toString();
+      if (Math.abs(val) < 0.0001 && val !== 0) return val.toExponential(4);
+      return val.toFixed(4).replace(/\.?0+$/, '');
+    }
+    return val.toFixed(precision);
+  };
+
+  const formattedResult = formatResult(convertedResult);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`${formattedResult} ${targetUnit.symbol}`);
+    navigator.clipboard.writeText(`${inputValue} ${sourceUnit.symbol} = ${formattedResult} ${targetUnit.symbol}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
 
   const unitFaqs = [
     {
-      q: 'Are conversions calculated to international standard standards?',
+      q: 'Are conversions calculated to international scientific standards?',
       a: 'Yes. All formulas use the National Institute of Standards and Technology (NIST) and ISO metric-imperial conversion constants, ensuring exact scientific accuracy.',
     },
     {
-      q: 'How does temperature conversion work between Celsius and Fahrenheit?',
-      a: 'Unlike proportional linear measures, temperature requires offset calculation: F = (C * 9/5) + 32, and C = (F - 32) * 5/9. Our calculator applies the full equation dynamically.',
+      q: 'How does digital storage conversion work (Binary vs Decimal)?',
+      a: 'We use the standard computing binary convention (1024 multiplier: 1 KB = 1024 Bytes, 1 MB = 1024 KB, 1 GB = 1024 MB).',
+    },
+    {
+      q: 'How does temperature conversion work between Celsius, Fahrenheit, and Kelvin?',
+      a: 'Unlike proportional linear measures, temperature requires offset calculations: F = (C * 9/5) + 32, C = (F - 32) * 5/9, and K = C + 273.15. The calculator handles all offsets dynamically.',
     },
     {
       q: 'Can I use this tool offline on mobile or tablet?',
-      a: 'Yes! All calculations run entirely inside your browser with zero remote requests. Once loaded, you can compute conversions with zero latency.',
+      a: 'Yes! All calculations run entirely inside your browser with zero remote requests. Once loaded, you can compute conversions instantly with zero latency.',
     },
   ];
 
   return (
-    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-      {/* 1. UNIFIED TOOL HEADER */}
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
       <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
-      {/* 2. MAIN TOOL WORKSPACE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
-        {/* Category Picker Tabs */}
+      {/* Main Converter Card */}
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-8">
+        {/* Category Selector Tabs */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2.5">
+          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
             Select Measurement Category
           </label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {CATEGORY_ITEMS.map((item) => {
-              const Icon = item.icon;
-              const active = activeCategory === item.id;
+              const IconComp = item.icon;
+              const isActive = activeCategory === item.id;
               return (
                 <button
                   key={item.id}
                   type="button"
                   onClick={() => handleCategoryChange(item.id)}
-                  className={`p-3 rounded-2xl border flex flex-col items-center justify-center gap-1.5 transition text-xs font-semibold ${
-                    active
-                      ? 'bg-emerald-50/90 border-emerald-500 text-emerald-900 shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-2.5 ${
+                    isActive
+                      ? 'bg-blue-600 border-blue-600 text-white shadow-xs font-bold'
+                      : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 ${active ? 'text-emerald-700' : 'text-slate-400'}`} />
-                  <span className="text-[11px] truncate w-full text-center">{item.label}</span>
+                  <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-200' : 'text-blue-600'}`} />
+                  <span className="text-xs font-semibold truncate">{item.label}</span>
                 </button>
               );
             })}
           </div>
         </div>
 
-        {/* Dual Conversion Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center pt-2">
-          {/* Source Input Box (5 cols) */}
-          <div className="md:col-span-5 p-5 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-3">
-            <label className="block text-xs font-bold text-slate-600 uppercase tracking-wider">
-              From (Source)
-            </label>
-            <input
-              type="number"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              className="w-full text-2xl font-black text-slate-900 bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:outline-hidden font-mono"
-            />
-            <select
-              value={sourceUnitId}
-              onChange={(e) => setSourceUnitId(e.target.value)}
-              className="w-full text-xs font-bold bg-white border border-slate-300 rounded-xl px-3 py-2.5 text-slate-800"
-            >
-              {units.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.symbol})
-                </option>
-              ))}
-            </select>
+        {/* Dual Input/Output Conversion Workspace */}
+        <div className="bg-slate-50/80 border border-slate-200/90 rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="grid grid-cols-1 lg:grid-cols-11 gap-4 items-center">
+            {/* SOURCE INPUT ZONE (5 Cols) */}
+            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">From</span>
+                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                  {sourceUnit.symbol}
+                </span>
+              </div>
+
+              <input
+                type="number"
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                placeholder="0"
+                className="w-full text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent focus:outline-hidden tabular-nums"
+              />
+
+              <div className="pt-1">
+                <select
+                  value={sourceUnitId}
+                  onChange={(e) => setSourceUnitId(e.target.value)}
+                  className="w-full text-xs sm:text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {units.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* SWAP BUTTON (1 Col) */}
+            <div className="lg:col-span-1 flex justify-center py-2 lg:py-0">
+              <button
+                type="button"
+                onClick={handleSwap}
+                className="w-11 h-11 rounded-2xl bg-white border border-slate-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50 shadow-xs flex items-center justify-center transition active:scale-95"
+                title="Swap source and target units"
+              >
+                <ArrowLeftRight className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* TARGET OUTPUT ZONE (5 Cols) */}
+            <div className="lg:col-span-5 bg-white border border-blue-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3 relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Converted Value</span>
+                <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                  {targetUnit.symbol}
+                </span>
+              </div>
+
+              <div className="text-2xl sm:text-3xl font-black text-blue-700 truncate tabular-nums select-all">
+                {formattedResult}
+              </div>
+
+              <div className="pt-1">
+                <select
+                  value={targetUnitId}
+                  onChange={(e) => setTargetUnitId(e.target.value)}
+                  className="w-full text-xs sm:text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                >
+                  {units.map((u) => (
+                    <option key={u.id} value={u.id}>
+                      {u.name} ({u.symbol})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
 
-          {/* Swap Button (1 col) */}
-          <div className="md:col-span-1 flex justify-center py-2 md:py-0">
-            <button
-              type="button"
-              onClick={handleSwap}
-              className="p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full transition shadow-2xs hover:rotate-180"
-              title="Swap units"
-            >
-              <ArrowLeftRight className="w-5 h-5" />
-            </button>
-          </div>
+          {/* Precision Controls & Action Bar */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200/80 text-xs">
+            <div className="flex items-center gap-2">
+              <Sliders className="w-3.5 h-3.5 text-slate-500" />
+              <span className="font-semibold text-slate-600">Decimal Precision:</span>
+              <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
+                {[
+                  { label: 'Auto', val: -1 },
+                  { label: '2', val: 2 },
+                  { label: '4', val: 4 },
+                  { label: '6', val: 6 },
+                ].map((p) => (
+                  <button
+                    key={p.label}
+                    type="button"
+                    onClick={() => setPrecision(p.val)}
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                      precision === p.val
+                        ? 'bg-blue-600 text-white shadow-2xs'
+                        : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {p.label}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-          {/* Target Result Box (5 cols) */}
-          <div className="md:col-span-5 p-5 bg-emerald-50/50 border border-emerald-200 rounded-2xl space-y-3">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-emerald-900 uppercase tracking-wider">
-                To (Result)
-              </label>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <button
+                type="button"
+                onClick={handleReset}
+                className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-semibold transition flex items-center gap-1.5"
+                title="Reset input to 1"
+              >
+                <RotateCcw className="w-3.5 h-3.5" /> Reset
+              </button>
+
               <button
                 type="button"
                 onClick={handleCopy}
-                className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1"
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs ${
+                  copied
+                    ? 'bg-emerald-600 text-white'
+                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                }`}
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied' : 'Copy'}</span>
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+                <span>{copied ? 'Copied Equation!' : 'Copy Result'}</span>
               </button>
             </div>
-            <div className="w-full text-2xl font-black text-emerald-950 bg-white border border-emerald-200 rounded-xl px-3.5 py-2.5 font-mono truncate shadow-2xs">
-              {formattedResult}
-            </div>
-            <select
-              value={targetUnitId}
-              onChange={(e) => setTargetUnitId(e.target.value)}
-              className="w-full text-xs font-bold bg-white border border-emerald-200 rounded-xl px-3 py-2.5 text-slate-800"
-            >
-              {units.map((u) => (
-                <option key={u.id} value={u.id}>
-                  {u.name} ({u.symbol})
-                </option>
-              ))}
-            </select>
           </div>
         </div>
 
-        {/* Live Equation Breakdown Banner */}
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-2 text-xs">
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-600 shrink-0" />
-            <span className="text-slate-600">
-              Conversion Formula:{' '}
-              <strong className="text-slate-900 font-mono">
-                {inputValue || '0'} {sourceUnit.symbol} = {formattedResult} {targetUnit.symbol}
-              </strong>
-            </span>
-          </div>
-          <span className="text-slate-400 font-mono text-[11px]">
-            Standard base:{' '}
-            {activeCategory === 'temperature' ? 'Celsius' : units[0].name}
-          </span>
-        </div>
-      </div>
-
-      {/* 3. HOW TO USE THIS TOOL */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-emerald-600" />
-          <span>How to Use the ToolCrest Unit Converter</span>
-        </h3>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
-              1
-            </span>
-            <h4 className="font-bold text-sm text-slate-900">Choose Measure Category</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Select from Weight, Distance, Temperature, Area, Volume, or Speed.
-            </p>
-          </div>
-
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
-              2
-            </span>
-            <h4 className="font-bold text-sm text-slate-900">Enter Number & Units</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Type the numeric value and pick both source and target measurement standards.
-            </p>
-          </div>
-
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
-              3
-            </span>
-            <h4 className="font-bold text-sm text-slate-900">Copy or Swap Instantly</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
-              Copy the formatted result in one click or tap Swap to invert the direction.
-            </p>
+        {/* Quick Conversions Grid for Current Unit */}
+        <div className="space-y-3">
+          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
+            Quick Conversion Benchmarks ({inputValue} {sourceUnit.symbol})
+          </h4>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
+            {units
+              .filter((u) => u.id !== sourceUnit.id)
+              .map((u) => {
+                const b = sourceUnit.toBase(numericInput || 1);
+                const r = u.fromBase(b);
+                const formatted = formatResult(r);
+                return (
+                  <button
+                    key={u.id}
+                    type="button"
+                    onClick={() => setTargetUnitId(u.id)}
+                    className="p-3 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl text-left transition group"
+                  >
+                    <div className="text-[10px] text-slate-400 group-hover:text-blue-600 font-medium">
+                      {u.name}
+                    </div>
+                    <div className="text-sm font-extrabold text-slate-900 group-hover:text-blue-700 tabular-nums truncate">
+                      {formatted} <span className="text-xs text-slate-500 font-bold">{u.symbol}</span>
+                    </div>
+                  </button>
+                );
+              })}
           </div>
         </div>
       </div>
 
-      {/* 4. FREQUENTLY ASKED QUESTIONS */}
-      <FaqSection
-        title="Frequently Asked Questions: Unit Converter"
-        subtitle="Common questions about metric and imperial measurement standards."
-        faqs={unitFaqs}
-      />
+      {/* FAQs */}
+      <FaqSection faqs={unitFaqs} />
 
-      {/* 5. RELATED TOOLS SUGGESTIONS */}
+      {/* Related Tools */}
       <RelatedToolsSection
-        currentToolSlug="unit-converter"
-        category="converters"
+        currentToolSlug={toolItem.slug}
+        category={toolItem.category}
         onNavigate={onNavigate}
       />
     </div>

@@ -4,10 +4,10 @@
  *
  * Full compliance with:
  * - Google Consent Mode v2 (analytics_storage, ad_storage, ad_user_data, ad_personalization)
- * - CookieYes CMP integration (event listener + cookie parsing)
+ * - CookieYes CMP integration (event listener + cookie parsing + dynamic load detection)
  * - React SPA client-side routing & GitHub Pages hosting
  * - Google Tag Assistant & GA4 DebugView support
- * - Deduplication of tags and page_view events
+ * - Event deduplication and guaranteed post-consent page_view delivery
  */
 
 export const GA_MEASUREMENT_ID = 'G-EM9BQ097R4';
@@ -20,16 +20,18 @@ declare global {
       isCategoryAllowed?: (category: string) => boolean;
       [key: string]: any;
     };
+    __toolcrest_consented_pv_fired?: boolean;
+    __toolcrest_consent_already_granted?: boolean;
   }
 }
 
-let hasInitialPageViewFired = false;
+let hasConsentedPageViewFired = false;
 let lastTrackedPath: string | null = null;
 let lastTrackedTime = 0;
 let consentListenersInitialized = false;
 
 /**
- * Detects whether DebugView is requested via Tag Assistant or query parameters
+ * Detects whether DebugView is active via Tag Assistant or URL parameters
  */
 export function isDebugModeActive(): boolean {
   if (typeof window === 'undefined') return false;
@@ -38,7 +40,8 @@ export function isDebugModeActive(): boolean {
     if (
       search.includes('gtm_debug=') ||
       search.includes('debug_mode=true') ||
-      search.includes('ga_debug')
+      search.includes('ga_debug') ||
+      search.includes('debug=true')
     ) {
       return true;
     }
@@ -70,7 +73,7 @@ export function isCookieYesActive(): boolean {
 /**
  * Reads existing CookieYes consent status directly from cookieyes-consent cookie
  */
-export function getCookieYesConsent(): { hasConsent: boolean; analytics: boolean } | null {
+export function getCookieYesConsent(): { hasConsent: boolean; analytics: boolean; ads: boolean } | null {
   if (typeof document === 'undefined') return null;
   try {
     const match = document.cookie.match(/(?:^|;\s*)cookieyes-consent=([^;]+)/);
@@ -78,8 +81,14 @@ export function getCookieYesConsent(): { hasConsent: boolean; analytics: boolean
     const val = decodeURIComponent(match[1]);
     const analyticsYes = val.includes('analytics:yes');
     const analyticsNo = val.includes('analytics:no');
-    if (analyticsYes) return { hasConsent: true, analytics: true };
-    if (analyticsNo) return { hasConsent: true, analytics: false };
+    const adsYes = val.includes('advertisement:yes');
+    if (analyticsYes || analyticsNo) {
+      return {
+        hasConsent: true,
+        analytics: analyticsYes,
+        ads: adsYes,
+      };
+    }
   } catch {}
   return null;
 }
@@ -90,25 +99,30 @@ export function getCookieYesConsent(): { hasConsent: boolean; analytics: boolean
 export function isAnalyticsPermitted(): boolean {
   if (typeof window === 'undefined') return false;
 
-  // 1. Check CookieYes cookie if present
+  // 1. Check window flag set during HTML pre-check
+  if (window.__toolcrest_consent_already_granted) {
+    return true;
+  }
+
+  // 2. Check CookieYes cookie if present
   const ckyConsent = getCookieYesConsent();
   if (ckyConsent !== null) {
     return ckyConsent.analytics;
   }
 
-  // 2. Check CookieYes global API if available
+  // 3. Check CookieYes global API if available
   if (window.cookieyes && typeof window.cookieyes.isCategoryAllowed === 'function') {
     return window.cookieyes.isCategoryAllowed('analytics');
   }
 
-  // 3. Check local fallback consent storage
+  // 4. Check local fallback consent storage
   try {
     const consent = localStorage.getItem('toolcrest_analytics_consent');
-    if (consent === 'denied' || consent === 'false') {
-      return false;
-    }
     if (consent === 'granted' || consent === 'true') {
       return true;
+    }
+    if (consent === 'denied' || consent === 'false') {
+      return false;
     }
   } catch {}
 
@@ -117,72 +131,23 @@ export function isAnalyticsPermitted(): boolean {
 }
 
 /**
- * Sets up listeners for CookieYes events and synchronizes Google Consent Mode v2
- */
-export function initConsentAndAnalytics(): void {
-  if (typeof window === 'undefined' || consentListenersInitialized) return;
-  consentListenersInitialized = true;
-
-  // Check if CookieYes already has recorded consent from a previous session
-  const existingCky = getCookieYesConsent();
-  if (existingCky && existingCky.hasConsent) {
-    if (typeof window.gtag === 'function') {
-      window.gtag('consent', 'update', {
-        analytics_storage: existingCky.analytics ? 'granted' : 'denied',
-      });
-    }
-  }
-
-  // Listen for CookieYes consent update event
-  document.addEventListener('cookieyes_consent_update', (eventData: any) => {
-    try {
-      const detail = eventData?.detail;
-      const accepted: string[] = Array.isArray(detail?.accepted)
-        ? detail.accepted
-        : Array.isArray(detail?.categories)
-        ? detail.categories
-        : [];
-
-      const analyticsGranted = accepted.includes('analytics');
-      const adsGranted = accepted.includes('advertisement');
-      const functionalGranted = accepted.includes('functional');
-
-      if (typeof window.gtag === 'function') {
-        window.gtag('consent', 'update', {
-          analytics_storage: analyticsGranted ? 'granted' : 'denied',
-          ad_storage: adsGranted ? 'granted' : 'denied',
-          ad_user_data: adsGranted ? 'granted' : 'denied',
-          ad_personalization: adsGranted ? 'granted' : 'denied',
-          personalization_storage: functionalGranted ? 'granted' : 'denied',
-          functionality_storage: 'granted',
-        });
-      }
-
-      if (isDebugModeActive()) {
-        console.log('[GA4 / CookieYes] Consent updated:', {
-          analyticsGranted,
-          adsGranted,
-          functionalGranted,
-        });
-      }
-
-      // If user just granted analytics consent, send the initial page_view if not yet sent
-      if (analyticsGranted && !hasInitialPageViewFired) {
-        sendInitialPageViewAfterConsent();
-      }
-    } catch (err) {
-      console.warn('[GA4] Error handling cookieyes_consent_update:', err);
-    }
-  });
-}
-
-/**
  * Sends the initial page_view once consent is granted
  */
 export function sendInitialPageViewAfterConsent(): void {
   if (typeof window === 'undefined') return;
+  if (hasConsentedPageViewFired || window.__toolcrest_consented_pv_fired) return;
+
+  hasConsentedPageViewFired = true;
+  window.__toolcrest_consented_pv_fired = true;
+
   const path = window.location.pathname || '/';
-  trackPageView(path, document.title, true);
+  const title = document.title || 'ToolCrest';
+
+  if (isDebugModeActive()) {
+    console.log('[GA4] Firing initial consented page_view for:', path);
+  }
+
+  trackPageView(path, title, true);
 }
 
 /**
@@ -203,8 +168,94 @@ export function setAnalyticsConsent(granted: boolean): void {
     });
   }
 
-  if (granted && !hasInitialPageViewFired) {
+  if (granted) {
+    window.__toolcrest_consent_already_granted = true;
     sendInitialPageViewAfterConsent();
+  }
+}
+
+/**
+ * Sets up listeners for CookieYes events and synchronizes Google Consent Mode v2
+ */
+export function initConsentAndAnalytics(): void {
+  if (typeof window === 'undefined' || consentListenersInitialized) return;
+  consentListenersInitialized = true;
+
+  // Check if CookieYes or localStorage already has recorded consent
+  const existingCky = getCookieYesConsent();
+  if (existingCky && existingCky.hasConsent) {
+    if (typeof window.gtag === 'function') {
+      window.gtag('consent', 'update', {
+        analytics_storage: existingCky.analytics ? 'granted' : 'denied',
+        ad_storage: existingCky.ads ? 'granted' : 'denied',
+        ad_user_data: existingCky.ads ? 'granted' : 'denied',
+        ad_personalization: existingCky.ads ? 'granted' : 'denied',
+      });
+    }
+    if (existingCky.analytics) {
+      window.__toolcrest_consent_already_granted = true;
+    }
+  }
+
+  const handleConsentUpdate = (eventData: any) => {
+    try {
+      const detail = eventData?.detail;
+      let accepted: string[] = [];
+      if (detail) {
+        if (Array.isArray(detail.accepted)) {
+          accepted = detail.accepted;
+        } else if (Array.isArray(detail.categories)) {
+          accepted = detail.categories;
+        } else if (typeof detail.accepted === 'string') {
+          accepted = detail.accepted.split(',').map((s: string) => s.trim());
+        }
+      }
+
+      const ckyMatch = document.cookie.match(/(?:^|;\s*)cookieyes-consent=([^;]+)/);
+      const ckyVal = ckyMatch ? decodeURIComponent(ckyMatch[1]) : '';
+
+      const analyticsGranted =
+        accepted.includes('analytics') || ckyVal.includes('analytics:yes');
+      const adsGranted =
+        accepted.includes('advertisement') || ckyVal.includes('advertisement:yes');
+      const functionalGranted =
+        accepted.includes('functional') || ckyVal.includes('functional:yes');
+
+      if (typeof window.gtag === 'function') {
+        window.gtag('consent', 'update', {
+          analytics_storage: analyticsGranted ? 'granted' : 'denied',
+          ad_storage: adsGranted ? 'granted' : 'denied',
+          ad_user_data: adsGranted ? 'granted' : 'denied',
+          ad_personalization: adsGranted ? 'granted' : 'denied',
+          personalization_storage: functionalGranted ? 'granted' : 'denied',
+          functionality_storage: 'granted',
+        });
+      }
+
+      if (isDebugModeActive()) {
+        console.log('[GA4 / CookieYes] Consent update received:', {
+          analyticsGranted,
+          adsGranted,
+          functionalGranted,
+        });
+      }
+
+      if (analyticsGranted) {
+        window.__toolcrest_consent_already_granted = true;
+        sendInitialPageViewAfterConsent();
+      }
+    } catch (err) {
+      console.warn('[GA4] Error handling cookieyes_consent_update:', err);
+    }
+  };
+
+  document.addEventListener('cookieyes_consent_update', handleConsentUpdate);
+  window.addEventListener('cookieyes_consent_update', handleConsentUpdate);
+
+  // If already consented when this module initializes, mark consented state
+  if (isAnalyticsPermitted()) {
+    hasConsentedPageViewFired = true;
+    window.__toolcrest_consented_pv_fired = true;
   }
 }
 
@@ -223,11 +274,15 @@ export function trackPageView(path: string, pageTitle?: string, force = false): 
 
   lastTrackedPath = path;
   lastTrackedTime = now;
-  hasInitialPageViewFired = true;
 
   const currentTitle = pageTitle || document.title || 'ToolCrest';
   const fullUrl = window.location.origin + (path.startsWith('/') ? path : '/' + path);
   const isDebug = isDebugModeActive();
+
+  if (isAnalyticsPermitted()) {
+    hasConsentedPageViewFired = true;
+    window.__toolcrest_consented_pv_fired = true;
+  }
 
   const eventParams: Record<string, any> = {
     page_path: path,
@@ -242,6 +297,12 @@ export function trackPageView(path: string, pageTitle?: string, force = false): 
   }
 
   if (typeof window.gtag === 'function') {
+    // Keep internal GA4 config synchronized with the current route for subsequent custom events
+    window.gtag('set', {
+      page_path: path,
+      page_title: currentTitle,
+      page_location: fullUrl,
+    });
     window.gtag('event', 'page_view', eventParams);
   } else {
     // If gtag script is still loading, queue into dataLayer

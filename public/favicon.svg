@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" fill="none">
+  <defs>
+    <linearGradient id="tcShieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#2563EB" />
+      <stop offset="55%" stopColor="#4F46E5" />
+      <stop offset="100%" stopColor="#7C3AED" />
+    </linearGradient>
+    <linearGradient id="tcCyanGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stopColor="#06B6D4" />
+      <stop offset="100%" stopColor="#38BDF8" />
+    </linearGradient>
+    <linearGradient id="tcFacetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.98" />
+      <stop offset="100%" stopColor="#E0E7FF" stopOpacity="0.85" />
+    </linearGradient>
+    <filter id="tcDropShadow" x="-10%" y="-10%" width="120%" height="130%" filterUnits="userSpaceOnUse">
+      <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-color="#0F172A" flood-opacity="0.3" />
+    </filter>
+  </defs>
+
+  <!-- Outer Hexagonal Crest Shield -->
+  <path
+    d="M24 3.5 L43 12.8 V29.5 C43 37.8 34.6 43.8 24 46.5 C13.4 43.8 5 37.8 5 29.5 V12.8 L24 3.5 Z"
+    fill="url(#tcShieldGrad)"
+    filter="url(#tcDropShadow)"
+  />
+
+  <!-- Top Cyan Apex Accent Rim -->
+  <path
+    d="M24 3.5 L43 12.8 L38.5 15 L24 8 L9.5 15 L5 12.8 L24 3.5 Z"
+    fill="url(#tcCyanGlow)"
+    opacity="0.9"
+  />
+
+  <!-- Inner Precision Chevron / Apex Tool Facet -->
+  <path
+    d="M24 13 L33 20 V29 L24 34 L15 29 V20 L24 13 Z"
+    fill="url(#tcFacetGrad)"
+  />
+
+  <!-- Center Diamond Spark of Precision -->
+  <path
+    d="M24 18.5 L27.5 24 L24 29.5 L20.5 24 Z"
+    fill="url(#tcShieldGrad)"
+  />
+
+  <!-- Core Precision Spark Dot -->
+  <circle cx="24" cy="24" r="1.8" fill="#06B6D4" />
+</svg>

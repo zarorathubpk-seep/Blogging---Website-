@@ -20,7 +20,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
               onClick={() => onNavigate('/')}
               className="text-left focus:outline-hidden"
             >
-              <ToolCrestLogo size="md" showTagline={false} />
+              <ToolCrestLogo size="md" theme="dark" showTagline={true} />
             </button>
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
               ToolCrest delivers fast, private, and 100% free online browser tools. Convert documents, merge PDFs, build schedules, and calculate finances without sending files to external servers.
@@ -28,18 +28,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
             <div className="space-y-1 pt-1 text-slate-400 text-[11px]">
               <div>
                 Email:{' '}
-                <a href="mailto:info@toolcrest.site" className="text-emerald-400 font-semibold hover:underline">
+                <a href="mailto:info@toolcrest.site" className="text-cyan-400 font-semibold hover:underline">
                   info@toolcrest.site
                 </a>
               </div>
               <div>
                 Phone:{' '}
-                <a href="tel:+9230305881136" className="text-emerald-400 font-semibold hover:underline">
+                <a href="tel:+9230305881136" className="text-cyan-400 font-semibold hover:underline">
                   +9230305881136
                 </a>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-emerald-400 text-[11px] font-medium pt-1">
+            <div className="flex items-center gap-1.5 text-cyan-400 text-[11px] font-medium pt-1">
               <ShieldCheck className="w-3.5 h-3.5" /> 100% Client-Side Privacy Architecture
             </div>
           </div>

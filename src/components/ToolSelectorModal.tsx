@@ -104,13 +104,13 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
       {/* Modal Dialog Card */}
       <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden z-10 flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-emerald-800 to-slate-900 text-white p-5 sm:p-6 flex items-start justify-between">
+        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-5 sm:p-6 flex items-start justify-between border-b border-slate-800">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-1 bg-emerald-500/30 rounded-lg text-emerald-300">
+              <span className="p-1 bg-blue-500/30 rounded-lg text-cyan-300">
                 <Sparkles className="w-4 h-4" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-emerald-300">
+              <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
                 Quick Tool Discovery
               </span>
             </div>
@@ -118,7 +118,7 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
               What would you like to do today?
             </h2>
             <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-              Choose from 30+ instant client-side tools. Fast, free, and no file uploads to external servers.
+              Choose from 39+ instant client-side tools. Fast, free, and no file uploads to external servers.
             </p>
           </div>
 
@@ -135,14 +135,14 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
         {/* Search & Category Filter Bar */}
         <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/70 space-y-3">
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-600" />
             <input
               ref={inputRef}
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by tool name (e.g. merge, compress, qr, convert, budget, counter)..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm focus:ring-2 focus:ring-emerald-500 focus:outline-hidden shadow-2xs"
+              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-hidden shadow-2xs font-medium"
             />
             {search && (
               <button
@@ -171,7 +171,7 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition ${
                   selectedCategory === cat.id
-                    ? 'bg-emerald-600 text-white shadow-2xs font-bold'
+                    ? 'bg-blue-600 text-white shadow-2xs font-bold'
                     : 'bg-white text-slate-600 hover:bg-slate-200/60 border border-slate-200/80'
                 }`}
               >

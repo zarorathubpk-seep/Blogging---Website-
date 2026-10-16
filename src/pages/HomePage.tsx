@@ -179,49 +179,64 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div className="space-y-12 pb-16">
       {/* 1. HERO DISCOVERY SECTION */}
-      <section className="pt-8 pb-10 sm:pt-12 sm:pb-14 border-b border-slate-200/80 bg-linear-to-b from-white via-slate-50/60 to-slate-50">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-4">
+      <section className="pt-10 pb-12 sm:pt-16 sm:pb-16 border-b border-slate-200/80 bg-gradient-to-b from-white via-slate-50/70 to-slate-100/50 relative overflow-hidden">
+        {/* Subtle decorative background gradient glows */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 right-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-28 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-400/10 rounded-full blur-2xl"></div>
+        </div>
+
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-5 relative z-10">
           {/* Tagline Badge */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-2xs">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-            <span>ToolCrest • 100% Free Online Tools & Document Suite</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/90 border border-blue-200/90 text-blue-900 text-xs font-bold shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
+            <span>ToolCrest • 39+ Free High-Precision Browser Tools</span>
           </div>
 
           {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight leading-tight">
-            All Your Essential Online Tools in One Place
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+            All Your Essential Online Tools <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              In One Premium Platform
+            </span>
           </h1>
 
           {/* Subtitle */}
           <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Fast, private, and free browser-based tools for PDFs, QR codes, unit conversions, time zones, and daily productivity planners.
+            Fast, private, and 100% free browser-based tools for PDFs, QR codes, image conversions, units, time zones, and daily productivity planners. Zero server uploads.
           </p>
 
           {/* Prominent Search Bar */}
           <div className="max-w-2xl mx-auto pt-2">
-            <div className="relative flex items-center shadow-sm rounded-2xl bg-white border-2 border-slate-200 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/20 transition">
-              <Search className="w-5 h-5 text-slate-400 ml-4 shrink-0" />
+            <div className="relative flex items-center shadow-xs rounded-2xl bg-white border-2 border-slate-200 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all">
+              <Search className="w-5 h-5 text-blue-600 ml-4 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search for a tool (e.g. Merge PDF, QR Generator, Budget Planner)..."
-                className="w-full text-xs sm:text-sm text-slate-800 bg-transparent px-3 py-3.5 focus:outline-hidden"
+                placeholder="Search tools (e.g. Merge PDF, QR Generator, Unit Converter, Budget Planner)..."
+                className="w-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 bg-transparent px-3 py-3.5 focus:outline-hidden font-medium"
               />
-              {searchQuery && (
-                <button
-                  type="button"
-                  onClick={() => setSearchQuery('')}
-                  className="mr-3 text-xs text-slate-400 hover:text-slate-700 font-bold px-2 py-1"
-                >
-                  Clear
-                </button>
-              )}
+              <div className="mr-3 flex items-center gap-1.5">
+                <kbd className="hidden sm:inline font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md border border-slate-200 font-bold">
+                  ⌘K
+                </kbd>
+                {searchQuery && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchQuery('')}
+                    className="text-xs text-slate-400 hover:text-slate-800 font-bold px-2 py-1 rounded-md hover:bg-slate-100"
+                  >
+                    Clear
+                  </button>
+                )}
+              </div>
             </div>
           </div>
 
-          {/* Category Filter Pills */}
-          <div className="flex items-center justify-center gap-1.5 flex-wrap pt-3">
+          {/* Category Filter Tabs */}
+          <div className="flex items-center justify-center gap-1.5 flex-wrap pt-2">
             {CATEGORY_FILTERS.map((cat) => (
               <button
                 key={cat.id}
@@ -229,7 +244,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 onClick={() => setSelectedCategory(cat.id)}
                 className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
                   selectedCategory === cat.id
-                    ? 'bg-emerald-600 text-white shadow-2xs'
+                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs font-bold'
                     : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
@@ -240,9 +255,9 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => setSelectedCategory('favorites')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1 ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 ${
                 selectedCategory === 'favorites'
-                  ? 'bg-amber-500 text-white shadow-2xs'
+                  ? 'bg-amber-500 text-white shadow-xs font-bold'
                   : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
               }`}
             >
@@ -252,18 +267,18 @@ export const HomePage: React.FC<HomePageProps> = ({
           </div>
 
           {/* Privacy & Trust Indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-medium text-slate-600 pt-3">
-            <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              Runs 100% in your browser
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-slate-600 pt-3">
+            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-cyan-600" />
+              100% In-Browser Execution
             </span>
-            <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-              <Lock className="w-4 h-4 text-emerald-600" />
-              Zero server file uploads
+            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
+              <Lock className="w-4 h-4 text-blue-600" />
+              Zero Cloud Uploads
             </span>
-            <span className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-2xs">
-              <Zap className="w-4 h-4 text-emerald-600" />
-              No sign-up needed
+            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
+              <Zap className="w-4 h-4 text-amber-500" />
+              Free Forever (No Sign-up)
             </span>
           </div>
         </div>
@@ -379,22 +394,25 @@ export const HomePage: React.FC<HomePageProps> = ({
         )}
 
         {/* 3. PRODUCTIVITY PLANNER HUB SPOTLIGHT BANNER */}
-        <section className="bg-linear-to-br from-emerald-900 via-teal-900 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-lg overflow-hidden relative">
-          <div className="max-w-2xl space-y-3 relative z-10">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full">
+        <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl overflow-hidden relative border border-slate-800">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+
+          <div className="max-w-2xl space-y-3.5 relative z-10">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest bg-blue-500/20 text-cyan-300 border border-blue-500/30 px-3 py-1 rounded-full">
               Full Productivity Suite
             </span>
-            <h2 className="text-2xl sm:text-3xl font-black tracking-tight">
+            <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               Free Weekly & Budget Planner Generator
             </h2>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
               Design weekly schedules, 50/30/20 budget ledgers in USD/GBP/EUR, project milestones, and habit trackers. Includes drag-and-drop reordering, progress tracking, and instant PDF/print export.
             </p>
             <div className="pt-2 flex flex-wrap gap-3">
               <button
                 type="button"
                 onClick={() => onNavigate('/planner')}
-                className="px-5 py-2.5 text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-emerald-950 rounded-xl shadow-xs transition flex items-center gap-2"
+                className="px-5 py-2.5 text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-md transition flex items-center gap-2"
               >
                 Open Planner Generator <ArrowRight className="w-4 h-4" />
               </button>
@@ -416,7 +434,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => onNavigate('/blog')}
-              className="text-xs font-bold text-emerald-700 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
             >
               Browse All Blog Guides <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -429,7 +447,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div
                   key={article.id}
                   onClick={() => onNavigate(`/blog/${article.slug}`)}
-                  className="bg-white border border-slate-200/90 hover:border-emerald-300 rounded-3xl overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer flex flex-col justify-between group"
+                  className="bg-white border border-slate-200/90 hover:border-blue-400 rounded-3xl overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer flex flex-col justify-between group"
                 >
                   <div>
                     <div className="w-full h-44 overflow-hidden bg-slate-100 relative">
@@ -439,14 +457,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                         className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
                       />
                       <div className="absolute top-3 left-3">
-                        <span className="font-bold text-[10px] text-emerald-950 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider shadow-2xs">
+                        <span className="font-bold text-[10px] text-blue-900 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider shadow-2xs border border-blue-100">
                           {article.category}
                         </span>
                       </div>
                     </div>
 
                     <div className="p-5">
-                      <h3 className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-emerald-700 transition leading-snug line-clamp-2 mb-2">
+                      <h3 className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-blue-600 transition leading-snug line-clamp-2 mb-2">
                         {article.title}
                       </h3>
                       <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
@@ -457,7 +475,7 @@ export const HomePage: React.FC<HomePageProps> = ({
 
                   <div className="px-5 pb-5 pt-2 flex items-center justify-between text-xs border-t border-slate-100">
                     <span className="text-[11px] text-slate-400">By {article.author}</span>
-                    <span className="text-emerald-700 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition">
+                    <span className="text-blue-600 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition">
                       Read guide <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>

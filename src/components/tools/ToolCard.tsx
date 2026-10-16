@@ -155,12 +155,12 @@ export const getCategoryStyles = (category: ToolCategory) => {
       };
     default:
       return {
-        iconBg: 'bg-linear-to-br from-slate-50 to-emerald-50/60 border-slate-200/90 text-slate-700 group-hover:from-emerald-50 group-hover:to-emerald-100',
-        badgeBg: 'bg-slate-100 text-slate-700 border-slate-200',
-        dotColor: 'bg-emerald-500',
-        accentText: 'text-emerald-700',
-        cardHoverBorder: 'hover:border-emerald-300',
-        label: 'Utility',
+        iconBg: 'bg-linear-to-br from-indigo-50 to-purple-50/80 border-indigo-200/90 text-indigo-600 group-hover:from-indigo-100 group-hover:to-purple-100',
+        badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200/80',
+        dotColor: 'bg-indigo-500',
+        accentText: 'text-indigo-600',
+        cardHoverBorder: 'hover:border-indigo-300',
+        label: 'Text & Utility',
       };
   }
 };
@@ -232,7 +232,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({
         )}
 
         {/* Tool Name */}
-        <h3 className="font-bold text-slate-900 group-hover:text-emerald-700 transition-colors text-base leading-snug tracking-tight">
+        <h3 className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors text-base leading-snug tracking-tight">
           {tool.name}
         </h3>
 
@@ -244,12 +244,12 @@ export const ToolCard: React.FC<ToolCardProps> = ({
 
       {/* Card Action Footer */}
       <div className="pt-3.5 mt-3.5 border-t border-slate-100 flex items-center justify-between text-xs">
-        <span className="text-[11px] font-medium text-slate-600 flex items-center gap-1">
-          <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+        <span className="text-[11px] font-medium text-slate-500 flex items-center gap-1.5">
+          <ShieldCheck className="w-3.5 h-3.5 text-cyan-600" />
           <span>Client-Side</span>
         </span>
 
-        <span className="font-bold text-emerald-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+        <span className="font-bold text-blue-600 group-hover:text-blue-700 flex items-center gap-1 group-hover:translate-x-1 transition-transform">
           <span>Open Tool</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </span>

@@ -31,7 +31,7 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
             onNavigate('/');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="hover:text-emerald-700 transition flex items-center gap-1"
+          className="hover:text-blue-600 transition flex items-center gap-1"
         >
           <Home className="w-3.5 h-3.5" />
           <span>Home</span>
@@ -43,7 +43,7 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
             onNavigate('/');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="hover:text-emerald-700 transition"
+          className="hover:text-blue-600 transition"
         >
           {tool.categoryLabel || styles.label}
         </button>
@@ -74,7 +74,7 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
                 </span>
 
                 {(badge || tool.badge) && (
-                  <span className="bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">
+                  <span className="bg-blue-50 text-blue-800 border border-blue-200/80 text-[10px] font-bold uppercase px-2 py-0.5 rounded-full">
                     {badge || tool.badge}
                   </span>
                 )}
@@ -92,8 +92,8 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
 
           {/* Privacy & Instant Processing Badges */}
           <div className="flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-slate-100">
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-800 bg-emerald-50/90 px-3.5 py-2 rounded-xl border border-emerald-200/80">
-              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+            <div className="flex items-center gap-2 text-xs font-semibold text-blue-900 bg-blue-50/90 px-3.5 py-2 rounded-xl border border-blue-200/80 shadow-2xs">
+              <ShieldCheck className="w-4 h-4 text-cyan-600 shrink-0" />
               <span>100% Client-Side • Private & Secure</span>
             </div>
             <div className="flex items-center gap-2 text-xs font-semibold text-slate-700 bg-slate-50 px-3.5 py-1.5 rounded-xl border border-slate-200">

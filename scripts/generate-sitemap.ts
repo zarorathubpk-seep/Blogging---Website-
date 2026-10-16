@@ -18,6 +18,14 @@ export function writeSitemapFiles() {
     const distPath = path.join(distDir, 'sitemap.xml');
     fs.writeFileSync(distPath, xml, 'utf-8');
     console.log(`[Sitemap] Copied to dist/sitemap.xml`);
+
+    // Ensure 404.html exists in dist for GitHub Pages SPA routing
+    const distIndex = path.join(distDir, 'index.html');
+    const dist404 = path.join(distDir, '404.html');
+    if (fs.existsSync(distIndex)) {
+      fs.copyFileSync(distIndex, dist404);
+      console.log(`[GitHub Pages] Synced dist/404.html from dist/index.html`);
+    }
   }
 }
 

@@ -44,7 +44,7 @@ export const RelatedToolsSection: React.FC<RelatedToolsSectionProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200/60">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-600" />
+            <Sparkles className="w-4 h-4 text-blue-600" />
             <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
               {title}
             </h3>
@@ -58,9 +58,9 @@ export const RelatedToolsSection: React.FC<RelatedToolsSectionProps> = ({
             onNavigate('/');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="text-xs font-bold text-emerald-700 hover:text-emerald-800 flex items-center gap-1 self-start sm:self-auto transition"
+          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 self-start sm:self-auto transition"
         >
-          <span>Explore All 30+ Tools</span>
+          <span>Explore All 39+ Tools</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
