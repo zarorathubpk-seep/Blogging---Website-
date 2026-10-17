@@ -26,15 +26,15 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
   ];
 
   return (
-    <aside className="space-y-6 print:hidden">
+    <aside className="space-y-6 print:hidden text-slate-100">
       {/* Latest Articles Widget with Thumbnails */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
-        <div className="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-          <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-            <BookOpen className="w-4 h-4 text-emerald-600" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-5 shadow-xl">
+        <div className="flex items-center justify-between pb-3 mb-4 border-b border-amber-500/20">
+          <h3 className="font-bold text-sm text-white flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-amber-400" />
             Latest Articles
           </h3>
-          <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-full">
+          <span className="text-[11px] font-bold text-amber-300 bg-amber-500/15 px-2.5 py-0.5 rounded-full border border-amber-500/30">
             Practical Guides
           </span>
         </div>
@@ -45,10 +45,10 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
             return (
               <div
                 key={article.id}
-                className="group cursor-pointer pb-3 border-b border-slate-100 last:border-b-0 last:pb-0 flex items-start gap-3"
+                className="group cursor-pointer pb-3 border-b border-amber-500/10 last:border-b-0 last:pb-0 flex items-start gap-3"
                 onClick={() => onSelectArticle(article.slug)}
               >
-                <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 border border-slate-200 bg-slate-100">
+                <div className="w-16 h-12 rounded-lg overflow-hidden shrink-0 border border-amber-500/20 bg-slate-900">
                   <AppImage
                     src={resolvedImg}
                     alt={article.title}
@@ -57,16 +57,16 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 text-[10px] text-slate-400 mb-0.5">
-                    <span className="font-semibold text-emerald-800 uppercase tracking-wider">
+                    <span className="font-bold text-amber-400 uppercase tracking-wider">
                       {article.category}
                     </span>
                     <span>•</span>
-                    <span className="flex items-center gap-0.5">
-                      <Clock className="w-2.5 h-2.5" />
+                    <span className="flex items-center gap-0.5 text-slate-400">
+                      <Clock className="w-2.5 h-2.5 text-amber-400" />
                       {article.readingTime}
                     </span>
                   </div>
-                  <h4 className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition leading-snug line-clamp-2">
+                  <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition leading-snug line-clamp-2">
                     {article.title}
                   </h4>
                 </div>
@@ -78,16 +78,16 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
         <button
           type="button"
           onClick={() => onSelectArticle(articles[0]?.slug || 'how-to-plan-your-week-in-15-minutes')}
-          className="w-full mt-4 py-2 px-3 text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 rounded-xl transition flex items-center justify-center gap-1.5"
+          className="w-full mt-4 py-2 px-3 text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 rounded-xl transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/10 cursor-pointer"
         >
           Browse All Guides <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>
 
       {/* Popular Planner Types Quick Switch */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 shadow-2xs">
-        <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2 mb-3">
-          <Sparkles className="w-4 h-4 text-amber-500" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-5 shadow-xl">
+        <h3 className="font-bold text-sm text-white flex items-center gap-2 mb-3">
+          <Sparkles className="w-4 h-4 text-amber-400" />
           Popular Planner Types
         </h3>
         <div className="space-y-2">
@@ -100,57 +100,57 @@ export const BlogSidebar: React.FC<BlogSidebarProps> = ({
                 const el = document.getElementById('planner-tool-section');
                 if (el) el.scrollIntoView({ behavior: 'smooth' });
               }}
-              className={`w-full text-left p-2.5 rounded-xl border text-xs transition flex items-center justify-between ${
+              className={`w-full text-left p-2.5 rounded-xl border text-xs transition flex items-center justify-between cursor-pointer ${
                 activeType === item.type
-                  ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold'
-                  : 'border-slate-100 hover:border-slate-200 hover:bg-slate-50 text-slate-700'
+                  ? 'bg-amber-500/15 border-amber-400 text-amber-300 font-bold shadow-xs'
+                  : 'border-amber-500/15 hover:border-amber-400/40 hover:bg-[#070a14] text-slate-300'
               }`}
             >
               <div>
                 <div className="font-bold">{item.label}</div>
-                <div className="text-[11px] text-slate-500 font-normal">{item.desc}</div>
+                <div className="text-[11px] text-slate-400 font-normal">{item.desc}</div>
               </div>
-              <ArrowRight className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <ArrowRight className="w-3.5 h-3.5 text-amber-400/70 shrink-0" />
             </button>
           ))}
         </div>
       </div>
 
       {/* How to Keep a Plan Going Tips Box */}
-      <div className="bg-linear-to-br from-emerald-50/70 via-teal-50/40 to-white border border-emerald-200/80 rounded-2xl p-5 shadow-2xs">
-        <h3 className="font-bold text-sm text-emerald-950 flex items-center gap-2 mb-3">
-          <HeartHandshake className="w-4 h-4 text-emerald-700" />
+      <div className="bg-gradient-to-br from-[#0c101d] to-[#070a14] border border-amber-500/30 rounded-2xl p-5 shadow-xl">
+        <h3 className="font-bold text-sm text-amber-300 flex items-center gap-2 mb-3">
+          <HeartHandshake className="w-4 h-4 text-amber-400" />
           How to Keep a Plan Going
         </h3>
-        <ul className="space-y-2 text-xs text-slate-700 leading-relaxed mb-4">
+        <ul className="space-y-2 text-xs text-slate-300 leading-relaxed mb-4">
           <li className="flex items-start gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
             <span>
-              <strong>Look at it daily,</strong> even for one minute. That small habit keeps the plan alive.
+              <strong className="text-amber-200">Look at it daily,</strong> even for one minute. That small habit keeps the plan alive.
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
             <span>
-              <strong>Celebrate small wins.</strong> Every checked box is real momentum.
+              <strong className="text-amber-200">Celebrate small wins.</strong> Every checked box is real momentum.
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
             <span>
-              <strong>Adjust it every week</strong> instead of abandoning it. Life shifts, and your plan should too.
+              <strong className="text-amber-200">Adjust it every week</strong> instead of abandoning it. Life shifts, and your plan should too.
             </span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0" />
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1.5 shrink-0" />
             <span>
-              <strong>Share a goal with a friend</strong> for gentle accountability.
+              <strong className="text-amber-200">Share a goal with a friend</strong> for gentle accountability.
             </span>
           </li>
         </ul>
 
-        <div className="bg-white/90 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-950 shadow-2xs">
-          <span className="font-bold block mb-1 text-emerald-900">A helpful question:</span>
+        <div className="bg-[#070a14] border border-amber-500/30 rounded-xl p-3 text-xs text-amber-200 shadow-inner">
+          <span className="font-bold block mb-1 text-amber-300">A helpful question:</span>
           <em>"If this plan were half as hard, would I do it? If yes, make it half as hard."</em>
         </div>
       </div>

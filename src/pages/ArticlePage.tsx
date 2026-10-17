@@ -92,26 +92,26 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
         elements.push(
           <div key={`table-${elements.length}`} className="my-6 overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse border border-slate-200 rounded-xl overflow-hidden">
-              <thead className="bg-slate-100 text-slate-800 font-bold">
+            <table className="w-full text-left text-xs sm:text-sm border-collapse border border-amber-500/25 rounded-xl overflow-hidden">
+              <thead className="bg-[#070a14] text-amber-300 font-bold border-b border-amber-500/20">
                 <tr>
                   {headers.map((h, i) => (
-                    <th key={i} className="p-3 border-b border-slate-200">
+                    <th key={i} className="p-3 border-b border-amber-500/20">
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 bg-white">
+              <tbody className="divide-y divide-amber-500/10">
                 {rows.map((rowStr, rIdx) => {
                   const cells = rowStr
                     .split('|')
                     .map((c) => c.trim())
-                    .filter((c, idx, arr) => idx > 0 && idx < arr.length - 1);
+                    .filter((c) => c.length > 0);
                   return (
-                    <tr key={rIdx} className="hover:bg-slate-50">
+                    <tr key={rIdx} className="hover:bg-amber-500/5 transition">
                       {cells.map((cell, cIdx) => (
-                        <td key={cIdx} className="p-3 text-slate-700">
+                        <td key={cIdx} className="p-3 text-slate-300">
                           {cell}
                         </td>
                       ))}
@@ -123,8 +123,8 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           </div>
         );
         tableBuffer = [];
+        inTable = false;
       }
-      inTable = false;
     };
 
     lines.forEach((line, idx) => {
@@ -145,9 +145,10 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           <h3
             key={idx}
             id={hid}
-            className="text-lg sm:text-xl font-bold text-slate-900 mt-8 mb-3 scroll-mt-24"
+            className="text-lg sm:text-xl font-bold text-white mt-8 mb-3 scroll-mt-24 flex items-center gap-2"
           >
-            {text}
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>{text}</span>
           </h3>
         );
         return;
@@ -157,7 +158,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       if (line.startsWith('**') && line.endsWith('**')) {
         const boldText = line.replace(/\*\*/g, '');
         elements.push(
-          <p key={idx} className="font-bold text-slate-900 mt-4 mb-2">
+          <p key={idx} className="font-bold text-amber-200 mt-4 mb-2">
             {boldText}
           </p>
         );
@@ -168,7 +169,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       if (line.trim().startsWith('- ')) {
         const bulletText = line.trim().replace('- ', '');
         elements.push(
-          <li key={idx} className="text-slate-700 leading-relaxed text-sm sm:text-base ml-4 list-disc mb-1.5">
+          <li key={idx} className="text-slate-300 leading-relaxed text-sm sm:text-base ml-4 list-disc mb-1.5 marker:text-amber-400">
             {bulletText}
           </li>
         );
@@ -178,7 +179,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       // Numbered lists
       if (/^\d+\.\s/.test(line.trim())) {
         elements.push(
-          <li key={idx} className="text-slate-700 leading-relaxed text-sm sm:text-base ml-4 list-decimal mb-1.5">
+          <li key={idx} className="text-slate-300 leading-relaxed text-sm sm:text-base ml-4 list-decimal mb-1.5 marker:text-amber-400 font-medium">
             {line.trim().replace(/^\d+\.\s/, '')}
           </li>
         );
@@ -192,7 +193,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
       // Standard paragraphs
       elements.push(
-        <p key={idx} className="text-slate-700 leading-relaxed text-sm sm:text-base my-3">
+        <p key={idx} className="text-slate-300 leading-relaxed text-sm sm:text-base my-3">
           {line}
         </p>
       );
@@ -206,33 +207,33 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
   const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-slate-50 py-10">
+    <div className="min-h-screen bg-[#0B0F19] text-slate-100 py-10">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-500">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-400">
           <button
             type="button"
-            onClick={() => onNavigate('/planner')}
-            className="hover:text-emerald-700"
+            onClick={() => onNavigate('/')}
+            className="hover:text-amber-300 transition cursor-pointer"
           >
-            Planner
+            Home
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
+          <ChevronRight className="w-3.5 h-3.5 text-amber-500/40" />
           <button
             type="button"
             onClick={() => onNavigate('/blog')}
-            className="hover:text-emerald-700"
+            className="hover:text-amber-300 transition cursor-pointer"
           >
             Blog
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
-          <span className="text-slate-800 font-semibold line-clamp-1">{article.title}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-amber-500/40" />
+          <span className="text-amber-300 font-bold line-clamp-1">{article.title}</span>
         </nav>
 
         {/* Article Header Card */}
-        <header className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs">
+        <header className="bg-[#0c101d] border border-amber-500/25 rounded-2xl overflow-hidden shadow-2xl">
           {/* Hero Banner Image */}
-          <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-slate-100">
+          <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-slate-900">
             <AppImage
               src={resolveArticleImage(article.slug, article.imageUrl)}
               alt={article.title}
@@ -241,77 +242,77 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           </div>
 
           <div className="p-6 sm:p-8 space-y-4">
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-              <span className="font-bold text-xs text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-md uppercase tracking-wider">
+            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+              <span className="font-black text-xs text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
                 {article.category}
               </span>
-              <span className="flex items-center gap-1">
-                <Clock className="w-3.5 h-3.5 text-slate-400" />
+              <span className="flex items-center gap-1 text-amber-300/80">
+                <Clock className="w-3.5 h-3.5 text-amber-400" />
                 {article.readingTime}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                <Calendar className="w-3.5 h-3.5 text-amber-400" />
                 {article.publishedAt}
               </span>
               <span>•</span>
-              <span className="font-medium text-slate-700">By {article.author}</span>
+              <span className="font-semibold text-slate-300">By {article.author}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">
+            <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
               {article.title}
             </h1>
 
-            <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
               {article.subtitle}
             </p>
 
             {/* Social Share Buttons Bar */}
-            <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-              <span className="text-xs font-semibold text-slate-500 flex items-center gap-1.5">
-                <Share2 className="w-4 h-4 text-slate-400" /> Share this guide:
+            <div className="pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-3">
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <Share2 className="w-4 h-4 text-amber-400" /> Share this guide:
               </span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition text-xs font-semibold flex items-center gap-1"
+                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition text-xs font-semibold flex items-center gap-1 cursor-pointer"
                   title="Copy article link"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
                   <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleShareTwitter}
-                  className="p-2 rounded-lg bg-slate-100 hover:bg-sky-50 text-slate-700 hover:text-sky-600 transition"
+                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
                   title="Share on X / Twitter"
                 >
-                  <Twitter className="w-3.5 h-3.5" />
+                  <Twitter className="w-3.5 h-3.5 text-amber-400" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShareLinkedIn}
-                  className="p-2 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-700 transition"
+                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
                   title="Share on LinkedIn"
                 >
-                  <Linkedin className="w-3.5 h-3.5" />
+                  <Linkedin className="w-3.5 h-3.5 text-amber-400" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShareFacebook}
-                  className="p-2 rounded-lg bg-slate-100 hover:bg-blue-50 text-slate-700 hover:text-blue-600 transition"
+                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
                   title="Share on Facebook"
                 >
-                  <Facebook className="w-3.5 h-3.5" />
+                  <Facebook className="w-3.5 h-3.5 text-amber-400" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShareEmail}
-                  className="p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition"
+                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
                   title="Share via Email"
                 >
-                  <Mail className="w-3.5 h-3.5" />
+                  <Mail className="w-3.5 h-3.5 text-amber-400" />
                 </button>
               </div>
             </div>
@@ -320,9 +321,9 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
         {/* Table of Contents */}
         {headings.length > 0 && (
-          <div className="bg-slate-100/70 border border-slate-200 rounded-2xl p-4 sm:p-5">
-            <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700 mb-2 flex items-center gap-1.5">
-              <List className="w-4 h-4 text-emerald-600" />
+          <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-4 sm:p-5 shadow-xl">
+            <h3 className="font-bold text-xs uppercase tracking-wider text-amber-300 mb-2 flex items-center gap-1.5">
+              <List className="w-4 h-4 text-amber-400" />
               Table of Contents
             </h3>
             <ul className="space-y-1.5 text-xs">
@@ -330,9 +331,9 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                 <li key={h.id}>
                   <a
                     href={`#${h.id}`}
-                    className="text-slate-600 hover:text-emerald-700 transition flex items-center gap-1.5"
+                    className="text-slate-300 hover:text-amber-300 transition flex items-center gap-1.5"
                   >
-                    <span className="text-slate-400">•</span>
+                    <span className="text-amber-400">•</span>
                     {h.text}
                   </a>
                 </li>
@@ -342,26 +343,26 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
         )}
 
         {/* Main Article Content */}
-        <main className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-2xs prose prose-slate max-w-none">
+        <main className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-6 sm:p-8 shadow-2xl">
           {renderFormattedContent(article.content)}
 
-          {/* Call to action at end linking back to planner generator */}
-          <div className="mt-10 p-5 bg-linear-to-r from-emerald-50 via-teal-50 to-white border border-emerald-200 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          {/* Call to action at end linking back to tools */}
+          <div className="mt-10 p-5 bg-gradient-to-r from-[#101728] via-[#0d1322] to-[#070a14] border border-amber-500/35 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-900 mb-1">
-                <Sparkles className="w-4 h-4 text-emerald-600" />
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 mb-1">
+                <Sparkles className="w-4 h-4 text-amber-400" />
                 Ready to put this into practice?
               </div>
-              <p className="text-xs text-slate-600">
-                Generate your personalized planner in seconds. Free, interactive, and runs entirely in your browser.
+              <p className="text-xs text-slate-300">
+                Explore our full suite of free, interactive productivity and document tools. 100% private, client-side.
               </p>
             </div>
             <button
               type="button"
-              onClick={() => onNavigate('/planner')}
-              className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-xs transition shrink-0 flex items-center gap-1.5"
+              onClick={() => onNavigate('/')}
+              className="px-5 py-2.5 text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 rounded-xl shadow-lg shadow-amber-500/20 transition shrink-0 flex items-center gap-1.5 cursor-pointer"
             >
-              Open Planner Tool <ArrowRight className="w-3.5 h-3.5" />
+              Browse All Tools <ArrowRight className="w-3.5 h-3.5 text-slate-950 stroke-[2.5]" />
             </button>
           </div>
         </main>
@@ -370,8 +371,11 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
         <AuthorBox />
 
         {/* Related Articles */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 shadow-2xs space-y-4">
-          <h3 className="font-bold text-base text-slate-900">Related Articles</h3>
+        <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-6 shadow-2xl space-y-4">
+          <h3 className="font-bold text-base text-white flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
+            <span>Related Articles</span>
+          </h3>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {relatedArticles.map((rel) => (
               <div
@@ -380,24 +384,24 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                   onSelectArticle(rel.slug);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="rounded-xl border border-slate-100 hover:border-emerald-200 hover:bg-slate-50/50 transition cursor-pointer flex flex-col justify-between group overflow-hidden"
+                className="rounded-xl border border-amber-500/20 hover:border-amber-400/50 bg-[#070a14] hover:bg-[#0c101d] transition duration-300 cursor-pointer flex flex-col justify-between group overflow-hidden"
               >
-                <div className="w-full h-28 overflow-hidden bg-slate-100">
+                <div className="w-full h-28 overflow-hidden bg-slate-900">
                   <AppImage
                     src={resolveArticleImage(rel.slug, rel.imageUrl)}
                     alt={rel.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                   />
                 </div>
                 <div className="p-3.5">
-                  <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block mb-1">
+                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block mb-1">
                     {rel.category}
                   </span>
-                  <h4 className="text-xs font-bold text-slate-800 group-hover:text-emerald-700 transition line-clamp-2 mb-1">
+                  <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition line-clamp-2 mb-1">
                     {rel.title}
                   </h4>
                   <span className="text-[11px] text-slate-400 mt-2 block flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {rel.readingTime}
+                    <Clock className="w-3 h-3 text-amber-400" /> {rel.readingTime}
                   </span>
                 </div>
               </div>

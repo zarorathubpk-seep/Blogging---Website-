@@ -185,20 +185,22 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
   ];
 
   return (
-    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-slate-100 animate-fadeIn">
       {/* 1. UNIFIED TOOL HEADER */}
       <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
       {/* 2. MAIN TOOL WORKSPACE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
         {/* Mode Segmented Switch */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100 flex-wrap gap-2">
-          <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+        <div className="flex items-center justify-between pb-3 border-b border-amber-500/20 flex-wrap gap-2">
+          <div className="flex items-center gap-1 bg-[#070a14] border border-amber-500/30 p-1 rounded-xl text-xs font-bold">
             <button
               type="button"
               onClick={() => setMode('random')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                mode === 'random' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
+              className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                mode === 'random'
+                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-400 hover:text-amber-200'
               }`}
             >
               Random Password
@@ -206,8 +208,10 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
             <button
               type="button"
               onClick={() => setMode('passphrase')}
-              className={`px-3 py-1.5 rounded-lg transition ${
-                mode === 'passphrase' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
+              className={`px-3 py-1.5 rounded-lg transition cursor-pointer ${
+                mode === 'passphrase'
+                  ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                  : 'text-slate-400 hover:text-amber-200'
               }`}
             >
               Memorable Passphrase
@@ -215,22 +219,34 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
           </div>
 
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-slate-500">Entropy Strength:</span>
-            <span className={`text-xs font-black uppercase ${strength.text}`}>
+            <span className="text-xs font-bold text-slate-400">Entropy Strength:</span>
+            <span className={`text-xs font-black uppercase px-2 py-0.5 rounded-md ${
+              strength.score >= 85
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                : strength.score >= 55
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+            }`}>
               {strength.label}
             </span>
           </div>
         </div>
 
         {/* Primary Password Display Card */}
-        <div className="p-5 sm:p-6 bg-slate-50 border border-slate-200/90 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+        <div className="p-5 sm:p-6 bg-[#070a14] border border-amber-500/35 rounded-2xl flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 shadow-inner">
           <div className="flex-1 overflow-hidden">
-            <div className="font-mono text-lg sm:text-2xl font-black text-slate-900 tracking-wider break-all select-all">
+            <div className="font-mono text-lg sm:text-2xl font-black text-amber-300 tracking-wider break-all select-all">
               {password}
             </div>
-            <div className="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden mt-3">
+            <div className="w-full h-1.5 rounded-full bg-slate-900 overflow-hidden mt-3 border border-amber-500/20">
               <div
-                className={`h-full transition-all duration-300 ${strength.color}`}
+                className={`h-full transition-all duration-300 ${
+                  strength.score >= 85
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500'
+                    : strength.score >= 55
+                    ? 'bg-amber-500'
+                    : 'bg-rose-500'
+                }`}
                 style={{ width: `${strength.score}%` }}
               />
             </div>
@@ -240,7 +256,7 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
             <button
               type="button"
               onClick={generatePassword}
-              className="p-3 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 rounded-xl transition shadow-2xs hover:rotate-180"
+              className="p-3 bg-[#0e1424] hover:bg-amber-500/10 text-amber-300 border border-amber-500/30 rounded-xl transition shadow-xs hover:rotate-180 cursor-pointer"
               title="Regenerate password"
             >
               <RefreshCw className="w-4 h-4" />
@@ -249,9 +265,9 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
             <button
               type="button"
               onClick={() => handleCopy()}
-              className="px-5 py-3 bg-emerald-600 hover:bg-emerald-700 active:scale-99 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition flex items-center gap-2"
+              className="px-5 py-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 active:scale-98 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center gap-2 cursor-pointer"
             >
-              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? <Check className="w-4 h-4 text-slate-950 stroke-[2.5]" /> : <Copy className="w-4 h-4 text-slate-950 stroke-[2.5]" />}
               <span>{copied ? 'Copied to Clipboard' : 'Copy Password'}</span>
             </button>
           </div>
@@ -262,9 +278,9 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
           <div className="space-y-5 pt-2">
             {/* Length Slider */}
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
                 <label>Password Length ({length} characters)</label>
-                <span className="font-mono text-emerald-700 font-bold">{length}</span>
+                <span className="font-mono text-amber-400 font-bold">{length}</span>
               </div>
               <input
                 type="range"
@@ -272,58 +288,58 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
                 max="64"
                 value={length}
                 onChange={(e) => setLength(parseInt(e.target.value, 10))}
-                className="w-full accent-emerald-600"
+                className="w-full accent-amber-500"
               />
             </div>
 
             {/* Checkbox Options Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-2">
-              <label className="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-100/60 transition">
+              <label className="flex items-center gap-2.5 p-3 bg-[#070a14] border border-amber-500/20 rounded-xl text-xs font-bold text-slate-200 cursor-pointer hover:border-amber-400/50 transition">
                 <input
                   type="checkbox"
                   checked={includeUpper}
                   onChange={(e) => setIncludeUpper(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-600 rounded"
+                  className="w-4 h-4 accent-amber-500 rounded"
                 />
                 <span>Uppercase (A-Z)</span>
               </label>
 
-              <label className="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-100/60 transition">
+              <label className="flex items-center gap-2.5 p-3 bg-[#070a14] border border-amber-500/20 rounded-xl text-xs font-bold text-slate-200 cursor-pointer hover:border-amber-400/50 transition">
                 <input
                   type="checkbox"
                   checked={includeLower}
                   onChange={(e) => setIncludeLower(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-600 rounded"
+                  className="w-4 h-4 accent-amber-500 rounded"
                 />
                 <span>Lowercase (a-z)</span>
               </label>
 
-              <label className="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-100/60 transition">
+              <label className="flex items-center gap-2.5 p-3 bg-[#070a14] border border-amber-500/20 rounded-xl text-xs font-bold text-slate-200 cursor-pointer hover:border-amber-400/50 transition">
                 <input
                   type="checkbox"
                   checked={includeNumbers}
                   onChange={(e) => setIncludeNumbers(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-600 rounded"
+                  className="w-4 h-4 accent-amber-500 rounded"
                 />
                 <span>Numbers (0-9)</span>
               </label>
 
-              <label className="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-100/60 transition">
+              <label className="flex items-center gap-2.5 p-3 bg-[#070a14] border border-amber-500/20 rounded-xl text-xs font-bold text-slate-200 cursor-pointer hover:border-amber-400/50 transition">
                 <input
                   type="checkbox"
                   checked={includeSymbols}
                   onChange={(e) => setIncludeSymbols(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-600 rounded"
+                  className="w-4 h-4 accent-amber-500 rounded"
                 />
                 <span>Symbols (!@#$)</span>
               </label>
 
-              <label className="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200/90 rounded-xl text-xs font-bold text-slate-800 cursor-pointer hover:bg-slate-100/60 transition sm:col-span-2">
+              <label className="flex items-center gap-2.5 p-3 bg-[#070a14] border border-amber-500/20 rounded-xl text-xs font-bold text-slate-200 cursor-pointer hover:border-amber-400/50 transition sm:col-span-2">
                 <input
                   type="checkbox"
                   checked={excludeAmbiguous}
                   onChange={(e) => setExcludeAmbiguous(e.target.checked)}
-                  className="w-4 h-4 accent-emerald-600 rounded"
+                  className="w-4 h-4 accent-amber-500 rounded"
                 />
                 <span>Exclude Ambiguous Characters (l, 1, I, O, 0)</span>
               </label>
@@ -332,9 +348,9 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
         ) : (
           <div className="space-y-5 pt-2">
             <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
                 <label>Number of Words ({wordCount})</label>
-                <span className="font-mono text-emerald-700 font-bold">{wordCount}</span>
+                <span className="font-mono text-amber-400 font-bold">{wordCount}</span>
               </div>
               <input
                 type="range"
@@ -342,22 +358,22 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
                 max="8"
                 value={wordCount}
                 onChange={(e) => setWordCount(parseInt(e.target.value, 10))}
-                className="w-full accent-emerald-600"
+                className="w-full accent-amber-500"
               />
             </div>
 
             <div className="flex items-center gap-3">
-              <label className="text-xs font-bold text-slate-700">Word Separator:</label>
+              <label className="text-xs font-bold text-slate-300">Word Separator:</label>
               <div className="flex items-center gap-2">
                 {['-', '_', '.', ' '].map((sep) => (
                   <button
                     key={sep}
                     type="button"
                     onClick={() => setSeparator(sep)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition ${
+                    className={`px-3 py-1.5 rounded-xl text-xs font-mono font-bold border transition cursor-pointer ${
                       separator === sep
-                        ? 'bg-emerald-50 border-emerald-500 text-emerald-900'
-                        : 'bg-white border-slate-200 text-slate-600'
+                        ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black border-amber-300'
+                        : 'bg-[#070a14] border-amber-500/20 text-slate-300 hover:text-amber-200'
                     }`}
                   >
                     {sep === ' ' ? 'Space' : sep}
@@ -370,9 +386,9 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
 
         {/* Recent Session History */}
         {history.length > 1 && (
-          <div className="pt-4 border-t border-slate-100 space-y-2.5">
-            <div className="flex items-center gap-2 text-xs font-bold text-slate-700">
-              <History className="w-3.5 h-3.5 text-slate-400" />
+          <div className="pt-4 border-t border-amber-500/20 space-y-2.5">
+            <div className="flex items-center gap-2 text-xs font-bold text-amber-300">
+              <History className="w-3.5 h-3.5 text-amber-400" />
               <span>Recent Passwords in Session</span>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -381,10 +397,10 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
                   key={idx}
                   type="button"
                   onClick={() => handleCopy(histPass)}
-                  className="px-3 py-1 bg-slate-50 hover:bg-slate-100 border border-slate-200/90 rounded-lg text-xs font-mono text-slate-700 transition flex items-center gap-1.5 truncate max-w-xs"
+                  className="px-3 py-1 bg-[#070a14] hover:bg-amber-500/10 border border-amber-500/25 rounded-lg text-xs font-mono text-amber-200 transition flex items-center gap-1.5 truncate max-w-xs cursor-pointer"
                   title="Click to copy"
                 >
-                  <Copy className="w-3 h-3 text-slate-400" />
+                  <Copy className="w-3 h-3 text-amber-400" />
                   <span className="truncate">{histPass}</span>
                 </button>
               ))}
@@ -394,39 +410,39 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
       </div>
 
       {/* 3. HOW TO USE GUIDE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-emerald-600" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+        <h3 className="font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-amber-400" />
           <span>Best Practices for Password Security</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               1
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Minimum 16 Characters</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Minimum 16 Characters</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Modern brute-force hardware can crack 8-character passwords in minutes. Always use 16+ characters for critical accounts.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               2
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Unique Per Account</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Unique Per Account</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Never reuse passwords across email, banking, and social accounts. A breach on one site shouldn't expose your whole identity.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               3
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Store in a Vault</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Store in a Vault</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Save your generated passwords in a reputable password manager so you only ever have to remember one strong master passphrase.
             </p>
           </div>

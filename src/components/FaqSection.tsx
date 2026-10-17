@@ -51,17 +51,17 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
   const activeFaqs = faqs && faqs.length > 0 ? faqs : FAQ_ITEMS;
 
   return (
-    <section id="faq" className={`py-8 bg-slate-50/60 border border-slate-200/80 rounded-3xl p-6 sm:p-8 print:hidden ${className}`}>
+    <section id="faq" className={`py-8 bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 print:hidden text-slate-100 shadow-2xl ${className}`}>
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-6">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/60 text-slate-700 text-xs font-semibold mb-2">
-            <HelpCircle className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-bold mb-2">
+            <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
             <span>Frequently Asked Questions</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
             {title}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 max-w-xl mx-auto">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-xl mx-auto">
             {subtitle}
           </p>
         </div>
@@ -72,22 +72,22 @@ export const FaqSection: React.FC<FaqSectionProps> = ({
             return (
               <div
                 key={item.q}
-                className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-2xs transition"
+                className="bg-[#070a14] border border-amber-500/20 hover:border-amber-400/50 rounded-2xl overflow-hidden shadow-md transition"
               >
                 <button
                   type="button"
                   onClick={() => toggle(idx)}
-                  className="w-full text-left p-4 sm:p-4.5 flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-800 hover:text-emerald-700 transition"
+                  className="w-full text-left p-4 sm:p-4.5 flex items-center justify-between gap-4 font-bold text-xs sm:text-sm text-slate-200 hover:text-amber-300 transition cursor-pointer"
                 >
                   <span>{item.q}</span>
                   <ChevronDown
                     className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
-                      isOpen ? 'transform rotate-180 text-emerald-600' : ''
+                      isOpen ? 'transform rotate-180 text-amber-400' : ''
                     }`}
                   />
                 </button>
                 {isOpen && (
-                  <div className="px-4 pb-4 sm:px-4.5 sm:pb-4.5 pt-0 text-xs text-slate-600 leading-relaxed border-t border-slate-100">
+                  <div className="px-4 pb-4 sm:px-4.5 sm:pb-4.5 pt-0 text-xs text-slate-300 leading-relaxed border-t border-slate-800">
                     {item.a}
                   </div>
                 )}

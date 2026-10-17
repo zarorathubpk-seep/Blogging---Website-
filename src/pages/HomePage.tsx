@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   TOOLS_DATA,
   CATEGORY_FILTERS,
+  getPdfGroups,
   ToolItem,
   ToolCategory,
 } from '../data/toolsData';
@@ -50,11 +51,20 @@ import {
   GraduationCap,
   UtensilsCrossed,
   CheckCheck,
-  Check,
   AlignLeft,
   Calculator,
   KeyRound,
   FileCode2,
+  Wrench,
+  LayoutGrid,
+  Camera,
+  Archive,
+  Crop,
+  CheckSquare,
+  Languages,
+  Table,
+  Presentation,
+  FileText,
 } from 'lucide-react';
 
 interface HomePageProps {
@@ -104,6 +114,16 @@ const TOOL_ICON_MAP: Record<string, React.ComponentType<{ className?: string }>>
   Calculator,
   KeyRound,
   FileCode2,
+  Wrench,
+  LayoutGrid,
+  Camera,
+  Archive,
+  Crop,
+  CheckSquare,
+  Languages,
+  Table,
+  Presentation,
+  FileText,
 };
 
 const FAVORITES_KEY = 'toolcrest_favorites_v1';
@@ -177,56 +197,56 @@ export const HomePage: React.FC<HomePageProps> = ({
   };
 
   return (
-    <div className="space-y-12 pb-16">
-      {/* 1. HERO DISCOVERY SECTION */}
-      <section className="pt-10 pb-12 sm:pt-16 sm:pb-16 border-b border-slate-200/80 bg-gradient-to-b from-white via-slate-50/70 to-slate-100/50 relative overflow-hidden">
-        {/* Subtle decorative background gradient glows */}
+    <div className="space-y-12 pb-16 bg-[#090D16] text-slate-100">
+      {/* 1. HERO DISCOVERY SECTION (Dark Obsidian & Regal Gold) */}
+      <section className="pt-12 pb-16 sm:pt-20 sm:pb-20 border-b border-amber-500/20 bg-gradient-to-b from-[#050811] via-[#090D16] to-[#0D1220] relative overflow-hidden">
+        {/* Ambient Golden Corona Halos */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-full overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 left-1/4 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-10 right-1/4 w-80 h-80 bg-purple-400/10 rounded-full blur-3xl"></div>
-          <div className="absolute top-28 left-1/2 -translate-x-1/2 w-64 h-64 bg-cyan-400/10 rounded-full blur-2xl"></div>
+          <div className="absolute -top-24 left-1/4 w-[28rem] h-[28rem] bg-amber-500/10 rounded-full blur-3xl"></div>
+          <div className="absolute top-10 right-1/4 w-96 h-96 bg-yellow-500/8 rounded-full blur-3xl"></div>
+          <div className="absolute top-32 left-1/2 -translate-x-1/2 w-80 h-80 bg-amber-600/10 rounded-full blur-2xl"></div>
         </div>
 
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-5 relative z-10">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 text-center space-y-6 relative z-10">
           {/* Tagline Badge */}
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50/90 border border-blue-200/90 text-blue-900 text-xs font-bold shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-cyan-500"></span>
-            <span>ToolCrest • 39+ Free High-Precision Browser Tools</span>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-black shadow-lg shadow-amber-500/10">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
+            <span>TOOLCREST • 39+ High-Precision Client-Side Tools</span>
           </div>
 
-          {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight">
+          {/* Main Headline with Gold Gradient */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-tight">
             All Your Essential Online Tools <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-amber-200 via-yellow-400 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_10px_rgba(245,158,11,0.25)]">
               In One Premium Platform
             </span>
           </h1>
 
           {/* Subtitle */}
-          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto leading-relaxed">
-            Fast, private, and 100% free browser-based tools for PDFs, QR codes, image conversions, units, time zones, and daily productivity planners. Zero server uploads.
+          <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
+            Ultra-fast, private, and 100% free browser-based tools for PDFs, QR codes, file conversions, units, financial calculators, and daily planners. Zero cloud uploads.
           </p>
 
-          {/* Prominent Search Bar */}
+          {/* Prominent Golden & Obsidian Search Bar */}
           <div className="max-w-2xl mx-auto pt-2">
-            <div className="relative flex items-center shadow-xs rounded-2xl bg-white border-2 border-slate-200 focus-within:border-blue-600 focus-within:ring-4 focus-within:ring-blue-500/15 transition-all">
-              <Search className="w-5 h-5 text-blue-600 ml-4 shrink-0" />
+            <div className="relative flex items-center rounded-2xl bg-[#0c111e]/90 border-2 border-amber-500/30 focus-within:border-amber-400 focus-within:ring-4 focus-within:ring-amber-500/20 shadow-2xl transition-all">
+              <Search className="w-5 h-5 text-amber-400 ml-4 shrink-0" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search tools (e.g. Merge PDF, QR Generator, Unit Converter, Budget Planner)..."
-                className="w-full text-xs sm:text-sm text-slate-900 placeholder:text-slate-400 bg-transparent px-3 py-3.5 focus:outline-hidden font-medium"
+                className="w-full text-xs sm:text-sm text-white placeholder:text-slate-400 bg-transparent px-3 py-3.5 focus:outline-hidden font-medium"
               />
               <div className="mr-3 flex items-center gap-1.5">
-                <kbd className="hidden sm:inline font-mono text-[10px] bg-slate-100 text-slate-500 px-2 py-1 rounded-md border border-slate-200 font-bold">
+                <kbd className="hidden sm:inline font-mono text-[10px] bg-[#070a12] text-amber-300 px-2 py-1 rounded-md border border-amber-500/30 font-bold">
                   ⌘K
                 </kbd>
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="text-xs text-slate-400 hover:text-slate-800 font-bold px-2 py-1 rounded-md hover:bg-slate-100"
+                    className="text-xs text-amber-400 hover:text-amber-200 font-bold px-2 py-1 rounded-md hover:bg-slate-800"
                   >
                     Clear
                   </button>
@@ -235,17 +255,17 @@ export const HomePage: React.FC<HomePageProps> = ({
             </div>
           </div>
 
-          {/* Category Filter Tabs */}
-          <div className="flex items-center justify-center gap-1.5 flex-wrap pt-2">
+          {/* Category Filter Tabs with Dark & Golden Styling */}
+          <div className="flex items-center justify-center gap-2 flex-wrap pt-2">
             {CATEGORY_FILTERS.map((cat) => (
               <button
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition ${
+                className={`px-4 py-1.5 rounded-full text-xs font-bold transition cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs font-bold'
-                    : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                    ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20 font-black'
+                    : 'bg-[#0e1424] border border-amber-500/20 text-slate-300 hover:text-amber-300 hover:border-amber-400/50 hover:bg-[#131b30]'
                 }`}
               >
                 {cat.label}
@@ -255,29 +275,29 @@ export const HomePage: React.FC<HomePageProps> = ({
             <button
               type="button"
               onClick={() => setSelectedCategory('favorites')}
-              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition flex items-center gap-1.5 ${
+              className={`px-4 py-1.5 rounded-full text-xs font-bold transition flex items-center gap-1.5 cursor-pointer ${
                 selectedCategory === 'favorites'
-                  ? 'bg-amber-500 text-white shadow-xs font-bold'
-                  : 'bg-white border border-slate-200 text-slate-600 hover:bg-slate-100'
+                  ? 'bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 text-slate-950 shadow-lg shadow-amber-500/20 font-black'
+                  : 'bg-[#0e1424] border border-amber-500/20 text-slate-300 hover:text-amber-300 hover:border-amber-400/50 hover:bg-[#131b30]'
               }`}
             >
-              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-500" />
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
               <span>Favorites ({favoriteIds.length})</span>
             </button>
           </div>
 
           {/* Privacy & Trust Indicators */}
-          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-slate-600 pt-3">
-            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
-              <ShieldCheck className="w-4 h-4 text-cyan-600" />
+          <div className="flex flex-wrap items-center justify-center gap-3 text-xs font-medium text-slate-300 pt-3">
+            <span className="flex items-center gap-1.5 bg-[#0e1424]/90 px-3.5 py-1.5 rounded-xl border border-amber-500/20 shadow-md">
+              <ShieldCheck className="w-4 h-4 text-amber-400" />
               100% In-Browser Execution
             </span>
-            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
-              <Lock className="w-4 h-4 text-blue-600" />
+            <span className="flex items-center gap-1.5 bg-[#0e1424]/90 px-3.5 py-1.5 rounded-xl border border-amber-500/20 shadow-md">
+              <Lock className="w-4 h-4 text-amber-400" />
               Zero Cloud Uploads
             </span>
-            <span className="flex items-center gap-1.5 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200/90 shadow-2xs">
-              <Zap className="w-4 h-4 text-amber-500" />
+            <span className="flex items-center gap-1.5 bg-[#0e1424]/90 px-3.5 py-1.5 rounded-xl border border-amber-500/20 shadow-md">
+              <Zap className="w-4 h-4 text-amber-400" />
               Free Forever (No Sign-up)
             </span>
           </div>
@@ -289,14 +309,14 @@ export const HomePage: React.FC<HomePageProps> = ({
         {/* If user is actively searching or filtering specific category */}
         {searchQuery.trim() !== '' || selectedCategory !== 'all' ? (
           <section className="space-y-4">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+            <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
               <div>
-                <h2 className="text-xl font-extrabold text-slate-900">
+                <h2 className="text-xl font-extrabold text-white">
                   {selectedCategory === 'favorites'
                     ? 'Your Saved Favorite Tools'
                     : `Matching Tools (${filteredTools.length})`}
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   {searchQuery ? `Search results for "${searchQuery}"` : 'Filtered collection'}
                 </p>
               </div>
@@ -307,15 +327,15 @@ export const HomePage: React.FC<HomePageProps> = ({
                   setSearchQuery('');
                   setSelectedCategory('all');
                 }}
-                className="text-xs font-bold text-emerald-700 hover:underline"
+                className="text-xs font-bold text-amber-400 hover:text-amber-300 hover:underline cursor-pointer"
               >
                 Reset Filters
               </button>
             </div>
 
             {filteredTools.length === 0 ? (
-              <div className="p-12 text-center bg-white border border-slate-200 rounded-3xl space-y-3">
-                <p className="text-sm text-slate-600">
+              <div className="p-12 text-center bg-[#0d1322] border border-amber-500/20 rounded-3xl space-y-3">
+                <p className="text-sm text-slate-300">
                   No tools found matching your current search criteria.
                 </p>
                 <button
@@ -324,7 +344,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                     setSearchQuery('');
                     setSelectedCategory('all');
                   }}
-                  className="px-4 py-2 text-xs font-bold text-white bg-emerald-600 rounded-xl"
+                  className="px-4 py-2 text-xs font-black text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 rounded-xl hover:brightness-110 cursor-pointer"
                 >
                   View All Tools
                 </button>
@@ -337,15 +357,15 @@ export const HomePage: React.FC<HomePageProps> = ({
           </section>
         ) : (
           <>
-            {/* POPULAR TOOLS SECTION */}
+            {/* POPULAR TOOLS SECTION (Dark & Gold) */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-500" />
-                    Popular Tools
+                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-amber-400" />
+                    <span>Popular Tools</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     Most frequently used tools by professionals and students
                   </p>
                 </div>
@@ -356,15 +376,101 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
             </section>
 
+            {/* ALL PDF TOOLS SUITE: 7 Task-Based Columns in Dark Obsidian & Gold */}
+            <section id="pdf-tools" className="space-y-6 pt-2 pb-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-amber-500/20">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
+                    <span className="text-[11px] font-black uppercase tracking-widest text-amber-400/90">
+                      All-In-One Document Workstation
+                    </span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2 mt-0.5">
+                    <FileText className="w-6 h-6 text-amber-400" />
+                    <span>Complete PDF Tools Suite</span>
+                  </h2>
+                  <p className="text-xs text-slate-400">
+                    33 high-precision in-browser utilities organized by workflow: Organize, Optimize, Convert, Edit, Security, and AI.
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold px-3 py-1 bg-amber-500/10 text-amber-300 rounded-full border border-amber-500/30">
+                    100% Client-Side Processing
+                  </span>
+                </div>
+              </div>
+
+              {/* 7 Columns Grid (Dark Glassmorphic Obsidian with Gold Trim) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-7 gap-4 bg-[#080c16] border border-amber-500/25 rounded-3xl p-5 sm:p-6 shadow-2xl">
+                {getPdfGroups().map((group) => {
+                  const GroupIcon = TOOL_ICON_MAP[group.iconName] || Layers;
+                  return (
+                    <div
+                      key={group.id}
+                      className="space-y-3 bg-[#0d1322] rounded-2xl p-3.5 border border-amber-500/20 shadow-md flex flex-col justify-between hover:border-amber-400/50 transition-all"
+                    >
+                      <div>
+                        {/* Column Header */}
+                        <div className="flex items-center gap-1.5 pb-2 border-b border-amber-500/15 mb-2">
+                          <GroupIcon className="w-4 h-4 text-amber-400" />
+                          <h3 className="text-[10px] font-black uppercase tracking-wider text-amber-200">
+                            {group.title}
+                          </h3>
+                        </div>
+
+                        {/* List of tools in column */}
+                        <ul className="space-y-1">
+                          {group.tools.map((tool) => {
+                            const Icon = TOOL_ICON_MAP[tool.iconName] || Layers;
+                            return (
+                              <li key={tool.id}>
+                                <button
+                                  type="button"
+                                  onClick={() => onSelectTool(tool.slug)}
+                                  className="w-full text-left p-1.5 rounded-xl hover:bg-amber-500/10 flex items-center justify-between text-xs font-semibold text-slate-300 hover:text-amber-300 transition group cursor-pointer"
+                                >
+                                  <div className="flex items-center gap-2 truncate">
+                                    <Icon className="w-3.5 h-3.5 text-slate-500 group-hover:text-amber-400 shrink-0" />
+                                    <span className="truncate">{tool.name}</span>
+                                  </div>
+                                  {tool.badge === 'New' && (
+                                    <span className="text-[9px] font-extrabold uppercase px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0">
+                                      New
+                                    </span>
+                                  )}
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (group.tools[0]) onSelectTool(group.tools[0].slug);
+                        }}
+                        className="w-full mt-3 pt-2 border-t border-slate-800 text-[11px] font-bold text-amber-400/80 hover:text-amber-300 flex items-center justify-between group transition cursor-pointer"
+                      >
+                        <span>Launch First</span>
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
             {/* RECENTLY ADDED TOOLS */}
             <section className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-emerald-600" />
-                    Recently Added Tools
+                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                    <Zap className="w-5 h-5 text-amber-400" />
+                    <span>Recently Added Tools</span>
                   </h2>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     New utilities and conversion engines added to ToolCrest
                   </p>
                 </div>
@@ -377,11 +483,11 @@ export const HomePage: React.FC<HomePageProps> = ({
 
             {/* COMPLETE TOOLS DIRECTORY (All tools by category) */}
             <section className="space-y-6 pt-4">
-              <div className="pb-3 border-b border-slate-200">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <div className="pb-3 border-b border-amber-500/20">
+                <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                   Explore Full Tools Directory
                 </h2>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-slate-400">
                   Browse our complete suite of 35+ PDF tools, converters, financial calculators, and planners
                 </p>
               </div>
@@ -393,13 +499,13 @@ export const HomePage: React.FC<HomePageProps> = ({
           </>
         )}
 
-        {/* 3. PRODUCTIVITY PLANNER HUB SPOTLIGHT BANNER */}
-        <section className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-10 text-white shadow-xl overflow-hidden relative border border-slate-800">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl pointer-events-none"></div>
-          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-purple-600/10 rounded-full blur-3xl pointer-events-none"></div>
+        {/* 3. PRODUCTIVITY PLANNER HUB SPOTLIGHT BANNER (Regal Gold & Dark Obsidian) */}
+        <section className="bg-gradient-to-br from-[#0c101d] via-[#141b30] to-[#080b14] rounded-3xl p-6 sm:p-10 text-white shadow-2xl overflow-hidden relative border border-amber-500/30">
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute bottom-0 left-1/3 w-80 h-80 bg-yellow-500/8 rounded-full blur-3xl pointer-events-none"></div>
 
           <div className="max-w-2xl space-y-3.5 relative z-10">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest bg-blue-500/20 text-cyan-300 border border-blue-500/30 px-3 py-1 rounded-full">
+            <span className="text-[10px] font-black uppercase tracking-widest bg-amber-500/15 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full">
               Full Productivity Suite
             </span>
             <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
@@ -412,29 +518,29 @@ export const HomePage: React.FC<HomePageProps> = ({
               <button
                 type="button"
                 onClick={() => onNavigate('/planner')}
-                className="px-5 py-2.5 text-xs font-bold bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white rounded-xl shadow-md transition flex items-center gap-2"
+                className="px-5 py-2.5 text-xs font-black bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center gap-2 cursor-pointer"
               >
-                Open Planner Generator <ArrowRight className="w-4 h-4" />
+                Open Planner Generator <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
             </div>
           </div>
         </section>
 
-        {/* 4. LATEST BLOG & TUTORIALS PREVIEW */}
+        {/* 4. LATEST BLOG & TUTORIALS PREVIEW (Dark & Gold) */}
         <section className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+          <div className="flex items-center justify-between pb-2 border-b border-amber-500/20">
             <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+              <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
                 Latest Articles & Productivity Guides
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-slate-400">
                 In-depth tutorials on time management, budgeting, and tool workflows
               </p>
             </div>
             <button
               type="button"
               onClick={() => onNavigate('/blog')}
-              className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline flex items-center gap-1"
+              className="text-xs font-bold text-amber-400 hover:text-amber-300 hover:underline flex items-center gap-1 cursor-pointer"
             >
               Browse All Blog Guides <ArrowRight className="w-3.5 h-3.5" />
             </button>
@@ -447,35 +553,35 @@ export const HomePage: React.FC<HomePageProps> = ({
                 <div
                   key={article.id}
                   onClick={() => onNavigate(`/blog/${article.slug}`)}
-                  className="bg-white border border-slate-200/90 hover:border-blue-400 rounded-3xl overflow-hidden shadow-2xs hover:shadow-md transition cursor-pointer flex flex-col justify-between group"
+                  className="bg-[#0d1322] border border-amber-500/20 hover:border-amber-400/60 rounded-3xl overflow-hidden shadow-lg hover:shadow-amber-500/10 transition cursor-pointer flex flex-col justify-between group"
                 >
                   <div>
-                    <div className="w-full h-44 overflow-hidden bg-slate-100 relative">
+                    <div className="w-full h-44 overflow-hidden bg-slate-950 relative">
                       <AppImage
                         src={img}
                         alt={article.title}
                         className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
                       />
                       <div className="absolute top-3 left-3">
-                        <span className="font-bold text-[10px] text-blue-900 bg-white/95 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider shadow-2xs border border-blue-100">
+                        <span className="font-black text-[10px] text-amber-300 bg-slate-950/90 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider border border-amber-500/30">
                           {article.category}
                         </span>
                       </div>
                     </div>
 
                     <div className="p-5">
-                      <h3 className="font-bold text-sm sm:text-base text-slate-900 group-hover:text-blue-600 transition leading-snug line-clamp-2 mb-2">
+                      <h3 className="font-bold text-sm sm:text-base text-white group-hover:text-amber-300 transition leading-snug line-clamp-2 mb-2">
                         {article.title}
                       </h3>
-                      <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed">
+                      <p className="text-xs text-slate-400 line-clamp-2 leading-relaxed">
                         {article.subtitle}
                       </p>
                     </div>
                   </div>
 
-                  <div className="px-5 pb-5 pt-2 flex items-center justify-between text-xs border-t border-slate-100">
+                  <div className="px-5 pb-5 pt-2 flex items-center justify-between text-xs border-t border-slate-800">
                     <span className="text-[11px] text-slate-400">By {article.author}</span>
-                    <span className="text-blue-600 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition">
+                    <span className="text-amber-400 font-bold flex items-center gap-1 group-hover:translate-x-0.5 transition">
                       Read guide <ArrowRight className="w-3.5 h-3.5" />
                     </span>
                   </div>

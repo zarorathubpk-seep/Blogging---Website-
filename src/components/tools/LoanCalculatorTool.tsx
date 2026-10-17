@@ -137,29 +137,31 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
   ];
 
   return (
-    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-slate-100 animate-fadeIn">
       {/* 1. UNIFIED TOOL HEADER */}
       <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
       {/* 2. MAIN TOOL WORKSPACE */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Loan Inputs & Controls (6 cols) */}
-        <div className="lg:col-span-6 bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-            <h2 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-              <Calculator className="w-4 h-4 text-emerald-600" />
+        <div className="lg:col-span-6 bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-6">
+          <div className="flex items-center justify-between pb-3 border-b border-amber-500/20">
+            <h2 className="font-bold text-sm text-white flex items-center gap-2">
+              <Calculator className="w-4 h-4 text-amber-400" />
               <span>Loan Parameters</span>
             </h2>
 
             {/* Currency selector */}
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold">
+            <div className="flex items-center gap-1 bg-[#070a14] border border-amber-500/30 p-1 rounded-xl text-xs font-bold">
               {['$', '£', '€', 'Rs'].map((curr) => (
                 <button
                   key={curr}
                   type="button"
                   onClick={() => setCurrency(curr)}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    currency === curr ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-500 hover:text-slate-900'
+                  className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                    currency === curr
+                      ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                      : 'text-slate-400 hover:text-amber-200'
                   }`}
                 >
                   {curr}
@@ -170,14 +172,14 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
 
           {/* Principal Amount */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
               <label>Loan Amount (Principal)</label>
-              <span className="font-mono text-emerald-700">
+              <span className="font-mono text-amber-400 font-bold">
                 {currency} {principal.toLocaleString()}
               </span>
             </div>
             <div className="relative">
-              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">
+              <span className="absolute left-3.5 top-1/2 -translate-y-1/2 font-bold text-amber-400/70 text-sm">
                 {currency}
               </span>
               <input
@@ -186,7 +188,7 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
                 step="5000"
                 value={principal}
                 onChange={(e) => setPrincipal(Math.max(0, parseInt(e.target.value, 10) || 0))}
-                className="w-full text-base font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-emerald-500 font-mono"
+                className="w-full text-base font-bold text-white bg-[#070a14] border border-amber-500/30 rounded-xl pl-8 pr-3.5 py-2.5 focus:border-amber-400 focus:outline-hidden font-mono"
               />
             </div>
             <input
@@ -196,15 +198,15 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
               step="5000"
               value={principal}
               onChange={(e) => setPrincipal(parseInt(e.target.value, 10))}
-              className="w-full accent-emerald-600"
+              className="w-full accent-amber-500"
             />
           </div>
 
           {/* Annual Interest Rate */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
               <label>Annual Interest Rate</label>
-              <span className="font-mono text-emerald-700">{annualRate}%</span>
+              <span className="font-mono text-amber-400 font-bold">{annualRate}%</span>
             </div>
             <div className="relative">
               <input
@@ -214,9 +216,9 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
                 step="0.1"
                 value={annualRate}
                 onChange={(e) => setAnnualRate(Math.max(0, parseFloat(e.target.value) || 0))}
-                className="w-full text-base font-bold text-slate-900 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-emerald-500 font-mono"
+                className="w-full text-base font-bold text-white bg-[#070a14] border border-amber-500/30 rounded-xl px-3.5 py-2.5 focus:border-amber-400 focus:outline-hidden font-mono"
               />
-              <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-slate-400 text-sm">
+              <span className="absolute right-3.5 top-1/2 -translate-y-1/2 font-bold text-amber-400/70 text-sm">
                 %
               </span>
             </div>
@@ -227,15 +229,15 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
               step="0.25"
               value={annualRate}
               onChange={(e) => setAnnualRate(parseFloat(e.target.value))}
-              className="w-full accent-emerald-600"
+              className="w-full accent-amber-500"
             />
           </div>
 
           {/* Loan Term (Years) */}
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
               <label>Loan Term Duration</label>
-              <span className="font-mono text-emerald-700">
+              <span className="font-mono text-amber-400 font-bold">
                 {termYears} Years ({termYears * 12} Months)
               </span>
             </div>
@@ -245,10 +247,10 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
                   key={yr}
                   type="button"
                   onClick={() => setTermYears(yr)}
-                  className={`py-2 rounded-xl text-xs font-bold border transition ${
+                  className={`py-2 rounded-xl text-xs font-bold border transition cursor-pointer ${
                     termYears === yr
-                      ? 'bg-emerald-50 border-emerald-500 text-emerald-900 shadow-2xs'
-                      : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+                      ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 border-amber-300'
+                      : 'bg-[#070a14] border-amber-500/20 text-slate-300 hover:text-amber-200 hover:border-amber-400/40'
                   }`}
                 >
                   {yr} Years
@@ -260,25 +262,25 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
 
         {/* Right Column: Results & Repayment Breakdown (6 cols) */}
         <div className="lg:col-span-6 space-y-6">
-          <div className="bg-linear-to-br from-emerald-900 via-teal-900 to-slate-900 rounded-3xl p-6 sm:p-7 text-white shadow-lg space-y-6">
-            <span className="text-[10px] font-extrabold uppercase tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-1 rounded-full inline-block">
+          <div className="bg-gradient-to-br from-[#121829] via-[#0c101d] to-[#080b14] border border-amber-500/35 rounded-3xl p-6 sm:p-7 text-white shadow-2xl space-y-6">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest bg-amber-500/15 text-amber-300 border border-amber-500/30 px-3 py-1 rounded-full inline-block">
               Monthly Repayment (EMI)
             </span>
 
-            <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-white">
+            <div className="text-3xl sm:text-4xl lg:text-5xl font-black font-mono tracking-tight text-amber-400">
               {currency} {calculations.monthlyPayment.toLocaleString()}
-              <span className="text-xs font-normal text-slate-300 ml-2 font-sans">/ month</span>
+              <span className="text-xs font-normal text-slate-400 ml-2 font-sans">/ month</span>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-emerald-700/50">
+            <div className="grid grid-cols-2 gap-4 pt-4 border-t border-amber-500/20">
               <div>
-                <span className="text-[11px] font-bold text-slate-300 uppercase block">Total Interest</span>
-                <span className="text-xl font-bold font-mono text-emerald-300">
+                <span className="text-[11px] font-bold text-slate-400 uppercase block">Total Interest</span>
+                <span className="text-xl font-bold font-mono text-amber-300">
                   {currency} {calculations.totalInterest.toLocaleString()}
                 </span>
               </div>
               <div>
-                <span className="text-[11px] font-bold text-slate-300 uppercase block">Total Cost of Loan</span>
+                <span className="text-[11px] font-bold text-slate-400 uppercase block">Total Cost of Loan</span>
                 <span className="text-xl font-bold font-mono text-white">
                   {currency} {calculations.totalPayment.toLocaleString()}
                 </span>
@@ -287,17 +289,17 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
 
             {/* Principal vs Interest Ratio Bar */}
             <div className="space-y-1.5 pt-2">
-              <div className="flex items-center justify-between text-xs text-slate-200">
+              <div className="flex items-center justify-between text-xs text-slate-300 font-semibold">
                 <span>Principal ({calculations.principalPercent}%)</span>
                 <span>Interest ({calculations.interestPercent}%)</span>
               </div>
-              <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden flex">
+              <div className="w-full h-3 rounded-full bg-slate-900 overflow-hidden flex border border-amber-500/20">
                 <div
-                  className="bg-emerald-400 h-full transition-all duration-500"
+                  className="bg-gradient-to-r from-amber-400 to-yellow-500 h-full transition-all duration-500"
                   style={{ width: `${calculations.principalPercent}%` }}
                 />
                 <div
-                  className="bg-amber-400 h-full transition-all duration-500"
+                  className="bg-amber-800 h-full transition-all duration-500"
                   style={{ width: `${calculations.interestPercent}%` }}
                 />
               </div>
@@ -305,9 +307,9 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
           </div>
 
           {/* Custom File Name & Schedule Export Box */}
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-6 shadow-xs space-y-3">
-            <label className="block text-xs font-bold text-slate-900 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+          <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 shadow-2xl space-y-3">
+            <label className="block text-xs font-bold text-amber-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Export Amortization Schedule</span>
             </label>
 
@@ -317,32 +319,32 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
                 value={customExportName}
                 onChange={(e) => setCustomExportName(e.target.value)}
                 placeholder="Schedule file name..."
-                className="flex-1 text-xs sm:text-sm font-semibold text-slate-900 bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+                className="flex-1 text-xs sm:text-sm font-semibold text-white bg-[#070a14] border border-amber-500/30 rounded-xl px-3.5 py-2.5 focus:border-amber-400 focus:outline-hidden"
               />
               <button
                 type="button"
                 onClick={handleExportCsv}
-                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-99 text-white font-bold text-xs rounded-xl shadow-xs transition flex items-center justify-center gap-2 shrink-0"
+                className="px-5 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 active:scale-98 text-slate-950 font-black text-xs rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
                 <span>Download CSV</span>
               </button>
             </div>
-            <p className="text-[11px] text-slate-500">
-              Output file: <strong className="font-mono text-emerald-800">{sanitizedCsvName}</strong>
+            <p className="text-[11px] text-slate-400">
+              Output file: <strong className="font-mono text-amber-300">{sanitizedCsvName}</strong>
             </p>
           </div>
         </div>
       </div>
 
       {/* 3. AMORTIZATION TABLE PREVIEW */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
         <div className="flex items-center justify-between">
-          <h3 className="font-extrabold text-base text-slate-900 flex items-center gap-2">
-            <FileSpreadsheet className="w-5 h-5 text-emerald-600" />
+          <h3 className="font-extrabold text-base text-white flex items-center gap-2">
+            <FileSpreadsheet className="w-5 h-5 text-amber-400" />
             <span>Annual Amortization Breakdown Table</span>
           </h3>
-          <span className="text-xs text-slate-500 font-mono">
+          <span className="text-xs text-amber-300 font-mono font-bold bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg">
             {calculations.schedule.length} Years Schedule
           </span>
         </div>
@@ -350,24 +352,24 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+              <tr className="border-b border-amber-500/20 text-amber-300 font-bold uppercase tracking-wider">
                 <th className="py-2.5 px-3">Year</th>
                 <th className="py-2.5 px-3 text-right">Principal Paid</th>
                 <th className="py-2.5 px-3 text-right">Interest Paid</th>
                 <th className="py-2.5 px-3 text-right">Ending Balance</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 font-mono">
+            <tbody className="divide-y divide-amber-500/10 font-mono">
               {calculations.schedule.slice(0, 10).map((row) => (
-                <tr key={row.year} className="hover:bg-slate-50/70 transition">
-                  <td className="py-2.5 px-3 font-bold text-slate-800">Year {row.year}</td>
-                  <td className="py-2.5 px-3 text-right text-emerald-700 font-semibold">
+                <tr key={row.year} className="hover:bg-amber-500/5 transition">
+                  <td className="py-2.5 px-3 font-bold text-slate-200">Year {row.year}</td>
+                  <td className="py-2.5 px-3 text-right text-amber-300 font-semibold">
                     {currency} {row.principalPaid.toLocaleString()}
                   </td>
-                  <td className="py-2.5 px-3 text-right text-amber-700">
+                  <td className="py-2.5 px-3 text-right text-amber-400/80">
                     {currency} {row.interestPaid.toLocaleString()}
                   </td>
-                  <td className="py-2.5 px-3 text-right text-slate-900 font-bold">
+                  <td className="py-2.5 px-3 text-right text-white font-bold">
                     {currency} {row.remainingBalance.toLocaleString()}
                   </td>
                 </tr>
@@ -383,39 +385,39 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
       </div>
 
       {/* 4. HOW TO USE GUIDE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-emerald-600" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+        <h3 className="font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-amber-400" />
           <span>How to Plan Loan Repayments</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               1
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Enter Principal & Rate</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Enter Principal & Rate</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Input the requested mortgage or personal loan total along with the annual interest rate quoted by your lender.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               2
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Compare Term Durations</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Compare Term Durations</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Test shorter terms (15 years) vs longer terms (30 years) to analyze the trade-off between monthly payment and total lifetime interest.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               3
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Download CSV Ledger</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Download CSV Ledger</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Set your preferred file name and export the year-by-year amortization ledger directly to your spreadsheet app.
             </p>
           </div>

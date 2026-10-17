@@ -90,15 +90,16 @@ export const PlannerTypeCards: React.FC<PlannerTypeCardsProps> = ({
   onSelectType,
 }) => {
   return (
-    <div className="mb-6 print:hidden">
+    <div className="mb-6 print:hidden text-slate-100">
       <div className="flex items-center justify-between mb-3">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-slate-900 tracking-tight">
-            Select Planner Type
+          <h2 className="text-base sm:text-lg font-bold text-white tracking-tight flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
+            <span>Select Planner Type</span>
           </h2>
-          <p className="text-xs text-slate-500">Choose from 8 browser-based planning systems</p>
+          <p className="text-xs text-slate-400">Choose from 8 browser-based planning systems</p>
         </div>
-        <span className="text-xs font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+        <span className="text-xs font-bold text-amber-300 bg-amber-500/15 px-3 py-1 rounded-full border border-amber-500/30">
           Ready to Edit & Print
         </span>
       </div>
@@ -120,26 +121,26 @@ export const PlannerTypeCards: React.FC<PlannerTypeCardsProps> = ({
                   el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }
               }}
-              className={`rounded-2xl text-left border transition relative flex flex-col justify-between overflow-hidden group ${
+              className={`rounded-2xl text-left border transition relative flex flex-col justify-between overflow-hidden group cursor-pointer ${
                 isActive
-                  ? 'bg-emerald-50/90 border-emerald-500 ring-2 ring-emerald-500/25 shadow-md'
-                  : 'bg-white border-slate-200/90 hover:border-slate-300 hover:bg-slate-50/70 shadow-2xs hover:shadow-xs'
+                  ? 'bg-[#0e1424] border-amber-400 ring-2 ring-amber-400/40 shadow-xl shadow-amber-500/10'
+                  : 'bg-[#070a14] border-amber-500/20 hover:border-amber-400/50 hover:bg-[#0c101d] shadow-sm'
               }`}
             >
               {/* Preview Image Thumbnail Header */}
               {previewImg && (
-                <div className="w-full h-24 overflow-hidden bg-slate-100 relative">
+                <div className="w-full h-24 overflow-hidden bg-slate-900 relative">
                   <AppImage
                     src={previewImg}
                     alt={`${card.title} preview`}
                     className="w-full h-full object-cover group-hover:scale-104 transition duration-300"
                   />
-                  <div className="absolute inset-0 bg-linear-to-t from-slate-950/60 via-transparent to-transparent flex items-end justify-between p-2">
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end justify-between p-2">
                     <span
-                      className={`text-[9px] font-bold px-1.5 py-0.5 rounded-md shadow-2xs ${
+                      className={`text-[9px] font-black px-2 py-0.5 rounded-md shadow-xs ${
                         isActive
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-white/90 text-slate-800 backdrop-blur-xs'
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950'
+                          : 'bg-slate-950/90 text-amber-300 border border-amber-500/30 backdrop-blur-xs'
                       }`}
                     >
                       {card.badge}
@@ -154,29 +155,29 @@ export const PlannerTypeCards: React.FC<PlannerTypeCardsProps> = ({
                     <div
                       className={`w-5 h-5 rounded-md flex items-center justify-center shrink-0 transition ${
                         isActive
-                          ? 'bg-emerald-600 text-white'
-                          : 'bg-slate-100 text-slate-600 group-hover:bg-emerald-100 group-hover:text-emerald-700'
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black'
+                          : 'bg-[#070a14] text-amber-400 border border-amber-500/20 group-hover:border-amber-400/50'
                       }`}
                     >
                       <Icon className="w-3 h-3" />
                     </div>
                     <h3
                       className={`font-bold text-xs leading-tight ${
-                        isActive ? 'text-emerald-950 font-extrabold' : 'text-slate-900'
+                        isActive ? 'text-amber-300 font-extrabold' : 'text-slate-200'
                       }`}
                     >
                       {card.title}
                     </h3>
                   </div>
-                  <p className="text-[11px] text-slate-500 leading-normal line-clamp-2 mt-1">
+                  <p className="text-[11px] text-slate-400 leading-normal line-clamp-2 mt-1">
                     {card.desc}
                   </p>
                 </div>
 
-                <div className="pt-2 mt-2 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                <div className="pt-2 mt-2 border-t border-amber-500/15 flex items-center justify-between text-[10px]">
                   <span
                     className={`font-semibold ${
-                      isActive ? 'text-emerald-700' : 'text-slate-400 group-hover:text-slate-600'
+                      isActive ? 'text-amber-400 font-bold' : 'text-slate-400 group-hover:text-amber-300'
                     }`}
                   >
                     {isActive ? '● Active' : 'Click to edit'}

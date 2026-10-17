@@ -230,15 +230,16 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
   ];
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10 text-slate-100 animate-fadeIn">
       <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
-      {/* Main Converter Card */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-8">
+      {/* Main Converter Card (Dark Obsidian & Regal Gold) */}
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-8 text-slate-100">
         {/* Category Selector Tabs */}
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-3">
-            Select Measurement Category
+          <label className="block text-xs font-bold uppercase tracking-wider text-amber-300 mb-3 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]"></span>
+            <span>Select Measurement Category</span>
           </label>
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
             {CATEGORY_ITEMS.map((item) => {
@@ -249,14 +250,14 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
                   key={item.id}
                   type="button"
                   onClick={() => handleCategoryChange(item.id)}
-                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-2.5 ${
+                  className={`p-3 rounded-2xl border text-left transition flex items-center gap-2.5 cursor-pointer ${
                     isActive
-                      ? 'bg-blue-600 border-blue-600 text-white shadow-xs font-bold'
-                      : 'bg-slate-50/70 border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                      ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 border-amber-300'
+                      : 'bg-[#070a14] border-amber-500/20 text-slate-300 hover:text-amber-300 hover:border-amber-400/50'
                   }`}
                 >
-                  <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-cyan-200' : 'text-blue-600'}`} />
-                  <span className="text-xs font-semibold truncate">{item.label}</span>
+                  <IconComp className={`w-4 h-4 shrink-0 ${isActive ? 'text-slate-950' : 'text-amber-400'}`} />
+                  <span className="text-xs font-bold truncate">{item.label}</span>
                 </button>
               );
             })}
@@ -264,13 +265,13 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
         </div>
 
         {/* Dual Input/Output Conversion Workspace */}
-        <div className="bg-slate-50/80 border border-slate-200/90 rounded-3xl p-6 sm:p-8 space-y-6">
+        <div className="bg-[#070a14] border border-amber-500/20 rounded-3xl p-6 sm:p-8 space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-11 gap-4 items-center">
             {/* SOURCE INPUT ZONE (5 Cols) */}
-            <div className="lg:col-span-5 bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3">
+            <div className="lg:col-span-5 bg-[#0e1424] border border-amber-500/30 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">From</span>
-                <span className="text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">From</span>
+                <span className="text-xs font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 rounded-md">
                   {sourceUnit.symbol}
                 </span>
               </div>
@@ -280,17 +281,17 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 placeholder="0"
-                className="w-full text-2xl sm:text-3xl font-extrabold text-slate-900 bg-transparent focus:outline-hidden tabular-nums"
+                className="w-full text-2xl sm:text-3xl font-extrabold text-white bg-transparent focus:outline-hidden tabular-nums"
               />
 
               <div className="pt-1">
                 <select
                   value={sourceUnitId}
                   onChange={(e) => setSourceUnitId(e.target.value)}
-                  className="w-full text-xs sm:text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full text-xs sm:text-sm font-semibold text-amber-100 bg-[#080d1a] border border-amber-500/30 rounded-xl px-3 py-2.5 focus:outline-hidden focus:border-amber-400"
                 >
                   {units.map((u) => (
-                    <option key={u.id} value={u.id}>
+                    <option key={u.id} value={u.id} className="bg-slate-900 text-slate-100">
                       {u.name} ({u.symbol})
                     </option>
                   ))}
@@ -303,23 +304,23 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
               <button
                 type="button"
                 onClick={handleSwap}
-                className="w-11 h-11 rounded-2xl bg-white border border-slate-200 text-blue-600 hover:text-blue-700 hover:bg-blue-50 shadow-xs flex items-center justify-center transition active:scale-95"
+                className="w-11 h-11 rounded-2xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black shadow-lg shadow-amber-500/20 flex items-center justify-center transition active:scale-95 cursor-pointer"
                 title="Swap source and target units"
               >
-                <ArrowLeftRight className="w-4 h-4" />
+                <ArrowLeftRight className="w-4 h-4 text-slate-950 stroke-[2.5]" />
               </button>
             </div>
 
             {/* TARGET OUTPUT ZONE (5 Cols) */}
-            <div className="lg:col-span-5 bg-white border border-blue-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs space-y-3 relative overflow-hidden">
+            <div className="lg:col-span-5 bg-[#0e1424] border border-amber-500/40 rounded-2xl p-4 sm:p-5 shadow-lg space-y-3 relative overflow-hidden">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Converted Value</span>
-                <span className="text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-md">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Converted Value</span>
+                <span className="text-xs font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-2.5 py-0.5 rounded-md">
                   {targetUnit.symbol}
                 </span>
               </div>
 
-              <div className="text-2xl sm:text-3xl font-black text-blue-700 truncate tabular-nums select-all">
+              <div className="text-2xl sm:text-3xl font-black text-amber-400 truncate tabular-nums select-all">
                 {formattedResult}
               </div>
 
@@ -327,10 +328,10 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
                 <select
                   value={targetUnitId}
                   onChange={(e) => setTargetUnitId(e.target.value)}
-                  className="w-full text-xs sm:text-sm font-semibold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 focus:outline-hidden focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full text-xs sm:text-sm font-semibold text-amber-100 bg-[#080d1a] border border-amber-500/30 rounded-xl px-3 py-2.5 focus:outline-hidden focus:border-amber-400"
                 >
                   {units.map((u) => (
-                    <option key={u.id} value={u.id}>
+                    <option key={u.id} value={u.id} className="bg-slate-900 text-slate-100">
                       {u.name} ({u.symbol})
                     </option>
                   ))}
@@ -340,11 +341,11 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
           </div>
 
           {/* Precision Controls & Action Bar */}
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-slate-200/80 text-xs">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t border-amber-500/20 text-xs">
             <div className="flex items-center gap-2">
-              <Sliders className="w-3.5 h-3.5 text-slate-500" />
-              <span className="font-semibold text-slate-600">Decimal Precision:</span>
-              <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1">
+              <Sliders className="w-3.5 h-3.5 text-amber-400" />
+              <span className="font-semibold text-slate-300">Decimal Precision:</span>
+              <div className="flex items-center gap-1 bg-[#0e1424] border border-amber-500/30 rounded-xl p-1">
                 {[
                   { label: 'Auto', val: -1 },
                   { label: '2', val: 2 },
@@ -355,10 +356,10 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
                     key={p.label}
                     type="button"
                     onClick={() => setPrecision(p.val)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition ${
+                    className={`px-2.5 py-1 rounded-lg text-xs font-bold transition cursor-pointer ${
                       precision === p.val
-                        ? 'bg-blue-600 text-white shadow-2xs'
-                        : 'text-slate-600 hover:text-slate-900'
+                        ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                        : 'text-slate-400 hover:text-amber-200'
                     }`}
                   >
                     {p.label}
@@ -371,19 +372,19 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
               <button
                 type="button"
                 onClick={handleReset}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-semibold transition flex items-center gap-1.5"
+                className="px-3.5 py-2 rounded-xl border border-amber-500/30 bg-[#0e1424] hover:bg-amber-500/10 text-amber-200 font-semibold transition flex items-center gap-1.5 cursor-pointer"
                 title="Reset input to 1"
               >
-                <RotateCcw className="w-3.5 h-3.5" /> Reset
+                <RotateCcw className="w-3.5 h-3.5 text-amber-400" /> Reset
               </button>
 
               <button
                 type="button"
                 onClick={handleCopy}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-xs ${
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 shadow-lg cursor-pointer ${
                   copied
                     ? 'bg-emerald-600 text-white'
-                    : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white'
+                    : 'bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-black shadow-amber-500/20'
                 }`}
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -395,8 +396,9 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
 
         {/* Quick Conversions Grid for Current Unit */}
         <div className="space-y-3">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-600">
-            Quick Conversion Benchmarks ({inputValue} {sourceUnit.symbol})
+          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-300 flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span>Quick Conversion Benchmarks ({inputValue} {sourceUnit.symbol})</span>
           </h4>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5">
             {units
@@ -410,13 +412,13 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
                     key={u.id}
                     type="button"
                     onClick={() => setTargetUnitId(u.id)}
-                    className="p-3 bg-slate-50 hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl text-left transition group"
+                    className="p-3 bg-[#070a14] hover:bg-amber-500/10 border border-amber-500/20 hover:border-amber-400/50 rounded-2xl text-left transition group cursor-pointer"
                   >
-                    <div className="text-[10px] text-slate-400 group-hover:text-blue-600 font-medium">
+                    <div className="text-[10px] text-slate-400 group-hover:text-amber-300 font-medium">
                       {u.name}
                     </div>
-                    <div className="text-sm font-extrabold text-slate-900 group-hover:text-blue-700 tabular-nums truncate">
-                      {formatted} <span className="text-xs text-slate-500 font-bold">{u.symbol}</span>
+                    <div className="text-sm font-black text-amber-200 group-hover:text-amber-400 tabular-nums truncate">
+                      {formatted} <span className="text-xs text-amber-400/70 font-bold">{u.symbol}</span>
                     </div>
                   </button>
                 );

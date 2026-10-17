@@ -369,16 +369,16 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
               handleSelectFile(e.dataTransfer.files[0]);
             }
           }}
-          className="border-2 border-dashed border-slate-300 hover:border-emerald-500 bg-slate-50/60 hover:bg-emerald-50/20 rounded-3xl p-10 sm:p-14 text-center cursor-pointer transition space-y-4 group"
+          className="border-2 border-dashed border-amber-500/35 hover:border-amber-400 bg-[#0c101d] hover:bg-amber-500/5 rounded-3xl p-10 sm:p-14 text-center cursor-pointer transition space-y-4 group shadow-2xl"
         >
-          <div className="w-16 h-16 rounded-3xl bg-white text-slate-400 group-hover:text-emerald-600 border border-slate-200 group-hover:border-emerald-300 flex items-center justify-center mx-auto shadow-2xs transition group-hover:scale-105">
+          <div className="w-16 h-16 rounded-3xl bg-[#0e1424] text-amber-400 border border-amber-500/30 group-hover:border-amber-400 flex items-center justify-center mx-auto shadow-md transition group-hover:scale-105">
             <UploadCloud className="w-8 h-8" />
           </div>
           <div className="space-y-1">
-            <h3 className="font-bold text-slate-900 text-base">
-              Drop your PDF here, or <span className="text-emerald-700 underline">browse files</span>
+            <h3 className="font-bold text-white text-base">
+              Drop your PDF here, or <span className="text-amber-400 underline font-black">browse files</span>
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-slate-400">
               Supports single or multi-page documents. All processing executes securely in your browser.
             </p>
           </div>
@@ -396,9 +396,9 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
 
       {/* Loading Document Indicator */}
       {isLoadingDoc && (
-        <div className="p-8 bg-white border border-slate-200 rounded-3xl text-center space-y-3">
-          <Loader2 className="w-8 h-8 text-emerald-600 animate-spin mx-auto" />
-          <p className="text-sm font-semibold text-slate-700">
+        <div className="p-8 bg-[#0c101d] border border-amber-500/25 rounded-3xl text-center space-y-3">
+          <Loader2 className="w-8 h-8 text-amber-400 animate-spin mx-auto" />
+          <p className="text-sm font-semibold text-slate-300">
             Analyzing document structure and preparing page previews...
           </p>
         </div>
@@ -406,19 +406,19 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
 
       {/* Active Document Workspace */}
       {file && docSummary && !isLoadingDoc && (
-        <div className="space-y-6">
+        <div className="space-y-6 text-slate-100">
           {/* Document Header Bar */}
-          <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+          <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-4 sm:p-5 shadow-xl flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-bold">
-                <FileText className="w-5 h-5 text-emerald-600" />
+              <div className="w-10 h-10 rounded-xl bg-[#0e1424] border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold">
+                <FileText className="w-5 h-5 text-amber-400" />
               </div>
               <div>
-                <h4 className="font-bold text-xs sm:text-sm text-slate-900 truncate max-w-sm sm:max-w-md">
+                <h4 className="font-bold text-xs sm:text-sm text-white truncate max-w-sm sm:max-w-md">
                   {file.name}
                 </h4>
-                <div className="flex items-center gap-2 text-[11px] text-slate-500 mt-0.5">
-                  <span className="font-mono font-bold text-slate-700">
+                <div className="flex items-center gap-2 text-[11px] text-slate-400 mt-0.5">
+                  <span className="font-mono font-bold text-amber-300">
                     {docSummary.pageCount} Total Pages
                   </span>
                   <span>•</span>
@@ -434,14 +434,14 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                 setDocSummary(null);
                 setProcessedResult(null);
               }}
-              className="text-xs font-semibold text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-3 py-1.5 rounded-xl transition flex items-center gap-1.5"
+              className="text-xs font-semibold text-rose-400 hover:text-rose-300 hover:bg-rose-950/40 px-3 py-1.5 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
             >
               <Trash2 className="w-3.5 h-3.5" /> Change Document
             </button>
           </div>
 
           {/* Mode Selector Tabs (5 Options from user brief) */}
-          <div className="bg-white border border-slate-200/90 rounded-3xl p-3 shadow-xs space-y-3">
+          <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-3 shadow-xl space-y-3">
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1 text-xs font-bold">
               <button
                 type="button"
@@ -449,15 +449,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                   setActiveTab('individual');
                   setProcessedResult(null);
                 }}
-                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   activeTab === 'individual'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20'
+                    : 'bg-[#070a14] text-slate-300 hover:text-amber-300 hover:bg-slate-800'
                 }`}
               >
                 <Grid className="w-4 h-4" />
                 <span>Option 1 & 4: Visual Page Selection</span>
-                <span className="bg-white/20 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="bg-slate-950/40 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
                   {selectedPages.length} Selected
                 </span>
               </button>
@@ -468,15 +468,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                   setActiveTab('ranges');
                   setProcessedResult(null);
                 }}
-                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   activeTab === 'ranges'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20'
+                    : 'bg-[#070a14] text-slate-300 hover:text-amber-300 hover:bg-slate-800'
                 }`}
               >
                 <Sliders className="w-4 h-4" />
                 <span>Option 2: Custom Page Ranges</span>
-                <span className="bg-slate-200/60 text-slate-700 text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="bg-slate-950/40 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
                   {ranges.length} Ranges
                 </span>
               </button>
@@ -487,15 +487,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                   setActiveTab('every');
                   setProcessedResult(null);
                 }}
-                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   activeTab === 'every'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20'
+                    : 'bg-[#070a14] text-slate-300 hover:text-amber-300 hover:bg-slate-800'
                 }`}
               >
                 <Layers className="w-4 h-4" />
                 <span>Option 3: Split Every Page</span>
-                <span className="bg-slate-200/60 text-slate-700 text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="bg-slate-950/40 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
                   ZIP
                 </span>
               </button>
@@ -506,15 +506,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                   setActiveTab('images');
                   setProcessedResult(null);
                 }}
-                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 ${
+                className={`px-4 py-2.5 rounded-2xl transition whitespace-nowrap flex items-center gap-2 cursor-pointer ${
                   activeTab === 'images'
-                    ? 'bg-emerald-600 text-white shadow-xs'
-                    : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
+                    ? 'bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20'
+                    : 'bg-[#070a14] text-slate-300 hover:text-amber-300 hover:bg-slate-800'
                 }`}
               >
                 <Image className="w-4 h-4" />
                 <span>Option 5: Export as Images</span>
-                <span className="bg-slate-200/60 text-slate-700 text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="bg-slate-950/40 text-amber-300 text-[10px] px-1.5 py-0.5 rounded-full font-mono">
                   PNG/JPG
                 </span>
               </button>
@@ -842,18 +842,18 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
             </div>
           )}
 
-          {/* Execute Split Button */}
+          {/* Execute Split Button (Golden Luxury) */}
           {!processedResult && (
             <button
               type="button"
               onClick={handleProcessSplit}
               disabled={isProcessing}
-              className="w-full py-3.5 px-6 text-sm font-black text-white bg-emerald-600 hover:bg-emerald-700 active:scale-99 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50"
+              className="w-full py-3.5 px-6 text-sm font-black text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 active:scale-98 rounded-2xl shadow-lg shadow-amber-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {isProcessing ? (
-                <Loader2 className="w-5 h-5 animate-spin" />
+                <Loader2 className="w-5 h-5 animate-spin text-slate-950" />
               ) : (
-                <Zap className="w-5 h-5 text-emerald-200" />
+                <Zap className="w-5 h-5 text-slate-950 stroke-[2.5]" />
               )}
               {isProcessing
                 ? imageProgress
@@ -885,40 +885,40 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
         </div>
       )}
 
-      {/* 3. HOW TO USE ADVANCED SPLIT PDF */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-emerald-600" />
+      {/* 3. HOW TO USE ADVANCED SPLIT PDF (Dark & Gold) */}
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-slate-100">
+        <h3 className="font-black text-base sm:text-lg text-white flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-amber-400" />
           <span>How to Split PDF Files (5 Powerful Modes)</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs flex items-center justify-center shadow-xs">
               1
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Select Mode & Pages</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-white">Select Mode & Pages</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Click individual page thumbnails, type custom page ranges (e.g. 1-4, 8-10), or select split every single page.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs flex items-center justify-center shadow-xs">
               2
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Choose Output Format</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-white">Choose Output Format</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Merge selected pages into one unified document, extract separate PDFs, or export pages as PNG/JPG images in a ZIP archive.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 font-black text-xs flex items-center justify-center shadow-xs">
               3
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Customize File Name</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-white">Customize File Name</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Enter your preferred custom file name before downloading. ToolCrest auto-sanitizes and applies proper file extensions.
             </p>
           </div>

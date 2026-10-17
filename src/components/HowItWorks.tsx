@@ -24,13 +24,14 @@ export const HowItWorks: React.FC = () => {
   ];
 
   return (
-    <section id="how-it-works" className="py-8 bg-white border-b border-slate-200/80 print:hidden">
+    <section id="how-it-works" className="py-8 bg-[#090d18] border-b border-amber-500/20 print:hidden text-slate-100">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-6">
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900 tracking-tight">
-            How It Works
+          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center justify-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
+            <span>How It Works</span>
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
             Three simple steps to build your custom schedule in seconds
           </p>
         </div>
@@ -41,17 +42,17 @@ export const HowItWorks: React.FC = () => {
             return (
               <div
                 key={step.num}
-                className="relative bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 shadow-2xs hover:border-slate-300 transition"
+                className="relative bg-[#0c101d] border border-amber-500/25 rounded-2xl p-4 sm:p-5 flex items-start gap-3.5 shadow-xl hover:border-amber-400/50 transition"
               >
-                <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-black text-sm shrink-0 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 flex items-center justify-center font-black text-sm shrink-0 shadow-md">
                   {step.num}
                 </div>
                 <div>
-                  <h3 className="font-bold text-sm text-slate-900 mb-1 flex items-center gap-1.5">
-                    <Icon className="w-4 h-4 text-emerald-600" />
+                  <h3 className="font-bold text-sm text-amber-200 mb-1 flex items-center gap-1.5">
+                    <Icon className="w-4 h-4 text-amber-400" />
                     {step.title}
                   </h3>
-                  <p className="text-xs text-slate-600 leading-relaxed">{step.desc}</p>
+                  <p className="text-xs text-slate-400 leading-relaxed">{step.desc}</p>
                 </div>
               </div>
             );

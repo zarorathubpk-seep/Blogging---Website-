@@ -151,21 +151,21 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
   ];
 
   return (
-    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <div className="py-8 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 text-slate-100 animate-fadeIn">
       {/* 1. UNIFIED TOOL HEADER */}
       <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
       {/* 2. MAIN TOOL WORKSPACE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
         {/* Date and Time Bar */}
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pb-4 border-b border-amber-500/20">
           <div className="flex items-center gap-3">
-            <Calendar className="w-4 h-4 text-emerald-600 shrink-0" />
+            <Calendar className="w-4 h-4 text-amber-400 shrink-0" />
             <input
               type="date"
               value={currentDate}
               onChange={(e) => setCurrentDate(e.target.value)}
-              className="text-xs font-bold text-slate-800 bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+              className="text-xs font-bold text-white bg-[#070a14] border border-amber-500/30 rounded-xl px-3 py-1.5 focus:border-amber-400 focus:outline-hidden"
             />
           </div>
 
@@ -178,17 +178,17 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
                 setTimeMinute(now.getMinutes());
                 setCurrentDate(now.toISOString().split('T')[0]);
               }}
-              className="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-1 transition"
+              className="text-xs font-bold text-amber-300 hover:text-amber-200 flex items-center gap-1 transition cursor-pointer"
             >
-              <Sparkles className="w-3.5 h-3.5" /> Reset to Current Time
+              <Sparkles className="w-3.5 h-3.5 text-amber-400" /> Reset to Current Time
             </button>
-            <span className="text-slate-300">|</span>
+            <span className="text-amber-500/40">|</span>
             <button
               type="button"
               onClick={handleCopyMeetingTimes}
-              className="text-xs font-bold text-slate-700 hover:text-slate-900 flex items-center gap-1 transition"
+              className="text-xs font-bold text-slate-300 hover:text-amber-300 flex items-center gap-1 transition cursor-pointer"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
               <span>{copied ? 'Copied' : 'Copy Slot'}</span>
             </button>
           </div>
@@ -197,12 +197,12 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
         {/* 2 Cities Comparison Grid */}
         <div className="grid grid-cols-1 md:grid-cols-11 gap-4 items-center">
           {/* Source City (5 cols) */}
-          <div className="md:col-span-5 p-5 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-3">
+          <div className="md:col-span-5 p-5 bg-[#0e1424] border border-amber-500/30 rounded-2xl space-y-3 shadow-lg">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                 Source Location
               </span>
-              <span className="text-xs font-mono text-emerald-700 font-semibold">
+              <span className="text-xs font-mono text-amber-300 font-semibold bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
                 Live: {getLiveTime(sourceZone.timeZone)}
               </span>
             </div>
@@ -212,15 +212,15 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
                 const found = POPULAR_ZONES.find((z) => z.id === e.target.value);
                 if (found) setSourceZone(found);
               }}
-              className="w-full text-sm font-bold bg-white border border-slate-300 rounded-xl px-3.5 py-2.5 text-slate-900"
+              className="w-full text-sm font-bold bg-[#080d1a] border border-amber-500/30 rounded-xl px-3.5 py-2.5 text-amber-100 focus:border-amber-400 focus:outline-hidden"
             >
               {POPULAR_ZONES.map((z) => (
-                <option key={z.id} value={z.id}>
+                <option key={z.id} value={z.id} className="bg-slate-900 text-slate-100">
                   {z.flag} {z.city}, {z.country} ({z.timeZone})
                 </option>
               ))}
             </select>
-            <div className="text-2xl font-black text-slate-900 font-mono">
+            <div className="text-2xl font-black text-white font-mono">
               {getConvertedTime(sourceZone.timeZone)}
             </div>
           </div>
@@ -230,20 +230,20 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
             <button
               type="button"
               onClick={handleSwap}
-              className="p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 rounded-full transition shadow-2xs hover:rotate-180"
+              className="p-3 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 rounded-full transition shadow-lg shadow-amber-500/20 hover:rotate-180 cursor-pointer"
               title="Swap cities"
             >
-              <ArrowLeftRight className="w-5 h-5" />
+              <ArrowLeftRight className="w-5 h-5 text-slate-950 stroke-[2.5]" />
             </button>
           </div>
 
           {/* Target City (5 cols) */}
-          <div className="md:col-span-5 p-5 bg-emerald-50/50 border border-emerald-200 rounded-2xl space-y-3">
+          <div className="md:col-span-5 p-5 bg-[#0e1424] border border-amber-500/40 rounded-2xl space-y-3 shadow-lg">
             <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-emerald-900 uppercase tracking-wider">
+              <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
                 Target Location
               </span>
-              <span className="text-xs font-mono text-emerald-700 font-semibold">
+              <span className="text-xs font-mono text-amber-300 font-semibold bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30">
                 Live: {getLiveTime(targetZone.timeZone)}
               </span>
             </div>
@@ -253,25 +253,25 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
                 const found = POPULAR_ZONES.find((z) => z.id === e.target.value);
                 if (found) setTargetZone(found);
               }}
-              className="w-full text-sm font-bold bg-white border border-emerald-200 rounded-xl px-3.5 py-2.5 text-slate-900"
+              className="w-full text-sm font-bold bg-[#080d1a] border border-amber-500/30 rounded-xl px-3.5 py-2.5 text-amber-100 focus:border-amber-400 focus:outline-hidden"
             >
               {POPULAR_ZONES.map((z) => (
-                <option key={z.id} value={z.id}>
+                <option key={z.id} value={z.id} className="bg-slate-900 text-slate-100">
                   {z.flag} {z.city}, {z.country} ({z.timeZone})
                 </option>
               ))}
             </select>
-            <div className="text-2xl font-black text-emerald-950 font-mono">
+            <div className="text-2xl font-black text-amber-400 font-mono">
               {getConvertedTime(targetZone.timeZone)}
             </div>
           </div>
         </div>
 
         {/* Interactive 24-Hour Timeline Slider */}
-        <div className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2">
-          <div className="flex items-center justify-between text-xs font-bold text-slate-700">
+        <div className="p-4 bg-[#070a14] border border-amber-500/25 rounded-2xl space-y-2">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-300">
             <span>Drag Time Hour Slider ({timeHour.toString().padStart(2, '0')}:00)</span>
-            <span className="font-mono text-emerald-700">{timeHour}:00</span>
+            <span className="font-mono text-amber-400 font-bold">{timeHour}:00</span>
           </div>
           <input
             type="range"
@@ -279,15 +279,15 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
             max="23"
             value={timeHour}
             onChange={(e) => setTimeHour(parseInt(e.target.value, 10))}
-            className="w-full accent-emerald-600"
+            className="w-full accent-amber-500"
           />
         </div>
 
         {/* Global Multi-City Comparison Deck */}
         <div className="space-y-3 pt-2">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
-              <Globe className="w-4 h-4 text-emerald-600" />
+            <h3 className="font-bold text-sm text-white flex items-center gap-2">
+              <Globe className="w-4 h-4 text-amber-400" />
               <span>Multi-City Team Roster</span>
             </h3>
 
@@ -299,14 +299,14 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
                     e.target.value = '';
                   }
                 }}
-                className="text-xs bg-slate-100 border border-slate-300 rounded-xl px-2.5 py-1 text-slate-700 font-semibold"
+                className="text-xs bg-[#070a14] border border-amber-500/30 rounded-xl px-2.5 py-1 text-amber-200 font-semibold focus:outline-hidden"
                 defaultValue=""
               >
-                <option value="" disabled>
+                <option value="" disabled className="bg-slate-900 text-slate-400">
                   + Add City
                 </option>
                 {POPULAR_ZONES.map((z) => (
-                  <option key={z.id} value={z.id}>
+                  <option key={z.id} value={z.id} className="bg-slate-900 text-slate-100">
                     {z.flag} {z.city}
                   </option>
                 ))}
@@ -318,21 +318,21 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
             {comparisonList.map((c) => (
               <div
                 key={c.id}
-                className="p-3.5 bg-slate-50/80 border border-slate-200/80 rounded-2xl space-y-1 relative group"
+                className="p-3.5 bg-[#070a14] border border-amber-500/20 hover:border-amber-400/40 rounded-2xl space-y-1 relative group transition"
               >
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-800">
+                  <span className="font-bold text-xs text-amber-200">
                     {c.flag} {c.city}
                   </span>
                   <button
                     type="button"
                     onClick={() => handleRemoveCity(c.id)}
-                    className="text-slate-300 hover:text-rose-500 transition"
+                    className="text-slate-500 hover:text-rose-400 transition cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                   </button>
                 </div>
-                <div className="text-base font-black text-slate-900 font-mono">
+                <div className="text-base font-black text-white font-mono">
                   {getConvertedTime(c.timeZone)}
                 </div>
                 <p className="text-[10px] text-slate-400 truncate">{c.timeZone}</p>
@@ -343,39 +343,39 @@ export const TimeZoneConverterTool: React.FC<TimeZoneConverterToolProps> = ({ on
       </div>
 
       {/* 3. HOW TO USE THIS TOOL */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-emerald-600" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+        <h3 className="font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-amber-400" />
           <span>How to Coordinate Cross-Timezone Meetings</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               1
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Select Locations</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Select Locations</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Pick your primary city and recipient timezone from our roster of international business hubs.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               2
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Drag 24-Hour Slider</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Drag 24-Hour Slider</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Scrub the timeline to find overlapping business hours suitable for both morning and evening calls.
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               3
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Copy Meeting Time</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-sm text-amber-200">Copy Meeting Time</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Tap Copy Slot to copy the dual-city timezone invite directly into your email or calendar invite.
             </p>
           </div>

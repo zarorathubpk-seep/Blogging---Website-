@@ -140,14 +140,14 @@ Feel free to edit this text or paste your own README documentation!
       <ToolHeader tool={toolItem} onNavigate={onNavigate} />
 
       {/* 2. MAIN TOOL WORKSPACE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 text-slate-100">
         {/* Top Controls Toolbar */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
           <div className="flex items-center gap-1.5 flex-wrap">
             <button
               type="button"
               onClick={() => insertSyntax('**', '**')}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+              className="p-2 text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition border border-amber-500/20 cursor-pointer"
               title="Bold"
             >
               <Bold className="w-4 h-4" />
@@ -155,7 +155,7 @@ Feel free to edit this text or paste your own README documentation!
             <button
               type="button"
               onClick={() => insertSyntax('*', '*')}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+              className="p-2 text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition border border-amber-500/20 cursor-pointer"
               title="Italic"
             >
               <Italic className="w-4 h-4" />
@@ -163,7 +163,7 @@ Feel free to edit this text or paste your own README documentation!
             <button
               type="button"
               onClick={() => insertSyntax('## ')}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+              className="p-2 text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition border border-amber-500/20 cursor-pointer"
               title="Heading"
             >
               <Heading className="w-4 h-4" />
@@ -171,7 +171,7 @@ Feel free to edit this text or paste your own README documentation!
             <button
               type="button"
               onClick={() => insertSyntax('- ')}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+              className="p-2 text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition border border-amber-500/20 cursor-pointer"
               title="List"
             >
               <List className="w-4 h-4" />
@@ -179,7 +179,7 @@ Feel free to edit this text or paste your own README documentation!
             <button
               type="button"
               onClick={() => insertSyntax('> ')}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+              className="p-2 text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition border border-amber-500/20 cursor-pointer"
               title="Quote"
             >
               <Quote className="w-4 h-4" />
@@ -187,7 +187,7 @@ Feel free to edit this text or paste your own README documentation!
             <button
               type="button"
               onClick={() => insertSyntax('```\n', '\n```')}
-              className="p-2 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition"
+              className="p-2 text-slate-300 hover:text-amber-300 hover:bg-amber-500/10 rounded-lg transition border border-amber-500/20 cursor-pointer"
               title="Code Block"
             >
               <Code className="w-4 h-4" />
@@ -196,18 +196,26 @@ Feel free to edit this text or paste your own README documentation!
 
           {/* View Toggles on small screens */}
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl text-xs font-bold md:hidden">
+            <div className="flex items-center gap-1 bg-[#070a14] border border-amber-500/30 p-1 rounded-xl text-xs font-bold md:hidden">
               <button
                 type="button"
                 onClick={() => setActiveTab('edit')}
-                className={`px-2.5 py-1 rounded-lg ${activeTab === 'edit' ? 'bg-white shadow-2xs text-slate-900' : 'text-slate-600'}`}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  activeTab === 'edit'
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                    : 'text-slate-400 hover:text-amber-200'
+                }`}
               >
                 Edit
               </button>
               <button
                 type="button"
                 onClick={() => setActiveTab('preview')}
-                className={`px-2.5 py-1 rounded-lg ${activeTab === 'preview' ? 'bg-white shadow-2xs text-slate-900' : 'text-slate-600'}`}
+                className={`px-2.5 py-1 rounded-lg transition cursor-pointer ${
+                  activeTab === 'preview'
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                    : 'text-slate-400 hover:text-amber-200'
+                }`}
               >
                 Preview
               </button>
@@ -216,9 +224,9 @@ Feel free to edit this text or paste your own README documentation!
             <button
               type="button"
               onClick={handleCopyMarkdown}
-              className="px-3.5 py-1.5 text-xs font-bold text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center gap-1.5"
+              className="px-3.5 py-1.5 text-xs font-bold text-amber-200 bg-[#070a14] hover:bg-amber-500/15 border border-amber-500/25 rounded-xl transition flex items-center gap-1.5 cursor-pointer"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
               <span>{copied ? 'Copied' : 'Copy'}</span>
             </button>
           </div>
@@ -232,14 +240,15 @@ Feel free to edit this text or paste your own README documentation!
               activeTab === 'preview' ? 'hidden md:flex' : 'flex'
             }`}
           >
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Markdown Input (.md)
+            <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Markdown Input (.md)</span>
             </span>
             <textarea
               value={markdown}
               onChange={(e) => setMarkdown(e.target.value)}
               placeholder="Start drafting in Markdown..."
-              className="w-full flex-1 min-h-[340px] text-xs sm:text-sm font-mono text-slate-900 bg-slate-50/60 border border-slate-300 rounded-2xl p-4 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden transition resize-y"
+              className="w-full flex-1 min-h-[340px] text-xs sm:text-sm font-mono text-slate-100 bg-[#070a14] border border-amber-500/30 rounded-2xl p-4 focus:border-amber-400 focus:outline-hidden transition resize-y placeholder:text-slate-500"
             />
           </div>
 
@@ -249,79 +258,80 @@ Feel free to edit this text or paste your own README documentation!
               activeTab === 'edit' ? 'hidden md:flex' : 'flex'
             }`}
           >
-            <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
-              Live HTML Preview
+            <span className="text-[11px] font-bold text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span>Live HTML Preview</span>
             </span>
             <div
-              className="w-full flex-1 min-h-[340px] p-5 bg-white border border-slate-200 rounded-2xl overflow-y-auto prose prose-slate max-w-none text-xs sm:text-sm"
+              className="w-full flex-1 min-h-[340px] p-5 bg-[#070a14] border border-amber-500/30 rounded-2xl overflow-y-auto text-xs sm:text-sm text-slate-100 prose prose-invert max-w-none"
               dangerouslySetInnerHTML={{ __html: parseMarkdownToHtml(markdown) }}
             />
           </div>
         </div>
 
         {/* Download Section with Custom File Name */}
-        <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="pt-3 border-t border-amber-500/20 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 flex-1">
-            <span className="text-xs font-bold text-slate-700 whitespace-nowrap">File Name:</span>
+            <span className="text-xs font-bold text-amber-300 whitespace-nowrap">File Name:</span>
             <input
               type="text"
               value={customFileName}
               onChange={(e) => setCustomFileName(e.target.value)}
               placeholder="document name..."
-              className="w-full sm:max-w-xs text-xs font-semibold bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-slate-900 focus:bg-white focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+              className="w-full sm:max-w-xs text-xs font-semibold bg-[#070a14] border border-amber-500/30 rounded-xl px-3 py-2 text-white focus:border-amber-400 focus:outline-hidden"
             />
-            <span className="text-xs font-mono font-bold text-emerald-800">.md</span>
+            <span className="text-xs font-mono font-bold text-amber-400">.md</span>
           </div>
 
           <button
             type="button"
             onClick={handleDownloadMd}
-            className="px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 active:scale-99 text-white font-bold text-xs sm:text-sm rounded-xl shadow-xs transition flex items-center justify-center gap-2 shrink-0"
+            className="px-6 py-2.5 bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 active:scale-98 text-slate-950 font-black text-xs sm:text-sm rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 shrink-0 cursor-pointer"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 text-slate-950 stroke-[2.5]" />
             <span>Download {sanitizedFileName}</span>
           </button>
         </div>
       </div>
 
       {/* 3. HOW TO USE GUIDE */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="font-extrabold text-base sm:text-lg text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-emerald-600" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">
+        <h3 className="font-extrabold text-base sm:text-lg text-white flex items-center gap-2">
+          <HelpCircle className="w-5 h-5 text-amber-400" />
           <span>Markdown Cheat Sheet & Quick Tips</span>
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-2">
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               1
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Headings & Lists</h4>
-            <p className="text-xs text-slate-600 leading-relaxed font-mono">
+            <h4 className="font-bold text-sm text-amber-200">Headings & Lists</h4>
+            <p className="text-xs text-slate-400 leading-relaxed font-mono">
               # H1 Title<br />
               ## H2 Section<br />
               - Bullet point item
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               2
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Emphasis & Quotes</h4>
-            <p className="text-xs text-slate-600 leading-relaxed font-mono">
+            <h4 className="font-bold text-sm text-amber-200">Emphasis & Quotes</h4>
+            <p className="text-xs text-slate-400 leading-relaxed font-mono">
               **Bold text**<br />
               *Italic text*<br />
               &gt; Blockquote highlight
             </p>
           </div>
 
-          <div className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
-            <span className="w-7 h-7 rounded-lg bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-2xs">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-2">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center justify-center shadow-xs">
               3
             </span>
-            <h4 className="font-bold text-sm text-slate-900">Code & Export</h4>
-            <p className="text-xs text-slate-600 leading-relaxed font-mono">
+            <h4 className="font-bold text-sm text-amber-200">Code & Export</h4>
+            <p className="text-xs text-slate-400 leading-relaxed font-mono">
               `inline code`<br />
               ```fenced block```<br />
               Download .md file

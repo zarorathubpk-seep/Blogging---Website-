@@ -533,8 +533,8 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
       {/* 1. UNIFIED TOOL HEADER */}
       <ToolHeader tool={tool} onNavigate={onNavigate} />
 
-      {/* Main Interactive Tool Workbench */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-6">
+      {/* Main Interactive Tool Workbench (Dark Obsidian & Regal Gold) */}
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-slate-100">
         {/* Upload Zone */}
         {tool.id !== 'create-pdf' &&
           tool.id !== 'webpage-to-pdf' &&
@@ -542,7 +542,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           tool.id !== 'excel-to-pdf' && (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-slate-300 hover:border-blue-500 rounded-3xl p-8 sm:p-12 text-center cursor-pointer bg-slate-50/60 hover:bg-blue-50/20 transition group"
+              className="border-2 border-dashed border-amber-500/35 hover:border-amber-400 rounded-3xl p-8 sm:p-12 text-center cursor-pointer bg-[#070a14]/90 hover:bg-amber-500/5 transition-all group"
             >
               <input
                 ref={fileInputRef}
@@ -556,17 +556,17 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                 onChange={handleFileChange}
                 className="hidden"
               />
-              <div className="w-16 h-16 rounded-2xl bg-white border border-slate-200 group-hover:border-blue-300 shadow-2xs flex items-center justify-center mx-auto text-blue-600 mb-4 transition">
+              <div className="w-16 h-16 rounded-2xl bg-[#0e1424] border border-amber-500/30 group-hover:border-amber-400 shadow-md flex items-center justify-center mx-auto text-amber-400 mb-4 transition">
                 <UploadCloud className="w-8 h-8 group-hover:scale-105 transition" />
               </div>
-              <h3 className="text-base font-bold text-slate-800">
+              <h3 className="text-base font-bold text-white">
                 {tool.id === 'images-to-pdf'
                   ? 'Choose or drag pictures (JPG, PNG, WEBP)'
                   : tool.id === 'merge-pdf' || tool.id === 'compare-pdfs'
                   ? 'Choose multiple PDF files to combine or compare'
                   : 'Select or drop your document here'}
               </h3>
-              <p className="text-xs text-slate-500 mt-1.5">
+              <p className="text-xs text-slate-400 mt-1.5">
                 100% Client-Side Processing • Zero Cloud Uploads • Max file size: 100MB
               </p>
             </div>
@@ -575,30 +575,30 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         {/* Selected Files List */}
         {selectedFiles.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs font-semibold text-slate-600">
+            <div className="flex items-center justify-between text-xs font-semibold text-slate-300">
               <span>Selected Files ({selectedFiles.length})</span>
               <button
                 type="button"
                 onClick={() => setSelectedFiles([])}
-                className="text-rose-600 hover:underline"
+                className="text-rose-400 hover:text-rose-300 hover:underline cursor-pointer"
               >
                 Clear all
               </button>
             </div>
-            <div className="divide-y divide-slate-100 border border-slate-200 rounded-2xl overflow-hidden bg-slate-50/50">
+            <div className="divide-y divide-slate-800 border border-amber-500/20 rounded-2xl overflow-hidden bg-[#070a14]">
               {selectedFiles.map((f, i) => (
-                <div key={i} className="flex items-center justify-between p-3 text-xs bg-white">
+                <div key={i} className="flex items-center justify-between p-3 text-xs bg-[#090d18]">
                   <div className="flex items-center gap-2.5 truncate">
-                    <FileText className="w-4 h-4 text-blue-600 shrink-0" />
-                    <span className="font-semibold text-slate-800 truncate">{f.name}</span>
-                    <span className="text-slate-400 font-mono text-[11px]">
+                    <FileText className="w-4 h-4 text-amber-400 shrink-0" />
+                    <span className="font-semibold text-slate-200 truncate">{f.name}</span>
+                    <span className="text-amber-400/80 font-mono text-[11px]">
                       ({(f.size / 1024).toFixed(1)} KB)
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => removeFile(i)}
-                    className="p-1 hover:bg-rose-50 text-slate-400 hover:text-rose-600 rounded transition"
+                    className="p-1 hover:bg-rose-950/50 text-slate-400 hover:text-rose-400 rounded transition cursor-pointer"
                     title="Remove"
                   >
                     <Trash2 className="w-4 h-4" />
@@ -610,19 +610,19 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         )}
 
         {/* Tool-specific Settings & Panels */}
-        <div className="p-4 sm:p-5 bg-slate-50 border border-slate-200/90 rounded-2xl space-y-4">
-          <h4 className="text-xs font-extrabold uppercase tracking-wider text-slate-600">
+        <div className="p-4 sm:p-5 bg-[#070a14] border border-amber-500/25 rounded-2xl space-y-4">
+          <h4 className="text-xs font-black uppercase tracking-wider text-amber-300">
             Tool Settings & Options
           </h4>
 
           {/* CROP PDF MARGINS */}
           {tool.id === 'crop-pdf' && (
             <div className="space-y-3">
-              <span className="text-xs text-slate-600">Adjust page boundary trim margins (points):</span>
+              <span className="text-xs text-slate-300">Adjust page boundary trim margins (points):</span>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                 {(['top', 'bottom', 'left', 'right'] as const).map((side) => (
-                  <div key={side} className="bg-white p-3 rounded-xl border border-slate-200">
-                    <label className="block text-[11px] font-bold uppercase text-slate-600 mb-1">
+                  <div key={side} className="bg-[#0c111e] p-3 rounded-xl border border-amber-500/20">
+                    <label className="block text-[11px] font-bold uppercase text-amber-300 mb-1">
                       {side} Margin
                     </label>
                     <div className="flex items-center gap-2">
@@ -634,9 +634,9 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                         onChange={(e) =>
                           setCropMargins((prev) => ({ ...prev, [side]: parseInt(e.target.value, 10) }))
                         }
-                        className="w-full accent-blue-600"
+                        className="w-full accent-amber-400"
                       />
-                      <span className="text-xs font-mono font-bold text-slate-800 w-8 text-right">
+                      <span className="text-xs font-mono font-bold text-amber-300 w-8 text-right">
                         {cropMargins[side]}
                       </span>
                     </div>
@@ -649,11 +649,11 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {/* REPAIR PDF DIAGNOSTIC INFO */}
           {tool.id === 'repair-pdf' && (
             <div className="space-y-2">
-              <p className="text-xs text-slate-600">
+              <p className="text-xs text-slate-300">
                 The Repair tool executes a deep structural diagnostic to recover corrupted stream headers, rebuild damaged cross-reference (xref) indices, and re-serialize the document catalog.
               </p>
               {repairLogs.length > 0 && (
-                <div className="p-3 bg-slate-900 rounded-xl font-mono text-[11px] text-emerald-400 space-y-1">
+                <div className="p-3 bg-[#0c111e] rounded-xl font-mono text-[11px] text-amber-300 border border-amber-500/30 space-y-1">
                   {repairLogs.map((log, i) => (
                     <div key={i}>{log}</div>
                   ))}
@@ -664,12 +664,12 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
 
           {/* PDF TO PDF/A ARCHIVAL INFO */}
           {tool.id === 'pdf-to-pdfa' && (
-            <div className="p-3 bg-white rounded-xl border border-slate-200 text-xs text-slate-700 space-y-2">
-              <div className="font-bold text-slate-900 flex items-center gap-2">
-                <Archive className="w-4 h-4 text-purple-600" />
+            <div className="p-3.5 bg-[#0c111e] rounded-xl border border-amber-500/25 text-xs text-slate-300 space-y-2">
+              <div className="font-bold text-amber-300 flex items-center gap-2">
+                <Archive className="w-4 h-4 text-amber-400" />
                 <span>ISO-19005-1b Archival Compliance Specifications:</span>
               </div>
-              <ul className="list-disc list-inside space-y-1 text-slate-600 text-[11px]">
+              <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
                 <li>Standard DeviceRGB color intent embedment</li>
                 <li>XMP schema compliance for perpetual electronic preservation</li>
                 <li>Uncompressed dictionary streams for long-term machine readability</li>
@@ -681,18 +681,18 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {tool.id === 'powerpoint-to-pdf' && (
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Deck Title</label>
+                <label className="block text-xs font-bold text-amber-200 mb-1">Deck Title</label>
                 <input
                   type="text"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-bold focus:border-amber-400"
                 />
               </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700">Presentation Slides ({slides.length})</span>
+                  <span className="text-xs font-bold text-slate-300">Presentation Slides ({slides.length})</span>
                   <button
                     type="button"
                     onClick={() =>
@@ -701,7 +701,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                         { title: `Slide ${prev.length + 1}`, bullets: ['New key talking point', 'Action item'] },
                       ])
                     }
-                    className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1"
+                    className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Add Slide</span>
@@ -710,14 +710,14 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
 
                 <div className="space-y-2">
                   {slides.map((s, idx) => (
-                    <div key={idx} className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                    <div key={idx} className="p-3 bg-[#0c111e] rounded-xl border border-amber-500/20 space-y-2">
                       <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-slate-500">Slide #{idx + 1}</span>
+                        <span className="text-[11px] font-bold text-amber-400">Slide #{idx + 1}</span>
                         {slides.length > 1 && (
                           <button
                             type="button"
                             onClick={() => setSlides((prev) => prev.filter((_, i) => i !== idx))}
-                            className="text-slate-400 hover:text-rose-600"
+                            className="text-slate-400 hover:text-rose-400 cursor-pointer"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>
@@ -731,7 +731,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                           updated[idx].title = e.target.value;
                           setSlides(updated);
                         }}
-                        className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 font-semibold"
+                        className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-lg px-2.5 py-1.5 font-semibold focus:border-amber-400"
                         placeholder="Slide Heading"
                       />
                       <textarea
@@ -742,7 +742,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                           updated[idx].bullets = e.target.value.split('\n');
                           setSlides(updated);
                         }}
-                        className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 font-mono text-[11px]"
+                        className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-lg p-2 font-mono text-[11px] focus:border-amber-400"
                         placeholder="Bullets (one per line)"
                       />
                     </div>
@@ -756,18 +756,18 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {tool.id === 'excel-to-pdf' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Report Title</label>
+                <label className="block text-xs font-bold text-amber-200 mb-1">Report Title</label>
                 <input
                   type="text"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-bold focus:border-amber-400"
                 />
               </div>
 
-              <div className="overflow-x-auto border border-slate-200 rounded-xl bg-white">
+              <div className="overflow-x-auto border border-amber-500/25 rounded-xl bg-[#0c111e]">
                 <table className="w-full text-xs text-left">
-                  <thead className="bg-slate-100 text-slate-700 font-bold border-b border-slate-200">
+                  <thead className="bg-[#131b2e] text-amber-300 font-bold border-b border-amber-500/20">
                     <tr>
                       {tableHeaders.map((h, i) => (
                         <th key={i} className="p-2.5">
@@ -776,11 +776,11 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 font-mono text-[11px]">
+                  <tbody className="divide-y divide-slate-800 font-mono text-[11px]">
                     {tableRows.map((r, ri) => (
-                      <tr key={ri} className="hover:bg-slate-50">
+                      <tr key={ri} className="hover:bg-amber-500/5">
                         {r.map((cell, ci) => (
-                          <td key={ci} className="p-2 text-slate-600">
+                          <td key={ci} className="p-2 text-slate-300">
                             {cell}
                           </td>
                         ))}
@@ -796,13 +796,13 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {tool.id === 'translate-pdf' && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Target Language
                 </label>
                 <select
                   value={targetLanguage}
                   onChange={(e) => setTargetLanguage(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 font-medium"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-medium focus:border-amber-400"
                 >
                   {SUPPORTED_LANGUAGES.map((l) => (
                     <option key={l.code} value={l.code}>
@@ -813,14 +813,14 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Text to Translate
                 </label>
                 <textarea
                   rows={4}
                   value={customBody}
                   onChange={(e) => setCustomBody(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl p-3 font-mono"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl p-3 font-mono focus:border-amber-400"
                 />
               </div>
             </div>
@@ -831,32 +831,32 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             <div className="space-y-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name</label>
+                  <label className="block text-xs font-bold text-amber-200 mb-1">Full Name</label>
                   <input
                     type="text"
                     value={formFields.fullName}
                     onChange={(e) => setFormFields((prev) => ({ ...prev, fullName: e.target.value }))}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2"
+                    className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">Email Address</label>
+                  <label className="block text-xs font-bold text-amber-200 mb-1">Email Address</label>
                   <input
                     type="email"
                     value={formFields.email}
                     onChange={(e) => setFormFields((prev) => ({ ...prev, email: e.target.value }))}
-                    className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2"
+                    className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Form Remarks</label>
+                <label className="block text-xs font-bold text-amber-200 mb-1">Form Remarks</label>
                 <textarea
                   rows={2}
                   value={formFields.comments}
                   onChange={(e) => setFormFields((prev) => ({ ...prev, comments: e.target.value }))}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl p-2.5"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl p-2.5 focus:border-amber-400"
                 />
               </div>
             </div>
@@ -868,7 +868,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             tool.id === 'extract-pdf-pages' ||
             tool.id === 'rearrange-pdf-pages') && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-xs font-bold text-amber-200 mb-1">
                 {tool.id === 'split-pdf'
                   ? 'Page Ranges to Extract (e.g., 1-3, 5)'
                   : tool.id === 'remove-pdf-pages'
@@ -882,7 +882,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                 value={splitRange}
                 onChange={(e) => setSplitRange(e.target.value)}
                 placeholder="e.g., 1-2 or 1, 3"
-                className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-hidden font-mono"
+                className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400 focus:outline-hidden font-mono"
               />
             </div>
           )}
@@ -890,7 +890,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {/* Rotation Degrees */}
           {tool.id === 'rotate-pdf' && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-2">
+              <label className="block text-xs font-bold text-amber-200 mb-2">
                 Rotation Angle (Clockwise)
               </label>
               <div className="flex gap-2">
@@ -899,10 +899,10 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                     key={deg}
                     type="button"
                     onClick={() => setRotateDeg(deg)}
-                    className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    className={`px-4 py-2 rounded-xl text-xs font-black transition flex items-center gap-1.5 cursor-pointer ${
                       rotateDeg === deg
-                        ? 'bg-rose-600 text-white shadow-2xs'
-                        : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100'
+                        ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-md'
+                        : 'bg-[#0c111e] border border-amber-500/25 text-slate-300 hover:text-amber-300'
                     }`}
                   >
                     <RotateCw className="w-3.5 h-3.5" />
@@ -917,18 +917,18 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {tool.id === 'watermark-pdf' && (
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Watermark Text
                 </label>
                 <input
                   type="text"
                   value={watermarkText}
                   onChange={(e) => setWatermarkText(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Opacity ({Math.round(watermarkOpacity * 100)}%)
                 </label>
                 <input
@@ -938,11 +938,11 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                   step="0.05"
                   value={watermarkOpacity}
                   onChange={(e) => setWatermarkOpacity(parseFloat(e.target.value))}
-                  className="w-full mt-2 accent-purple-600"
+                  className="w-full mt-2 accent-amber-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Angle ({watermarkAngle}°)
                 </label>
                 <input
@@ -952,7 +952,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                   step="15"
                   value={watermarkAngle}
                   onChange={(e) => setWatermarkAngle(parseInt(e.target.value, 10))}
-                  className="w-full mt-2 accent-purple-600"
+                  className="w-full mt-2 accent-amber-400"
                 />
               </div>
             </div>
@@ -962,13 +962,13 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {tool.id === 'page-numbers-pdf' && (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Format
                 </label>
                 <select
                   value={pageNumberFormat}
                   onChange={(e: any) => setPageNumberFormat(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
                 >
                   <option value="page-x-of-y">Page X of Y (Recommended)</option>
                   <option value="page-x">Page X</option>
@@ -976,13 +976,13 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                 </select>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Placement
                 </label>
                 <select
                   value={pageNumberPos}
                   onChange={(e: any) => setPageNumberPos(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
                 >
                   <option value="bottom-right">Bottom Right</option>
                   <option value="bottom-center">Bottom Center</option>
@@ -996,18 +996,18 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {tool.id === 'sign-pdf' && (
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="text-xs font-semibold text-slate-700">
+                <label className="text-xs font-bold text-amber-200">
                   Draw Signature with Touch or Mouse
                 </label>
                 <button
                   type="button"
                   onClick={clearSignature}
-                  className="text-xs text-rose-600 hover:underline"
+                  className="text-xs text-rose-400 hover:text-rose-300 hover:underline cursor-pointer"
                 >
                   Clear Signature
                 </button>
               </div>
-              <div className="border border-slate-300 rounded-2xl bg-white overflow-hidden shadow-2xs">
+              <div className="border border-amber-500/30 rounded-2xl bg-white overflow-hidden shadow-md">
                 <canvas
                   ref={canvasRef}
                   width={460}
@@ -1033,25 +1033,25 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             tool.id === 'pdf-to-markdown') && (
             <div className="space-y-3">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Document Title
                 </label>
                 <input
                   type="text"
                   value={customTitle}
                   onChange={(e) => setCustomTitle(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl px-3 py-2 font-bold"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-bold focus:border-amber-400"
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1">
                   Content / Text / Markdown Body
                 </label>
                 <textarea
                   rows={5}
                   value={customBody}
                   onChange={(e) => setCustomBody(e.target.value)}
-                  className="w-full text-xs bg-white border border-slate-200 rounded-xl p-3 font-mono leading-relaxed"
+                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl p-3 font-mono leading-relaxed focus:border-amber-400"
                 />
               </div>
             </div>
@@ -1060,41 +1060,41 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
 
         {/* AI Summary Card Output */}
         {summaryResult && (
-          <div className="p-5 bg-gradient-to-br from-violet-50/80 to-purple-50/80 border border-violet-200 rounded-2xl space-y-4 animate-fadeIn">
+          <div className="p-5 bg-[#080c16] border border-amber-500/30 rounded-2xl space-y-4 animate-fadeIn text-slate-200">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-violet-900 font-bold text-sm">
-                <Sparkles className="w-4 h-4 text-violet-600" />
+              <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
+                <Sparkles className="w-4 h-4 text-amber-400" />
                 <span>Executive AI Summary</span>
               </div>
               <button
                 type="button"
                 onClick={() => copyToClipboard(summaryResult.executiveSummary)}
-                className="px-2.5 py-1 text-xs bg-white border border-violet-200 rounded-lg text-violet-700 font-semibold flex items-center gap-1.5 shadow-2xs hover:bg-violet-50"
+                className="px-3 py-1.5 text-xs bg-[#0c111e] border border-amber-500/30 rounded-lg text-amber-300 font-bold flex items-center gap-1.5 shadow-xs hover:bg-amber-500/10 cursor-pointer"
               >
                 {copiedText ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copiedText ? 'Copied!' : 'Copy Summary'}</span>
               </button>
             </div>
 
-            <p className="text-xs text-slate-700 leading-relaxed bg-white/80 p-3 rounded-xl border border-violet-100">
+            <p className="text-xs text-slate-300 leading-relaxed bg-[#0c111e] p-3 rounded-xl border border-amber-500/20">
               {summaryResult.executiveSummary}
             </p>
 
             <div>
-              <span className="text-[11px] font-bold uppercase tracking-wider text-violet-800 block mb-1.5">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 block mb-1.5">
                 Key Takeaways:
               </span>
-              <ul className="space-y-1 text-xs text-slate-600">
+              <ul className="space-y-1 text-xs text-slate-300">
                 {summaryResult.keyTakeaways.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-violet-600 font-bold">•</span>
+                    <span className="text-amber-400 font-bold">•</span>
                     <span>{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
 
-            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-violet-100 text-[11px] font-mono text-violet-900">
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-800 text-[11px] font-mono text-amber-300">
               <div>Words: {summaryResult.metrics.wordCount}</div>
               <div>Sentences: {summaryResult.metrics.sentenceCount}</div>
               <div>Est. Read: ~{summaryResult.metrics.estimatedReadTimeMinutes} min</div>
@@ -1104,20 +1104,20 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
 
         {/* Feedback / Error Alerts */}
         {errorMessage && (
-          <div className="p-3.5 bg-rose-50 border border-rose-200 rounded-2xl text-xs text-rose-900 flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+          <div className="p-3.5 bg-rose-950/40 border border-rose-500/40 rounded-2xl text-xs text-rose-200 flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
             <span>{errorMessage}</span>
           </div>
         )}
 
         {successInfo && (
-          <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-2xl text-xs text-emerald-950 flex items-center justify-between gap-2">
+          <div className="p-3.5 bg-amber-950/40 border border-amber-500/40 rounded-2xl text-xs text-amber-200 flex items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
               <span>{successInfo}</span>
             </div>
             {processedBytes && (
-              <span className="font-mono text-[11px] text-emerald-700 font-semibold">
+              <span className="font-mono text-[11px] text-amber-300 font-bold">
                 Ready for download
               </span>
             )}
@@ -1131,12 +1131,12 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
               type="button"
               onClick={handleExecute}
               disabled={isProcessing}
-              className="flex-1 py-3 px-5 text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 active:scale-99 rounded-2xl shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
+              className="flex-1 py-3.5 px-6 text-xs sm:text-sm font-black text-slate-950 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 active:scale-98 rounded-2xl shadow-lg shadow-amber-500/25 transition flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {isProcessing ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
               ) : (
-                <Zap className="w-4 h-4 text-cyan-200" />
+                <Zap className="w-4 h-4 text-slate-950 stroke-[2.5]" />
               )}
               {isProcessing ? 'Processing...' : `Run ${tool.name}`}
             </button>
@@ -1164,36 +1164,36 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
       </div>
 
       {/* Step by step Instructions */}
-      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-xs space-y-4">
-        <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-blue-600" />
+      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-slate-100">
+        <h3 className="text-base font-black text-white flex items-center gap-2">
+          <HelpCircle className="w-4 h-4 text-amber-400" />
           <span>How to Use {tool.name} (3 Simple Steps)</span>
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-          <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-1.5">
-            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs font-bold flex items-center justify-center">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-1.5">
+            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center">
               1
             </span>
-            <h4 className="font-bold text-xs text-slate-900">Upload or Select Document</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-xs text-white">Upload or Select Document</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Drag your file directly into the box or choose documents from your device.
             </p>
           </div>
-          <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-1.5">
-            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs font-bold flex items-center justify-center">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-1.5">
+            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center">
               2
             </span>
-            <h4 className="font-bold text-xs text-slate-900">Configure Options</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-xs text-white">Configure Options</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Adjust compression levels, angles, margin crops, page numbers, or watermark options.
             </p>
           </div>
-          <div className="p-4 bg-slate-50/70 border border-slate-200/80 rounded-2xl space-y-1.5">
-            <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-800 text-xs font-bold flex items-center justify-center">
+          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-1.5">
+            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center">
               3
             </span>
-            <h4 className="font-bold text-xs text-slate-900">Process & Download</h4>
-            <p className="text-xs text-slate-600 leading-relaxed">
+            <h4 className="font-bold text-xs text-white">Process & Download</h4>
+            <p className="text-xs text-slate-400 leading-relaxed">
               Wait a split second for instant client-side execution, then download your processed file.
             </p>
           </div>
@@ -1205,19 +1205,16 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         subtitle="Learn more about document privacy, browser capabilities, and output quality."
         faqs={[
           {
-            question: 'Is my PDF uploaded to any external server?',
-            answer:
-              'No. ToolCrest processes all documents 100% locally in your browser using WebAssembly and client-side JavaScript. Your files never leave your machine.',
+            q: 'Is my PDF uploaded to any external server?',
+            a: 'No. ToolCrest processes all documents 100% locally in your browser using WebAssembly and client-side JavaScript. Your files never leave your machine.',
           },
           {
-            question: 'Is there any file size or page limit?',
-            answer:
-              'ToolCrest supports documents up to 100MB and hundreds of pages directly in your browser without throttling or scan limits.',
+            q: 'Is there any file size or page limit?',
+            a: 'ToolCrest supports documents up to 100MB and hundreds of pages directly in your browser without throttling or scan limits.',
           },
           {
-            question: 'Can I rename the output file before downloading?',
-            answer:
-              'Yes. Every tool features an editable file name input field before downloading, automatically sanitized with proper file extensions.',
+            q: 'Can I rename the output file before downloading?',
+            a: 'Yes. Every tool features an editable file name input field before downloading, automatically sanitized with proper file extensions.',
           },
         ]}
       />

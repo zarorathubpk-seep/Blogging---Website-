@@ -40,16 +40,16 @@ export const RelatedToolsSection: React.FC<RelatedToolsSectionProps> = ({
   if (relatedTools.length === 0) return null;
 
   return (
-    <section className="bg-slate-50/80 border border-slate-200/90 rounded-3xl p-6 sm:p-8 space-y-5">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-slate-200/60">
+    <section className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 space-y-5 text-slate-100 shadow-2xl">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-blue-600" />
-            <h3 className="font-extrabold text-base sm:text-lg text-slate-900 tracking-tight">
+            <Sparkles className="w-4 h-4 text-amber-400" />
+            <h3 className="font-black text-base sm:text-lg text-white tracking-tight">
               {title}
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">{subtitle}</p>
+          <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>
         </div>
 
         <button
@@ -58,7 +58,7 @@ export const RelatedToolsSection: React.FC<RelatedToolsSectionProps> = ({
             onNavigate('/');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 self-start sm:self-auto transition"
+          className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 self-start sm:self-auto transition cursor-pointer"
         >
           <span>Explore All 39+ Tools</span>
           <ArrowRight className="w-3.5 h-3.5" />

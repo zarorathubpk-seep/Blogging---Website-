@@ -79,7 +79,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
   const activeCardConfig = PLANNER_CARDS.find((c) => c.type === activeType) || PLANNER_CARDS[0];
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[#0B0F19] text-slate-100">
       {/* 1. Hero Section */}
       <HeroSection />
 
@@ -105,12 +105,12 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
             {/* Current Active Mode Indicator */}
             <div className="flex items-center justify-between px-2 pt-1 pb-2">
               <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                <span className="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse shadow-[0_0_8px_#f59e0b]" />
+                <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
                   Active Tool: {activeCardConfig.title}
                 </span>
               </div>
-              <span className="text-[11px] text-slate-500 hidden sm:inline">
+              <span className="text-[11px] text-slate-400 hidden sm:inline">
                 {activeCardConfig.desc}
               </span>
             </div>
@@ -118,7 +118,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
             {/* Printable & Interactive Planner Canvas */}
             <div
               id="planner-print-container"
-              className="bg-white border border-slate-200/90 rounded-3xl p-5 sm:p-8 shadow-sm transition-all"
+              className="bg-white border border-amber-500/25 rounded-3xl p-5 sm:p-8 shadow-xl transition-all"
             >
               {activeType === 'weekly' && (
                 <WeeklyPlannerView
