@@ -166,10 +166,10 @@ export const ToolCrestLogo: React.FC<ToolCrestLogoProps> = ({
 
           {showTagline && variant === 'full' && (
             <div className="flex items-center gap-1.5 mt-1">
-              <span className="text-[9px] text-amber-400 font-bold">✦</span>
+              <span className="text-xs text-amber-400 font-bold">✦</span>
               <span
-                className={`text-[9px] font-black uppercase tracking-widest ${
-                  isLight ? 'text-slate-500' : 'text-amber-200/80'
+                className={`text-xs font-bold tracking-wider ${
+                  isLight ? 'text-slate-600' : 'text-amber-200/90'
                 }`}
               >
                 Premium Tools Platform

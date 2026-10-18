@@ -522,32 +522,33 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
           </div>
 
           {/* TAB 1 & 4: Visual Thumbnail Grid & Individual Selection */}
+          {/* TAB 1 & 4: Visual Thumbnail Grid & Individual Selection */}
           {(activeTab === 'individual' || activeTab === 'images') && (
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
+            <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-slate-100">
               {/* Toolbar: Select All / Deselect / Invert / Thumbnail Size */}
-              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-slate-100">
+              <div className="flex flex-wrap items-center justify-between gap-3 pb-4 border-b border-amber-500/15">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="text-xs font-bold text-slate-700 mr-1">
+                  <span className="text-xs font-bold text-amber-300 mr-1">
                     Selection ({selectedPages.length} of {docSummary.pageCount} pages):
                   </span>
                   <button
                     type="button"
                     onClick={handleSelectAll}
-                    className="px-2.5 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    className="px-2.5 py-1 text-xs font-bold bg-[#070a14] hover:bg-amber-500/10 border border-amber-500/20 text-slate-200 hover:text-amber-300 rounded-lg transition cursor-pointer"
                   >
                     Select All
                   </button>
                   <button
                     type="button"
                     onClick={handleDeselectAll}
-                    className="px-2.5 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    className="px-2.5 py-1 text-xs font-bold bg-[#070a14] hover:bg-amber-500/10 border border-amber-500/20 text-slate-200 hover:text-amber-300 rounded-lg transition cursor-pointer"
                   >
                     Deselect All
                   </button>
                   <button
                     type="button"
                     onClick={handleInvertSelection}
-                    className="px-2.5 py-1 text-xs font-bold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition"
+                    className="px-2.5 py-1 text-xs font-bold bg-[#070a14] hover:bg-amber-500/10 border border-amber-500/20 text-slate-200 hover:text-amber-300 rounded-lg transition cursor-pointer"
                   >
                     Invert Selection
                   </button>
@@ -556,15 +557,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                 {/* Sub-options for individual extract */}
                 {activeTab === 'individual' && (
                   <div className="flex items-center gap-2 text-xs">
-                    <span className="text-slate-500 font-semibold">Output Mode:</span>
-                    <div className="flex bg-slate-100 p-0.5 rounded-xl font-bold">
+                    <span className="text-slate-400 font-semibold">Output Mode:</span>
+                    <div className="flex bg-[#070a14] p-0.5 rounded-xl border border-amber-500/20 font-bold">
                       <button
                         type="button"
                         onClick={() => setIndividualExportMode('merged')}
-                        className={`px-3 py-1 rounded-lg transition ${
+                        className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                           individualExportMode === 'merged'
-                            ? 'bg-white text-emerald-800 shadow-2xs'
-                            : 'text-slate-600'
+                            ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                            : 'text-slate-400 hover:text-amber-300'
                         }`}
                       >
                         1 Combined PDF
@@ -572,10 +573,10 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                       <button
                         type="button"
                         onClick={() => setIndividualExportMode('zip')}
-                        className={`px-3 py-1 rounded-lg transition ${
+                        className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                           individualExportMode === 'zip'
-                            ? 'bg-white text-emerald-800 shadow-2xs'
-                            : 'text-slate-600'
+                            ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                            : 'text-slate-400 hover:text-amber-300'
                         }`}
                       >
                         Separate PDFs in ZIP
@@ -588,11 +589,11 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                 {activeTab === 'images' && (
                   <div className="flex flex-wrap items-center gap-3 text-xs">
                     <div className="flex items-center gap-1.5">
-                      <span className="text-slate-600 font-bold">Format:</span>
+                      <span className="text-slate-300 font-bold">Format:</span>
                       <select
                         value={imageFormat}
                         onChange={(e) => setImageFormat(e.target.value as 'png' | 'jpeg')}
-                        className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 font-bold text-slate-800"
+                        className="bg-[#070a14] border border-amber-500/25 rounded-lg px-2.5 py-1 font-bold text-amber-300 focus:outline-hidden focus:border-amber-400 cursor-pointer"
                       >
                         <option value="png">PNG (Lossless)</option>
                         <option value="jpeg">JPG / JPEG</option>
@@ -600,11 +601,11 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                     </div>
 
                     <div className="flex items-center gap-1.5">
-                      <span className="text-slate-600 font-bold">Resolution:</span>
+                      <span className="text-slate-300 font-bold">Resolution:</span>
                       <select
                         value={imageScale}
                         onChange={(e) => setImageScale(Number(e.target.value))}
-                        className="bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1 font-bold text-slate-800"
+                        className="bg-[#070a14] border border-amber-500/25 rounded-lg px-2.5 py-1 font-bold text-amber-300 focus:outline-hidden focus:border-amber-400 cursor-pointer"
                       >
                         <option value={1.0}>1x Standard (72 DPI)</option>
                         <option value={1.5}>1.5x Enhanced (108 DPI)</option>
@@ -617,7 +618,7 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
               </div>
 
               {/* Responsive Page Thumbnails Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-h-[520px] overflow-y-auto p-1">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-h-[520px] overflow-y-auto p-1 custom-scrollbar">
                 {docSummary.pages.map((p) => {
                   const isSelected = selectedPages.includes(p.pageNumber);
                   const thumb = thumbnails[p.pageNumber];
@@ -628,17 +629,17 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                       onClick={() => togglePageSelection(p.pageNumber)}
                       className={`relative rounded-2xl border-2 overflow-hidden cursor-pointer transition select-none group flex flex-col ${
                         isSelected
-                          ? 'border-emerald-500 bg-emerald-50/30 ring-2 ring-emerald-500/30 shadow-xs'
-                          : 'border-slate-200 hover:border-slate-400 bg-slate-50/50 hover:bg-slate-100/50'
+                          ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/30 shadow-lg'
+                          : 'border-slate-800 hover:border-amber-500/40 bg-[#070a14]'
                       }`}
                     >
                       {/* Checkbox overlay badge */}
                       <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
                         <div
-                          className={`w-6 h-6 rounded-lg flex items-center justify-center transition shadow-2xs ${
+                          className={`w-6 h-6 rounded-lg flex items-center justify-center transition shadow-xs ${
                             isSelected
-                              ? 'bg-emerald-600 text-white'
-                              : 'bg-white/90 text-transparent border border-slate-300 group-hover:border-slate-400'
+                              ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 font-black'
+                              : 'bg-slate-900/80 text-transparent border border-slate-700 group-hover:border-amber-500/50'
                           }`}
                         >
                           <Check className="w-3.5 h-3.5 stroke-[3]" />
@@ -647,22 +648,22 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
 
                       {/* Page number badge top right */}
                       <div className="absolute top-2 right-2 z-10">
-                        <span className="bg-slate-900/80 backdrop-blur-xs text-white text-[10px] font-bold px-2 py-0.5 rounded-md">
+                        <span className="bg-slate-950/90 border border-amber-500/30 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
                           Page {p.pageNumber}
                         </span>
                       </div>
 
                       {/* Thumbnail Image display */}
-                      <div className="w-full h-44 sm:h-48 bg-white flex items-center justify-center overflow-hidden p-2">
+                      <div className="w-full h-44 sm:h-48 bg-slate-900/90 flex items-center justify-center overflow-hidden p-2">
                         {thumb ? (
                           <img
                             src={thumb}
                             alt={`Page ${p.pageNumber}`}
-                            className="max-h-full max-w-full object-contain shadow-2xs rounded transition group-hover:scale-102"
+                            className="max-h-full max-w-full object-contain shadow-xs rounded transition group-hover:scale-102 bg-white"
                           />
                         ) : (
-                          <div className="flex flex-col items-center justify-center text-slate-300">
-                            <FileText className="w-10 h-10 animate-pulse text-slate-200" />
+                          <div className="flex flex-col items-center justify-center text-slate-500">
+                            <FileText className="w-10 h-10 animate-pulse text-amber-400/40" />
                             <span className="text-[10px] font-mono mt-1 text-slate-400">
                               Rendering...
                             </span>
@@ -671,11 +672,11 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                       </div>
 
                       {/* Bottom Footer Info */}
-                      <div className="p-2 bg-white/90 border-t border-slate-100 flex items-center justify-between text-[10px] text-slate-500">
-                        <span className="font-bold text-slate-700">
+                      <div className="p-2 bg-[#090d19] border-t border-amber-500/15 flex items-center justify-between text-[10px] text-slate-400">
+                        <span className="font-bold text-amber-300">
                           {p.orientation === 'landscape' ? 'Landscape' : 'Portrait'}
                         </span>
-                        <span className="font-mono">
+                        <span className="font-mono text-slate-400">
                           {p.width}×{p.height}
                         </span>
                       </div>
@@ -688,27 +689,27 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
 
           {/* TAB 2: Custom Page Ranges */}
           {activeTab === 'ranges' && (
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-5">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 text-slate-100">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-amber-500/15">
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm">
+                  <h3 className="font-bold text-white text-sm">
                     Define Custom Extraction Ranges
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-slate-400">
                     Add ranges like Pages 1–5, 8–12, or 16–20. Total document has {docSummary.pageCount} pages.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs">
-                  <span className="text-slate-500 font-semibold">Output Mode:</span>
-                  <div className="flex bg-slate-100 p-0.5 rounded-xl font-bold">
+                  <span className="text-slate-400 font-semibold">Output Mode:</span>
+                  <div className="flex bg-[#070a14] p-0.5 rounded-xl border border-amber-500/20 font-bold">
                     <button
                       type="button"
                       onClick={() => setRangeExportMode('merged')}
-                      className={`px-3 py-1 rounded-lg transition ${
+                      className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                         rangeExportMode === 'merged'
-                          ? 'bg-white text-emerald-800 shadow-2xs'
-                          : 'text-slate-600'
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                          : 'text-slate-400 hover:text-amber-300'
                       }`}
                     >
                       Merge into 1 PDF
@@ -716,10 +717,10 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                     <button
                       type="button"
                       onClick={() => setRangeExportMode('zip')}
-                      className={`px-3 py-1 rounded-lg transition ${
+                      className={`px-3 py-1 rounded-lg transition cursor-pointer ${
                         rangeExportMode === 'zip'
-                          ? 'bg-white text-emerald-800 shadow-2xs'
-                          : 'text-slate-600'
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-xs'
+                          : 'text-slate-400 hover:text-amber-300'
                       }`}
                     >
                       Separate PDF per Range in ZIP
@@ -733,10 +734,10 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                 {ranges.map((r, index) => (
                   <div
                     key={r.id}
-                    className="p-4 bg-slate-50 border border-slate-200 rounded-2xl flex flex-wrap items-center justify-between gap-3"
+                    className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl flex flex-wrap items-center justify-between gap-3 shadow-md"
                   >
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center justify-center">
+                      <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 text-xs font-bold flex items-center justify-center">
                         {index + 1}
                       </span>
                       <input
@@ -744,13 +745,13 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                         value={r.name}
                         onChange={(e) => handleUpdateRange(r.id, { name: e.target.value })}
                         placeholder="Range label (e.g. Chapter 1)"
-                        className="text-xs font-bold bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-slate-800 w-36"
+                        className="text-xs font-bold bg-[#0c101d] border border-amber-500/30 rounded-xl px-2.5 py-1.5 text-slate-100 placeholder:text-slate-500 w-36 focus:outline-hidden focus:border-amber-400"
                       />
                     </div>
 
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-1.5 text-xs">
-                        <label className="text-slate-500 font-semibold">From Page:</label>
+                        <label className="text-slate-400 font-semibold">From Page:</label>
                         <input
                           type="number"
                           min={1}
@@ -759,14 +760,14 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                           onChange={(e) =>
                             handleUpdateRange(r.id, { start: Number(e.target.value) })
                           }
-                          className="w-16 bg-white border border-slate-200 rounded-xl px-2 py-1.5 font-bold text-center"
+                          className="w-16 bg-[#0c101d] border border-amber-500/30 rounded-xl px-2 py-1.5 font-bold text-center text-amber-300 focus:outline-hidden focus:border-amber-400"
                         />
                       </div>
 
-                      <span className="text-slate-400 font-bold">&rarr;</span>
+                      <span className="text-amber-400 font-bold">&rarr;</span>
 
                       <div className="flex items-center gap-1.5 text-xs">
-                        <label className="text-slate-500 font-semibold">To Page:</label>
+                        <label className="text-slate-400 font-semibold">To Page:</label>
                         <input
                           type="number"
                           min={1}
@@ -775,11 +776,11 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                           onChange={(e) =>
                             handleUpdateRange(r.id, { end: Number(e.target.value) })
                           }
-                          className="w-16 bg-white border border-slate-200 rounded-xl px-2 py-1.5 font-bold text-center"
+                          className="w-16 bg-[#0c101d] border border-amber-500/30 rounded-xl px-2 py-1.5 font-bold text-center text-amber-300 focus:outline-hidden focus:border-amber-400"
                         />
                       </div>
 
-                      <span className="text-[11px] font-mono text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
+                      <span className="text-[11px] font-mono font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2.5 py-1 rounded-lg">
                         {Math.max(1, Math.abs(r.end - r.start) + 1)} pages
                       </span>
 
@@ -787,7 +788,7 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
                         <button
                           type="button"
                           onClick={() => handleRemoveRange(r.id)}
-                          className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition"
+                          className="p-1.5 text-slate-400 hover:text-rose-400 rounded-lg transition cursor-pointer"
                           title="Delete Range"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -801,33 +802,33 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
               <button
                 type="button"
                 onClick={handleAddRange}
-                className="w-full py-2.5 border-2 border-dashed border-slate-200 hover:border-emerald-400 bg-slate-50/50 hover:bg-emerald-50/30 rounded-2xl text-xs font-bold text-slate-700 hover:text-emerald-800 transition flex items-center justify-center gap-2"
+                className="w-full py-2.5 border-2 border-dashed border-amber-500/30 hover:border-amber-400 bg-[#070a14] hover:bg-amber-500/10 rounded-2xl text-xs font-bold text-amber-300 hover:text-amber-200 transition flex items-center justify-center gap-2 cursor-pointer"
               >
-                <Plus className="w-4 h-4 text-emerald-600" /> Add Another Page Range
+                <Plus className="w-4 h-4 text-amber-400" /> Add Another Page Range
               </button>
             </div>
           )}
 
           {/* TAB 3: Split Every Page Option */}
           {activeTab === 'every' && (
-            <div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-7 shadow-xs space-y-4">
+            <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-4 text-slate-100">
               <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/15 border border-amber-500/30 text-amber-400 flex items-center justify-center font-bold">
                   <Archive className="w-6 h-6" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-slate-900 text-sm sm:text-base">
+                  <h3 className="font-bold text-white text-sm sm:text-base">
                     Split Entire Document into Separate 1-Page PDFs
                   </h3>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-400 mt-0.5">
                     Every page from 1 to {docSummary.pageCount} will be compiled into its own individual PDF and packaged into a ZIP file.
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 flex items-center justify-between text-xs text-slate-700">
+              <div className="p-4 bg-[#070a14] rounded-2xl border border-amber-500/20 flex items-center justify-between text-xs text-slate-300">
                 <span>Output Archive format:</span>
-                <span className="font-mono font-bold text-slate-900">
+                <span className="font-mono font-bold text-amber-300">
                   {docSummary.pageCount} PDF files inside .ZIP
                 </span>
               </div>

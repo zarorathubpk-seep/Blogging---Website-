@@ -91,31 +91,8 @@ export const Header: React.FC<HeaderProps> = ({
   return (
     <>
       <header className="sticky top-0 z-40 bg-slate-950/95 backdrop-blur-md border-b border-amber-500/20 print:hidden transition-all text-slate-100">
-        {/* Top micro announcement bar (Dark & Gold) */}
-        <div className="bg-[#060911] text-slate-300 py-1.5 px-4 sm:px-6 lg:px-8 text-[11px] flex items-center justify-between border-b border-amber-500/15">
-          <div className="flex items-center gap-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]"></span>
-            <span className="text-slate-300 font-medium">
-              100% Free Client-Side Tools • Zero Cloud Uploads • Private & Fast
-            </span>
-          </div>
-          <div className="hidden sm:flex items-center gap-4 text-slate-400">
-            <a
-              href="mailto:info@toolcrest.site"
-              className="hover:text-amber-300 transition flex items-center gap-1.5"
-            >
-              <Mail className="w-3 h-3 text-amber-400" /> info@toolcrest.site
-            </a>
-            <a
-              href="tel:+9230305881136"
-              className="hover:text-amber-300 transition flex items-center gap-1.5"
-            >
-              <Phone className="w-3 h-3 text-amber-400" /> +9230305881136
-            </a>
-          </div>
-        </div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Primary Navigation Bar & Brand Identity (Semantic Nav Landmark at Top) */}
+        <nav aria-label="Main Navigation" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Brand Logo with Dark Theme */}
             <button
@@ -132,7 +109,7 @@ export const Header: React.FC<HeaderProps> = ({
               <button
                 type="button"
                 onClick={() => handleToolDirect('merge-pdf')}
-                className={`px-3 py-1.5 rounded-xl transition uppercase tracking-wider cursor-pointer ${
+                className={`px-3.5 py-1.5 rounded-xl transition uppercase tracking-wider cursor-pointer ${
                   currentPath === '/tools/merge-pdf'
                     ? 'text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 font-black shadow-xs'
                     : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
@@ -188,14 +165,15 @@ export const Header: React.FC<HeaderProps> = ({
 
                 {convertDropdownOpen && (
                   <div className="absolute left-0 top-full mt-2 w-72 bg-slate-950 rounded-2xl shadow-2xl border border-amber-500/30 p-3 z-50 animate-fadeIn text-xs text-slate-200">
-                    <div className="text-[10px] font-black uppercase tracking-widest text-amber-400/90 px-2 pb-1.5">
-                      Convert to PDF
+                    <div className="text-xs font-bold text-amber-300 px-2 pb-1.5 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <span>Convert to PDF</span>
                     </div>
                     <div className="space-y-0.5">
                       <button
                         type="button"
                         onClick={() => handleToolDirect('images-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <Image className="w-3.5 h-3.5 text-amber-400" />
                         <span>JPG to PDF</span>
@@ -203,37 +181,38 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={() => handleToolDirect('word-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <FileText className="w-3.5 h-3.5 text-blue-400" />
-                        <span>WORD to PDF</span>
+                        <span>Word to PDF</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleToolDirect('powerpoint-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <Presentation className="w-3.5 h-3.5 text-amber-400" />
-                        <span>POWERPOINT to PDF</span>
+                        <span>PowerPoint to PDF</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleToolDirect('excel-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <Table className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>EXCEL to PDF</span>
+                        <span>Excel to PDF</span>
                       </button>
                     </div>
 
-                    <div className="text-[10px] font-black uppercase tracking-widest text-amber-400/90 px-2 pt-3 pb-1.5 border-t border-slate-800 mt-2">
-                      Convert from PDF
+                    <div className="text-xs font-bold text-amber-300 px-2 pt-3 pb-1.5 border-t border-slate-800 mt-2 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
+                      <span>Convert from PDF</span>
                     </div>
                     <div className="space-y-0.5">
                       <button
                         type="button"
                         onClick={() => handleToolDirect('pdf-to-images')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <Image className="w-3.5 h-3.5 text-amber-400" />
                         <span>PDF to JPG</span>
@@ -241,23 +220,23 @@ export const Header: React.FC<HeaderProps> = ({
                       <button
                         type="button"
                         onClick={() => handleToolDirect('pdf-to-word')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <FileText className="w-3.5 h-3.5 text-blue-400" />
-                        <span>PDF to WORD</span>
+                        <span>PDF to Word</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleToolDirect('pdf-to-excel')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <Table className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>PDF to EXCEL</span>
+                        <span>PDF to Excel</span>
                       </button>
                       <button
                         type="button"
                         onClick={() => handleToolDirect('pdf-to-pdfa')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-lg hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
                       >
                         <Archive className="w-3.5 h-3.5 text-purple-400" />
                         <span>PDF to PDF/A</span>
@@ -273,7 +252,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setMegaMenuOpen((prev) => !prev)}
                 className={`px-3 py-1.5 rounded-xl transition uppercase tracking-wider flex items-center gap-1.5 cursor-pointer border ${
                   megaMenuOpen
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 shadow-sm font-extrabold'
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 shadow-xs font-extrabold'
                     : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
                 }`}
               >
@@ -293,12 +272,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   type="button"
                   onClick={onOpenToolSelector}
-                  className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/90 hover:bg-slate-900 border border-amber-500/30 hover:border-amber-400/60 rounded-full text-xs text-slate-300 hover:text-white transition shadow-sm group cursor-pointer"
+                  className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/90 hover:bg-slate-900 border border-amber-500/30 hover:border-amber-400/60 rounded-full text-xs text-slate-300 hover:text-white transition shadow-xs group cursor-pointer"
                   title="Open Quick Tool Launcher (Cmd+K)"
                 >
                   <Search className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
                   <span className="hidden xl:inline text-slate-300 font-medium">Find Tool...</span>
-                  <kbd className="font-mono text-[10px] bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30 font-bold">
+                  <kbd className="font-mono text-xs bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30 font-bold">
                     ⌘K
                   </kbd>
                 </button>
@@ -377,6 +356,30 @@ export const Header: React.FC<HeaderProps> = ({
                 {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
               </button>
             </div>
+          </div>
+        </nav>
+
+        {/* Micro Announcement & Trust Bar (Accessible text-xs, >= 12px) */}
+        <div className="bg-[#060911]/90 text-slate-300 py-1.5 px-4 sm:px-6 lg:px-8 text-xs flex items-center justify-between border-t border-amber-500/15">
+          <div className="flex items-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
+            <span className="text-slate-300 font-medium text-xs">
+              100% Free Client-Side Tools • Zero Cloud Uploads • Private &amp; Fast
+            </span>
+          </div>
+          <div className="hidden sm:flex items-center gap-4 text-slate-400 text-xs">
+            <a
+              href="mailto:info@toolcrest.site"
+              className="hover:text-amber-300 transition flex items-center gap-1.5"
+            >
+              <Mail className="w-3.5 h-3.5 text-amber-400" /> info@toolcrest.site
+            </a>
+            <a
+              href="tel:+9230305881136"
+              className="hover:text-amber-300 transition flex items-center gap-1.5"
+            >
+              <Phone className="w-3.5 h-3.5 text-amber-400" /> +9230305881136
+            </a>
           </div>
         </div>
 

@@ -256,85 +256,90 @@ export const ToolCard: React.FC<ToolCardProps> = ({
             <IconComponent className="w-6 h-6 stroke-[2.2]" />
           </div>
 
-          <div className="flex items-center gap-1.5 shrink-0 pt-0.5">
+          <div className="flex items-center gap-3 shrink-0 pt-0.5">
             {tool.badge && (
-              <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs">
+              <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-xs mr-0.5">
                 {tool.badge}
               </span>
             )}
 
-            {/* Favorite Star Button */}
-            {onToggleFavorite && (
-              <button
-                type="button"
-                onClick={(e) => onToggleFavorite(e, tool.id)}
-                className={`p-1.5 rounded-xl transition cursor-pointer ${
-                  isFavorite
-                    ? 'text-amber-400 bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400/40 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
-                    : 'text-slate-500 hover:text-amber-400 hover:bg-slate-800/80'
-                }`}
-                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
-              >
-                <Star
-                  className={`w-4 h-4 transition ${isFavorite ? 'fill-amber-400' : ''}`}
-                />
-              </button>
-            )}
-
-            {/* More Options Dropdown Trigger */}
-            <div className="relative" ref={menuRef}>
-              <button
-                type="button"
-                onClick={handleToggleOptions}
-                className="p-1.5 rounded-xl text-slate-400 hover:text-amber-300 hover:bg-slate-800/80 transition cursor-pointer"
-                title="Tool options"
-              >
-                <MoreVertical className="w-4 h-4" />
-              </button>
-
-              {/* Options Popover Menu in Dark Obsidian & Gold */}
-              {menuOpen && (
-                <div
-                  className="absolute right-0 top-full mt-1.5 w-44 bg-[#0a0d18] rounded-xl shadow-2xl border border-amber-500/35 py-1 z-30 animate-fadeIn text-xs text-slate-200"
-                  onClick={(e) => e.stopPropagation()}
+            {/* Utility Action Buttons Group with Breathing Room */}
+            <div className="flex items-center gap-1.5">
+              {/* Favorite Star Button */}
+              {onToggleFavorite && (
+                <button
+                  type="button"
+                  onClick={(e) => onToggleFavorite(e, tool.id)}
+                  aria-label={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                  className={`p-1.5 rounded-xl transition cursor-pointer ${
+                    isFavorite
+                      ? 'text-amber-400 bg-amber-500/25 hover:bg-amber-500/35 border border-amber-400/40 shadow-[0_0_10px_rgba(245,158,11,0.3)]'
+                      : 'text-slate-400 hover:text-amber-400 hover:bg-slate-800/80'
+                  }`}
+                  title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
                 >
-                  <button
-                    type="button"
-                    onClick={handleCopyLink}
-                    className="w-full px-3 py-2 text-left hover:bg-amber-500/10 hover:text-amber-300 flex items-center gap-2 transition"
-                  >
-                    {copiedLink ? (
-                      <>
-                        <Check className="w-3.5 h-3.5 text-amber-400" />
-                        <span className="text-amber-400 font-bold">Link Copied!</span>
-                      </>
-                    ) : (
-                      <>
-                        <Copy className="w-3.5 h-3.5 text-amber-400/80" />
-                        <span>Copy Link</span>
-                      </>
-                    )}
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleShare}
-                    className="w-full px-3 py-2 text-left hover:bg-amber-500/10 hover:text-amber-300 flex items-center gap-2 transition"
-                  >
-                    <Share2 className="w-3.5 h-3.5 text-amber-400/80" />
-                    <span>Share Tool</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleSpecsClick}
-                    className="w-full px-3 py-2 text-left hover:bg-amber-500/10 hover:text-amber-300 flex items-center gap-2 transition border-t border-slate-800"
-                  >
-                    <Info className="w-3.5 h-3.5 text-amber-400/80" />
-                    <span>Quick Specs</span>
-                  </button>
-                </div>
+                  <Star
+                    className={`w-4 h-4 transition ${isFavorite ? 'fill-amber-400' : ''}`}
+                  />
+                </button>
               )}
+
+              {/* More Options Dropdown Trigger */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  type="button"
+                  onClick={handleToggleOptions}
+                  aria-label="Tool options"
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-amber-300 hover:bg-slate-800/80 transition cursor-pointer"
+                  title="Tool options"
+                >
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+
+                {/* Options Popover Menu in Dark Obsidian & Gold */}
+                {menuOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-1.5 w-44 bg-[#0a0d18] rounded-xl shadow-2xl border border-amber-500/35 py-1 z-30 animate-fadeIn text-xs text-slate-200"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={handleCopyLink}
+                      className="w-full px-3 py-2 text-left hover:bg-amber-500/10 hover:text-amber-300 flex items-center gap-2 transition cursor-pointer"
+                    >
+                      {copiedLink ? (
+                        <>
+                          <Check className="w-3.5 h-3.5 text-amber-400" />
+                          <span className="text-amber-400 font-bold">Link Copied!</span>
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="w-3.5 h-3.5 text-amber-400/80" />
+                          <span>Copy Link</span>
+                        </>
+                      )}
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleShare}
+                      className="w-full px-3 py-2 text-left hover:bg-amber-500/10 hover:text-amber-300 flex items-center gap-2 transition cursor-pointer"
+                    >
+                      <Share2 className="w-3.5 h-3.5 text-amber-400/80" />
+                      <span>Share Tool</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleSpecsClick}
+                      className="w-full px-3 py-2 text-left hover:bg-amber-500/10 hover:text-amber-300 flex items-center gap-2 transition border-t border-slate-800 cursor-pointer"
+                    >
+                      <Info className="w-3.5 h-3.5 text-amber-400/80" />
+                      <span>Quick Specs</span>
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -343,7 +348,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({
         {showCategoryBadge && (
           <div className="flex items-center gap-1.5 mb-1.5">
             <span className={`w-1.5 h-1.5 rounded-full ${styles.dotColor}`} />
-            <span className="text-[10px] font-black uppercase tracking-widest text-amber-400/90 group-hover:text-amber-300 transition-colors">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-400 group-hover:text-amber-300 transition-colors">
               {tool.categoryLabel || styles.label}
             </span>
           </div>
@@ -362,13 +367,13 @@ export const ToolCard: React.FC<ToolCardProps> = ({
         {/* Quick Specs Drawer */}
         {showSpecs && (
           <div
-            className="mt-2.5 p-2.5 rounded-xl bg-[#070a12] border border-amber-500/30 text-[11px] text-slate-300 space-y-1 animate-fadeIn"
+            className="mt-2.5 p-2.5 rounded-xl bg-[#070a12] border border-amber-500/30 text-xs text-slate-300 space-y-1 animate-fadeIn"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="font-bold text-amber-300 flex items-center gap-1">
+            <div className="font-bold text-amber-300 flex items-center gap-1 text-xs">
               <span>✦</span> Specifications
             </div>
-            <div className="text-slate-300 leading-normal">
+            <div className="text-slate-300 leading-normal text-xs">
               {tool.longDesc.substring(0, 115)}…
             </div>
           </div>
@@ -377,12 +382,12 @@ export const ToolCard: React.FC<ToolCardProps> = ({
 
       {/* Card Action Footer */}
       <div className="pt-3.5 mt-3.5 border-t border-slate-800/80 flex items-center justify-between text-xs">
-        <span className="text-[11px] font-semibold text-slate-400 flex items-center gap-1.5">
+        <span className="text-xs font-semibold text-slate-400 flex items-center gap-1.5">
           <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
           <span>Client-Side</span>
         </span>
 
-        <span className="font-black text-amber-400 group-hover:text-amber-300 flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
+        <span className="font-bold text-amber-400 group-hover:text-amber-300 flex items-center gap-1.5 group-hover:translate-x-1 transition-transform">
           <span>Open Tool</span>
           <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
         </span>

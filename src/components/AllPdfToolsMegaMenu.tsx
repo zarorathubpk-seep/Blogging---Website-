@@ -98,7 +98,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
 
       {/* Luxury Dark & Gold Mega Menu Container */}
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12 pointer-events-none">
-        <div className="relative pointer-events-auto bg-slate-950 rounded-3xl shadow-2xl border border-amber-500/30 p-6 sm:p-8 lg:p-10 overflow-hidden text-slate-100">
+        <div className="relative pointer-events-auto bg-slate-950 rounded-2xl shadow-2xl border border-amber-500/30 p-6 sm:p-8 lg:p-10 overflow-hidden text-slate-100">
           {/* Shimmering Metallic Gold Top Accent Stripe */}
           <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-600" />
 
@@ -107,7 +107,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]" />
-                <span className="text-[11px] font-black tracking-widest uppercase text-amber-300">
+                <span className="text-xs font-bold tracking-wider text-amber-300">
                   Comprehensive Suite
                 </span>
               </div>
@@ -118,7 +118,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
 
             <div className="flex items-center gap-3">
               <span className="hidden sm:inline-block text-xs font-bold text-amber-300 bg-amber-500/10 px-3.5 py-1.5 rounded-full border border-amber-500/30">
-                100% In-Browser & Private • Zero Cloud Uploads
+                100% In-Browser &amp; Private • Zero Cloud Uploads
               </span>
               <button
                 type="button"
@@ -141,7 +141,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
                   {/* Category Title with Gold Accent */}
                   <div className="flex items-center gap-1.5 pb-2 border-b border-slate-800">
                     <GroupIcon className="w-4 h-4 text-amber-400" />
-                    <h3 className="text-[11px] font-black uppercase tracking-wider text-amber-200">
+                    <h3 className="text-xs font-bold text-amber-200">
                       {group.title}
                     </h3>
                   </div>
@@ -176,7 +176,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
                             </div>
 
                             {tool.badge === 'New' && (
-                              <span className="text-[9px] font-black uppercase px-1.5 py-0.2 rounded bg-amber-400/20 text-yellow-300 border border-amber-400/30">
+                              <span className="text-xs font-bold uppercase px-1.5 py-0.5 rounded-full bg-amber-400/20 text-yellow-300 border border-amber-400/30">
                                 New
                               </span>
                             )}

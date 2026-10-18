@@ -25,7 +25,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
               ToolCrest delivers fast, private, and 100% free online browser tools. Convert documents, merge PDFs, build schedules, and calculate finances without sending files to external servers.
             </p>
-            <div className="space-y-1 pt-1 text-slate-400 text-[11px]">
+            <div className="space-y-1 pt-1 text-slate-400 text-xs">
               <div>
                 Email:{' '}
                 <a href="mailto:info@toolcrest.site" className="text-amber-400 font-bold hover:underline">
@@ -39,14 +39,14 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 </a>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-400 text-[11px] font-bold pt-1">
+            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold pt-1">
               <ShieldCheck className="w-3.5 h-3.5" /> 100% Client-Side Privacy Architecture
             </div>
           </div>
 
           {/* PDF Suite Tools (Col 3) */}
           <div>
-            <h4 className="font-black text-amber-300 text-xs uppercase tracking-wider mb-3">
+            <h4 className="font-bold text-amber-300 text-sm mb-3">
               Popular PDF Tools
             </h4>
             <ul className="space-y-2 text-slate-400">
@@ -109,7 +109,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
 
           {/* Productivity Planners (Col 4) */}
           <div>
-            <h4 className="font-black text-amber-300 text-xs uppercase tracking-wider mb-3">
+            <h4 className="font-bold text-amber-300 text-sm mb-3">
               Productivity Planners
             </h4>
             <ul className="space-y-2 text-slate-400">
@@ -184,8 +184,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
 
           {/* Legal & Company (Col 5) */}
           <div>
-            <h4 className="font-black text-amber-300 text-xs uppercase tracking-wider mb-3">
-              Company & Legal
+            <h4 className="font-bold text-amber-300 text-sm mb-3">
+              Company &amp; Legal
             </h4>
             <ul className="space-y-2 text-slate-400">
               <li>
@@ -203,7 +203,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                   onClick={() => onNavigate('/contact-us')}
                   className="hover:text-amber-300 transition cursor-pointer"
                 >
-                  Contact & Support
+                  Contact &amp; Support
                 </button>
               </li>
               <li>
@@ -221,7 +221,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                   onClick={() => onNavigate('/terms-and-conditions')}
                   className="hover:text-amber-300 transition cursor-pointer"
                 >
-                  Terms & Conditions
+                  Terms &amp; Conditions
                 </button>
               </li>
               <li>
@@ -256,7 +256,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
         </div>
 
         {/* Bottom Bar: Copyright & Compliance */}
-        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-slate-500">
+        <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
             © {new Date().getFullYear()} ToolCrest. All tools execute locally in your web browser. Free for personal and commercial use.
           </div>
