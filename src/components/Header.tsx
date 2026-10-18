@@ -103,59 +103,23 @@ export const Header: React.FC<HeaderProps> = ({
               <ToolCrestLogo size="md" showTagline={true} theme="dark" />
             </button>
 
-            {/* Middle Nav Bar: Direct PDF Shortcuts with Gold Highlights */}
-            <div className="hidden xl:flex items-center gap-1 font-bold text-xs">
-              {/* MERGE PDF (Gold Accent) */}
-              <button
-                type="button"
-                onClick={() => handleToolDirect('merge-pdf')}
-                className={`px-3.5 py-1.5 rounded-xl transition uppercase tracking-wider cursor-pointer ${
-                  currentPath === '/tools/merge-pdf'
-                    ? 'text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 font-black shadow-xs'
-                    : 'text-amber-400 hover:text-amber-300 hover:bg-amber-500/10'
-                }`}
-              >
-                Merge PDF
-              </button>
-
-              {/* SPLIT PDF */}
-              <button
-                type="button"
-                onClick={() => handleToolDirect('split-pdf')}
-                className={`px-3 py-1.5 rounded-xl transition uppercase tracking-wider cursor-pointer ${
-                  currentPath === '/tools/split-pdf'
-                    ? 'text-amber-300 bg-slate-900 font-black border border-amber-500/40'
-                    : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900'
-                }`}
-              >
-                Split PDF
-              </button>
-
-              {/* COMPRESS PDF */}
-              <button
-                type="button"
-                onClick={() => handleToolDirect('compress-pdf')}
-                className={`px-3 py-1.5 rounded-xl transition uppercase tracking-wider cursor-pointer ${
-                  currentPath === '/tools/compress-pdf'
-                    ? 'text-amber-300 bg-slate-900 font-black border border-amber-500/40'
-                    : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900'
-                }`}
-              >
-                Compress PDF
-              </button>
-
-              {/* CONVERT PDF DROPDOWN */}
+            {/* Consolidated Desktop Primary Navigation */}
+            <div className="hidden lg:flex items-center gap-1.5 font-medium text-xs">
+              {/* 1. Tools Suite Dropdown */}
               <div className="relative" ref={convertDropdownRef}>
                 <button
                   type="button"
                   onClick={() => setConvertDropdownOpen((prev) => !prev)}
-                  className={`px-3 py-1.5 rounded-xl transition uppercase tracking-wider flex items-center gap-1 cursor-pointer ${
-                    convertDropdownOpen
-                      ? 'text-amber-300 bg-slate-900 border border-amber-500/30'
-                      : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900'
+                  className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold ${
+                    convertDropdownOpen || currentPath.startsWith('/tools/')
+                      ? 'text-amber-300 bg-slate-900 border border-amber-500/40 shadow-xs'
+                      : 'text-slate-200 hover:text-amber-300 hover:bg-slate-900/80'
                   }`}
+                  aria-expanded={convertDropdownOpen}
+                  aria-haspopup="true"
                 >
-                  <span>Convert PDF</span>
+                  <FileText className="w-3.5 h-3.5 text-amber-400" />
+                  <span>PDF &amp; Document Tools</span>
                   <ChevronDown
                     className={`w-3.5 h-3.5 transition-transform ${
                       convertDropdownOpen ? 'rotate-180 text-amber-400' : ''
@@ -164,177 +128,189 @@ export const Header: React.FC<HeaderProps> = ({
                 </button>
 
                 {convertDropdownOpen && (
-                  <div className="absolute left-0 top-full mt-2 w-72 bg-slate-950 rounded-2xl shadow-2xl border border-amber-500/30 p-3 z-50 animate-fadeIn text-xs text-slate-200">
-                    <div className="text-xs font-bold text-amber-300 px-2 pb-1.5 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      <span>Convert to PDF</span>
+                  <div className="absolute left-0 top-full mt-2 w-80 bg-slate-950 rounded-2xl shadow-2xl border border-amber-500/30 p-3 z-50 animate-fadeIn text-xs text-slate-200">
+                    <div className="text-xs font-bold text-amber-300 px-2 pb-1.5 flex items-center justify-between border-b border-amber-500/20 mb-1">
+                      <span>Popular PDF Actions</span>
+                      <span className="text-[10px] text-amber-400/80 font-normal">Free &amp; Client-Side</span>
                     </div>
-                    <div className="space-y-0.5">
+
+                    <div className="grid grid-cols-2 gap-1 py-1">
+                      <button
+                        type="button"
+                        onClick={() => handleToolDirect('merge-pdf')}
+                        className="text-left px-2.5 py-2 rounded-xl hover:bg-amber-500/15 flex items-center gap-2 text-slate-200 hover:text-amber-300 transition"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-rose-400" />
+                        <span className="font-semibold">Merge PDF</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToolDirect('split-pdf')}
+                        className="text-left px-2.5 py-2 rounded-xl hover:bg-amber-500/15 flex items-center gap-2 text-slate-200 hover:text-amber-300 transition"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-blue-400" />
+                        <span className="font-semibold">Split PDF</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleToolDirect('compress-pdf')}
+                        className="text-left px-2.5 py-2 rounded-xl hover:bg-amber-500/15 flex items-center gap-2 text-slate-200 hover:text-amber-300 transition"
+                      >
+                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                        <span className="font-semibold">Compress PDF</span>
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleToolDirect('images-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        className="text-left px-2.5 py-2 rounded-xl hover:bg-amber-500/15 flex items-center gap-2 text-slate-200 hover:text-amber-300 transition"
                       >
-                        <Image className="w-3.5 h-3.5 text-amber-400" />
-                        <span>JPG to PDF</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToolDirect('word-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
-                      >
-                        <FileText className="w-3.5 h-3.5 text-blue-400" />
-                        <span>Word to PDF</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToolDirect('powerpoint-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
-                      >
-                        <Presentation className="w-3.5 h-3.5 text-amber-400" />
-                        <span>PowerPoint to PDF</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToolDirect('excel-to-pdf')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
-                      >
-                        <Table className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Excel to PDF</span>
+                        <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        <span className="font-semibold">Images to PDF</span>
                       </button>
                     </div>
 
-                    <div className="text-xs font-bold text-amber-300 px-2 pt-3 pb-1.5 border-t border-slate-800 mt-2 flex items-center gap-1.5">
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-                      <span>Convert from PDF</span>
-                    </div>
-                    <div className="space-y-0.5">
+                    <div className="pt-2 border-t border-slate-800/80 mt-1">
                       <button
                         type="button"
-                        onClick={() => handleToolDirect('pdf-to-images')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
+                        onClick={() => {
+                          setConvertDropdownOpen(false);
+                          setMegaMenuOpen(true);
+                        }}
+                        className="w-full text-center py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-110 text-slate-950 font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20"
                       >
-                        <Image className="w-3.5 h-3.5 text-amber-400" />
-                        <span>PDF to JPG</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToolDirect('pdf-to-word')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
-                      >
-                        <FileText className="w-3.5 h-3.5 text-blue-400" />
-                        <span>PDF to Word</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToolDirect('pdf-to-excel')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
-                      >
-                        <Table className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>PDF to Excel</span>
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleToolDirect('pdf-to-pdfa')}
-                        className="w-full text-left px-2.5 py-1.5 rounded-xl hover:bg-slate-900 flex items-center gap-2 text-slate-300 hover:text-white"
-                      >
-                        <Archive className="w-3.5 h-3.5 text-purple-400" />
-                        <span>PDF to PDF/A</span>
+                        <span>Browse All 33 PDF Tools</span>
+                        <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
                       </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              {/* ALL PDF TOOLS (Trigger for Golden Mega Menu) */}
+              {/* 2. Planner Generator */}
               <button
                 type="button"
-                onClick={() => setMegaMenuOpen((prev) => !prev)}
-                className={`px-3 py-1.5 rounded-xl transition uppercase tracking-wider flex items-center gap-1.5 cursor-pointer border ${
-                  megaMenuOpen
-                    ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 shadow-xs font-extrabold'
-                    : 'bg-amber-500/10 text-amber-400 border-amber-500/30 hover:bg-amber-500/20'
+                onClick={() => handleNavClick('/planner')}
+                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold ${
+                  currentPath.startsWith('/planner')
+                    ? 'text-amber-300 bg-slate-900 border border-amber-500/40 shadow-xs'
+                    : 'text-slate-200 hover:text-amber-300 hover:bg-slate-900/80'
                 }`}
               >
-                <span>All PDF Tools</span>
-                {megaMenuOpen ? (
-                  <ChevronUp className="w-3.5 h-3.5 text-amber-300" />
-                ) : (
-                  <ChevronDown className="w-3.5 h-3.5" />
-                )}
+                <CalendarCheck2 className="w-3.5 h-3.5 text-amber-400" />
+                <span>Planners</span>
+              </button>
+
+              {/* 3. Calculators & Utilities */}
+              <button
+                type="button"
+                onClick={() => handleNavClick('/#directory')}
+                className="px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold text-slate-200 hover:text-amber-300 hover:bg-slate-900/80"
+              >
+                <Table className="w-3.5 h-3.5 text-amber-400" />
+                <span>Calculators &amp; Directory</span>
+              </button>
+
+              {/* 4. Blog & Guides */}
+              <button
+                type="button"
+                onClick={() => handleNavClick('/blog')}
+                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold ${
+                  currentPath.startsWith('/blog')
+                    ? 'text-amber-300 bg-slate-900 border border-amber-500/40 shadow-xs'
+                    : 'text-slate-200 hover:text-amber-300 hover:bg-slate-900/80'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-amber-400" />
+                <span>Blog &amp; Guides</span>
               </button>
             </div>
 
-            {/* Desktop Navigation Links & Actions */}
-            <div className="hidden lg:flex items-center gap-2">
+            {/* Desktop Right Utilities & Action Center */}
+            <div className="hidden lg:flex items-center gap-2.5">
               {/* Search Trigger Pill in Header */}
               {onOpenToolSelector && (
                 <button
                   type="button"
                   onClick={onOpenToolSelector}
-                  className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/90 hover:bg-slate-900 border border-amber-500/30 hover:border-amber-400/60 rounded-full text-xs text-slate-300 hover:text-white transition shadow-xs group cursor-pointer"
+                  className="flex items-center gap-2 px-3.5 py-1.5 bg-slate-900/90 hover:bg-slate-900 border border-amber-500/30 hover:border-amber-400/60 rounded-xl text-xs text-slate-300 hover:text-white transition shadow-xs group cursor-pointer"
                   title="Open Quick Tool Launcher (Cmd+K)"
+                  aria-label="Open quick tool launcher"
                 >
                   <Search className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
                   <span className="hidden xl:inline text-slate-300 font-medium">Find Tool...</span>
-                  <kbd className="font-mono text-xs bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/30 font-bold">
+                  <kbd className="font-mono text-xs bg-slate-950 text-amber-300 px-1.5 py-0.5 rounded-lg border border-amber-500/30 font-bold">
                     ⌘K
                   </kbd>
                 </button>
               )}
 
-              {navLinks.map((item) => {
-                const isActive =
-                  item.path === '/'
-                    ? currentPath === '/'
-                    : currentPath.startsWith(item.path);
-
-                return (
-                  <button
-                    key={item.label}
-                    type="button"
-                    onClick={() => handleNavClick(item.path)}
-                    className={`px-2.5 py-1.5 rounded-xl text-xs font-semibold transition cursor-pointer ${
-                      isActive
-                        ? 'text-amber-300 bg-amber-500/15 font-bold border border-amber-500/30'
-                        : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                );
-              })}
-
-              {/* Currency Selector */}
-              <div className="flex items-center bg-slate-900 rounded-xl p-0.5 ml-1 border border-amber-500/20">
-                {(['USD', 'GBP', 'EUR'] as Currency[]).map((cur) => (
-                  <button
-                    key={cur}
-                    type="button"
-                    onClick={() => onCurrencyChange(cur)}
-                    className={`px-2 py-1 text-xs font-bold rounded-lg transition cursor-pointer ${
-                      currency === cur
-                        ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 shadow-xs font-black'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                    title={`Switch currency to ${cur}`}
-                  >
-                    {cur === 'USD' ? '$' : cur === 'GBP' ? '£' : '€'}
-                  </button>
-                ))}
+              {/* Currency Selector (Fix Issue 8: Distinct Button Affordance & Segmented Switcher) */}
+              <div
+                role="radiogroup"
+                aria-label="Currency selection switcher"
+                className="flex items-center bg-[#070a14] rounded-xl p-0.5 border border-amber-500/30 shadow-xs"
+              >
+                {(['USD', 'GBP', 'EUR'] as Currency[]).map((cur) => {
+                  const isSelected = currency === cur;
+                  const symbol = cur === 'USD' ? '$' : cur === 'GBP' ? '£' : '€';
+                  return (
+                    <button
+                      key={cur}
+                      type="button"
+                      role="radio"
+                      aria-checked={isSelected}
+                      onClick={() => onCurrencyChange(cur)}
+                      className={`px-2 py-1 text-xs font-bold rounded-lg transition-all cursor-pointer flex items-center gap-0.5 ${
+                        isSelected
+                          ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black shadow-sm'
+                          : 'text-slate-300 hover:text-amber-300 hover:bg-slate-900'
+                      }`}
+                      title={`Switch currency to ${cur} (${symbol})`}
+                    >
+                      <span>{symbol}</span>
+                      <span className="text-[10px] font-semibold opacity-90">{cur}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Admin Console Icon */}
-              <button
-                type="button"
-                onClick={() => onNavigate('/admin')}
-                className={`p-2 rounded-xl text-slate-400 hover:text-amber-300 hover:bg-slate-900 transition ml-0.5 cursor-pointer ${
-                  currentPath === '/admin' ? 'text-amber-300 bg-amber-500/15' : ''
-                }`}
-                title="Admin Article Management"
-              >
-                <Shield className="w-4 h-4" />
-              </button>
+              {/* Secondary Navigation Dropdown (About, Contact, Admin) */}
+              <div className="relative group">
+                <button
+                  type="button"
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-bold text-slate-400 hover:text-amber-300 hover:bg-slate-900 border border-slate-800 transition flex items-center gap-1 cursor-pointer"
+                  title="More options and company information"
+                >
+                  <span>More</span>
+                  <ChevronDown className="w-3 h-3" />
+                </button>
+
+                <div className="absolute right-0 top-full mt-2 w-48 bg-slate-950 rounded-2xl shadow-2xl border border-amber-500/30 p-2 z-50 invisible group-hover:visible opacity-0 group-hover:opacity-100 transition-all text-xs text-slate-200">
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('/about-us')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-amber-500/10 hover:text-amber-300 transition flex items-center justify-between"
+                  >
+                    <span>About Us</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('/contact-us')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-amber-500/10 hover:text-amber-300 transition flex items-center justify-between"
+                  >
+                    <span>Contact Support</span>
+                  </button>
+                  <div className="border-t border-slate-800 my-1" />
+                  <button
+                    type="button"
+                    onClick={() => handleNavClick('/admin')}
+                    className="w-full text-left px-3 py-2 rounded-xl hover:bg-amber-500/10 hover:text-amber-300 transition flex items-center gap-2 text-slate-400"
+                  >
+                    <Shield className="w-3.5 h-3.5 text-amber-400" />
+                    <span>Admin Portal</span>
+                  </button>
+                </div>
+              </div>
             </div>
 
             {/* Mobile Hamburger Button */}

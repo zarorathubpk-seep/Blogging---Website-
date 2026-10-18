@@ -353,20 +353,6 @@ export default function App() {
 
       <div className="flex-1">{renderCurrentView()}</div>
 
-      {/* Floating Tool Launcher Button (Gold & Dark) */}
-      <button
-        type="button"
-        onClick={() => setIsToolSelectorOpen(true)}
-        className="fixed bottom-5 right-5 z-40 bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600 hover:brightness-110 text-slate-950 font-black text-xs px-4 py-2.5 rounded-full shadow-xl shadow-amber-500/20 border border-amber-300/40 flex items-center gap-2 hover:scale-105 active:scale-95 transition print:hidden cursor-pointer"
-        title="Quick Tool Launcher (Cmd+K)"
-      >
-        <Sparkles className="w-4 h-4 text-slate-950" />
-        <span>Tools Finder</span>
-        <kbd className="hidden sm:inline-block font-mono text-[10px] bg-slate-950/80 text-amber-300 px-1.5 py-0.5 rounded border border-amber-500/40 font-bold">
-          ⌘K
-        </kbd>
-      </button>
-
       {/* Tool Selector Modal Popup */}
       <ToolSelectorModal
         isOpen={isToolSelectorOpen}

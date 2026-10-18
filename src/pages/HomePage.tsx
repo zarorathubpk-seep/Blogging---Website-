@@ -267,14 +267,14 @@ export const HomePage: React.FC<HomePageProps> = ({
                 className="w-full text-xs sm:text-sm text-white placeholder:text-slate-400 bg-transparent px-3 py-3.5 focus:outline-hidden font-medium"
               />
               <div className="mr-3 flex items-center gap-1.5">
-                <kbd className="hidden sm:inline font-mono text-xs bg-[#070a12] text-amber-300 px-2 py-1 rounded-md border border-amber-500/30 font-bold">
+                <kbd className="hidden sm:inline font-mono text-xs bg-[#070a12] text-amber-300 px-2 py-1 rounded-xl border border-amber-500/30 font-bold">
                   ⌘K
                 </kbd>
                 {searchQuery && (
                   <button
                     type="button"
                     onClick={() => setSearchQuery('')}
-                    className="text-xs text-amber-400 hover:text-amber-200 font-bold px-2 py-1 rounded-md hover:bg-slate-800"
+                    className="text-xs text-amber-400 hover:text-amber-200 font-bold px-2.5 py-1 rounded-xl hover:bg-slate-800"
                   >
                     Clear
                   </button>
@@ -385,33 +385,61 @@ export const HomePage: React.FC<HomePageProps> = ({
           </section>
         ) : (
           <>
-            {/* POPULAR TOOLS SECTION (Dark & Gold) */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
+            {/* TOP ESSENTIALS QUICK BAR (Eliminates redundant 6-card Popular + 4-card Recent stack, fixing Issue 3) */}
+            <section className="bg-[#0c101d] rounded-2xl p-4 sm:p-5 border border-amber-500/25 shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shrink-0">
+                  <Sparkles className="w-5 h-5" />
+                </div>
                 <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-400" />
-                    <span>Popular Tools</span>
+                  <h2 className="text-sm sm:text-base font-bold text-white tracking-tight flex items-center gap-2">
+                    <span>Quick Launch Essentials</span>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      Top 4
+                    </span>
                   </h2>
                   <p className="text-xs text-slate-400">
-                    Most frequently used tools by professionals and students
+                    Direct one-click access to the most frequented in-browser utilities
                   </p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-5">
-                {popularTools.map(renderToolCard)}
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { name: 'Merge PDF', slug: 'merge-pdf', badge: 'Popular' },
+                  { name: 'Split PDF', slug: 'split-pdf', badge: 'Popular' },
+                  { name: 'Compress PDF', slug: 'compress-pdf', badge: 'Popular' },
+                  { name: 'Weekly Planner', slug: 'weekly-planner', badge: 'New' },
+                ].map((item) => (
+                  <button
+                    key={item.slug}
+                    type="button"
+                    onClick={() => {
+                      if (item.slug === 'weekly-planner') {
+                        onNavigate('/planner');
+                      } else {
+                        onSelectTool(item.slug);
+                      }
+                    }}
+                    className="px-3.5 py-2 rounded-xl bg-slate-900 border border-amber-500/30 hover:border-amber-400/60 hover:bg-slate-800 text-slate-200 hover:text-amber-300 transition-all font-semibold text-xs flex items-center gap-2 shadow-xs cursor-pointer group"
+                  >
+                    <span>{item.name}</span>
+                    <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40">
+                      {item.badge}
+                    </span>
+                  </button>
+                ))}
               </div>
             </section>
 
-            {/* ALL PDF TOOLS SUITE: Visual Card-Based Grid Layout (Issue 4, 9, 10-22, 25 Fixed) */}
+            {/* ALL PDF TOOLS SUITE: Breathable 3/4-Column Workflow Cards with Generous Spacing (Fixes Issue 4 & Issue 9) */}
             <section id="pdf-tools" className="space-y-6 pt-2 pb-2">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-amber-500/20">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-amber-500/20">
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_6px_#f59e0b]" />
                     <span className="text-xs font-bold text-amber-400">
-                      All-in-One Document Workstation
+                      Complete Document Workflow Suite
                     </span>
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2 mt-0.5">
@@ -423,24 +451,24 @@ export const HomePage: React.FC<HomePageProps> = ({
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold px-3 py-1 bg-amber-500/10 text-amber-300 rounded-full border border-amber-500/30">
+                  <span className="text-xs font-bold px-3 py-1 bg-amber-500/10 text-amber-300 rounded-full border border-amber-500/30 shadow-xs">
                     100% Client-Side Processing
                   </span>
                 </div>
               </div>
 
-              {/* Visual Card Grid format (Issue 4) - Replaces cramped 7-columns */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+              {/* Breathable 3/4-Column Layout with Generous Whitespace (Fixes Issue 4) */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {getPdfGroups().map((group) => {
                   const GroupIcon = TOOL_ICON_MAP[group.iconName] || Layers;
                   return (
                     <div
                       key={group.id}
-                      className="bg-[#0c101d] rounded-2xl p-5 border border-amber-500/25 shadow-xl flex flex-col justify-between hover:border-amber-400/50 transition-all space-y-4"
+                      className="bg-[#0c101d] rounded-2xl p-5 sm:p-6 border border-amber-500/25 shadow-xl flex flex-col justify-between hover:border-amber-400/50 transition-all space-y-4"
                     >
                       <div>
-                        {/* Workflow Card Header in Title Case (Issue 17 Fixed) */}
-                        <div className="flex items-center justify-between pb-3 border-b border-amber-500/15 mb-3">
+                        {/* Workflow Card Header in Clean Title Case (Fixes Issue 6) */}
+                        <div className="flex items-center justify-between pb-3.5 border-b border-amber-500/15 mb-3.5">
                           <div className="flex items-center gap-2.5">
                             <div className="w-8 h-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xs">
                               <GroupIcon className="w-4 h-4" />
@@ -454,8 +482,8 @@ export const HomePage: React.FC<HomePageProps> = ({
                           </span>
                         </div>
 
-                        {/* List of tools with generous width (Issues 10-16, 18-22 Truncation Fixed) */}
-                        <ul className="space-y-1.5">
+                        {/* Generous Vertical Spacing Between List Items (Fixes Issue 4 & 9) */}
+                        <ul className="space-y-2.5">
                           {group.tools.map((tool) => {
                             const Icon = TOOL_ICON_MAP[tool.iconName] || Layers;
                             return (
@@ -463,16 +491,17 @@ export const HomePage: React.FC<HomePageProps> = ({
                                 <button
                                   type="button"
                                   onClick={() => onSelectTool(tool.slug)}
-                                  className="w-full text-left p-2 rounded-xl hover:bg-amber-500/10 flex items-center justify-between text-xs font-semibold text-slate-200 hover:text-amber-300 transition group cursor-pointer border border-transparent hover:border-amber-500/20"
+                                  className="w-full text-left p-2.5 rounded-xl hover:bg-amber-500/10 flex items-center justify-between text-xs font-semibold text-slate-200 hover:text-amber-300 transition group cursor-pointer border border-transparent hover:border-amber-500/20"
                                 >
-                                  <div className="flex items-center gap-2 min-w-0 pr-1">
+                                  <div className="flex items-center gap-2.5 min-w-0 pr-1">
                                     <Icon className="w-3.5 h-3.5 text-amber-400/80 group-hover:text-amber-400 shrink-0" />
                                     <span className="whitespace-normal leading-snug break-words">
                                       {tool.name}
                                     </span>
                                   </div>
+                                  {/* Consistent Pill-Shaped Badge Style (Fixes Issue 9) */}
                                   {tool.badge && (
-                                    <span className="text-xs font-bold uppercase px-1.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 ml-1">
+                                    <span className="text-xs font-bold uppercase px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40 shrink-0 ml-2 shadow-xs">
                                       {tool.badge}
                                     </span>
                                   )}
@@ -488,27 +517,8 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
             </section>
 
-            {/* RECENTLY ADDED TOOLS */}
-            <section className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight flex items-center gap-2">
-                    <Zap className="w-5 h-5 text-amber-400" />
-                    <span>Recently Added Tools</span>
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    New utilities and conversion engines added to ToolCrest
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                {recentTools.map(renderToolCard)}
-              </div>
-            </section>
-
-            {/* COMPLETE TOOLS DIRECTORY WITH SECONDARY SUB-FILTERS & PAGINATION (Issue 5 Fixed) */}
-            <section className="space-y-6 pt-4">
+            {/* UNIFIED FULL TOOLS DIRECTORY (Fixes Issue 3: Single robust directory with sub-filters & pagination) */}
+            <section id="directory" className="space-y-6 pt-4">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-3 border-b border-amber-500/20">
                 <div>
                   <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
@@ -679,7 +689,7 @@ export const HomePage: React.FC<HomePageProps> = ({
                         className="w-full h-full object-cover group-hover:scale-103 transition duration-500"
                       />
                       <div className="absolute top-3 left-3">
-                        <span className="font-bold text-xs text-amber-300 bg-slate-950/90 backdrop-blur-xs px-2.5 py-1 rounded-md uppercase tracking-wider border border-amber-500/30">
+                        <span className="font-semibold text-xs text-amber-300 bg-slate-950/90 backdrop-blur-xs px-2.5 py-1 rounded-full tracking-normal border border-amber-500/30">
                           {article.category}
                         </span>
                       </div>
