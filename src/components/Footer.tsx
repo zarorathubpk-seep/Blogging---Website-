@@ -2,17 +2,30 @@ import React from 'react';
 import { ToolCrestLogo } from './ToolCrestLogo';
 import { ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { PlannerType } from '../types/planner';
+import { Theme } from '../context/ThemeContext';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
   onSelectPlannerType: (type: PlannerType) => void;
+  theme?: Theme;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType }) => {
+export const Footer: React.FC<FooterProps> = ({
+  onNavigate,
+  onSelectPlannerType,
+  theme = 'dark',
+}) => {
+  const isDark = theme === 'dark';
   return (
-    <footer className="bg-[#050811] text-slate-300 pt-12 pb-8 border-t border-amber-500/20 print:hidden text-xs">
+    <footer
+      className={`pt-12 pb-8 border-t print:hidden text-xs transition-colors duration-200 ${
+        isDark
+          ? 'bg-[#050811] text-slate-300 border-amber-500/20'
+          : 'bg-slate-50/90 text-slate-700 border-slate-200/90 shadow-2xs'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-8 pb-10 border-b border-slate-800">
+        <div className={`grid grid-cols-1 md:grid-cols-5 gap-8 pb-10 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
           {/* Brand & Mission (Col 1 & 2) */}
           <div className="md:col-span-2 space-y-3">
             <button
@@ -20,41 +33,41 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
               onClick={() => onNavigate('/')}
               className="text-left focus:outline-hidden cursor-pointer"
             >
-              <ToolCrestLogo size="md" theme="dark" showTagline={true} />
+              <ToolCrestLogo size="md" theme={isDark ? 'dark' : 'light'} showTagline={true} />
             </button>
-            <p className="text-slate-400 text-xs leading-relaxed max-w-sm">
+            <p className={`text-xs leading-relaxed max-w-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               ToolCrest delivers fast, private, and 100% free online browser tools. Convert documents, merge PDFs, build schedules, and calculate finances without sending files to external servers.
             </p>
-            <div className="space-y-1 pt-1 text-slate-400 text-xs">
-              <div>
-                Email:{' '}
-                <a href="mailto:info@toolcrest.site" className="text-amber-400 font-bold hover:underline">
+            <div className="space-y-1.5 pt-1 text-xs">
+              <div className="flex items-center">
+                <span className={`w-14 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Email:</span>
+                <a href="mailto:info@toolcrest.site" className={`font-bold hover:underline transition ${isDark ? 'text-amber-400' : 'text-amber-700 hover:text-amber-900'}`}>
                   info@toolcrest.site
                 </a>
               </div>
-              <div>
-                Phone:{' '}
-                <a href="tel:+9230305881136" className="text-amber-400 font-bold hover:underline">
+              <div className="flex items-center">
+                <span className={`w-14 font-medium ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Phone:</span>
+                <a href="tel:+9230305881136" className={`font-bold hover:underline transition ${isDark ? 'text-amber-400' : 'text-amber-700 hover:text-amber-900'}`}>
                   +9230305881136
                 </a>
               </div>
             </div>
-            <div className="flex items-center gap-1.5 text-amber-400 text-xs font-bold pt-1">
+            <div className={`flex items-center gap-1.5 text-xs font-bold pt-1 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
               <ShieldCheck className="w-3.5 h-3.5" /> 100% Client-Side Privacy Architecture
             </div>
           </div>
 
           {/* PDF Suite Tools (Col 3) */}
           <div>
-            <h4 className="font-bold text-amber-300 text-sm mb-3">
+            <h3 className={`font-bold text-sm mb-3 ${isDark ? 'text-amber-300' : 'text-slate-900'}`}>
               Popular PDF Tools
-            </h4>
-            <ul className="space-y-2 text-slate-400">
+            </h3>
+            <ul className={`space-y-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               <li>
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/merge-pdf')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Merge PDF Documents
                 </button>
@@ -63,7 +76,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/split-pdf')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Split & Extract PDF Pages
                 </button>
@@ -72,7 +85,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/compress-pdf')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Compress PDF Size
                 </button>
@@ -81,7 +94,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/images-to-pdf')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Images to PDF
                 </button>
@@ -90,7 +103,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/sign-pdf')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Sign PDF
                 </button>
@@ -99,7 +112,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/qr-generator')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   QR Code Generator
                 </button>
@@ -109,10 +122,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
 
           {/* Productivity Planners (Col 4) */}
           <div>
-            <h4 className="font-bold text-amber-300 text-sm mb-3">
+            <h3 className={`font-bold text-sm mb-3 ${isDark ? 'text-amber-300' : 'text-slate-900'}`}>
               Productivity Planners
-            </h4>
-            <ul className="space-y-2 text-slate-400">
+            </h3>
+            <ul className={`space-y-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               <li>
                 <button
                   type="button"
@@ -120,7 +133,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                     onSelectPlannerType('weekly');
                     onNavigate('/planner');
                   }}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Weekly Planner Generator
                 </button>
@@ -132,7 +145,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                     onSelectPlannerType('budget');
                     onNavigate('/planner');
                   }}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Monthly Budget Planner (50/30/20)
                 </button>
@@ -144,7 +157,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                     onSelectPlannerType('daily');
                     onNavigate('/planner');
                   }}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Daily Time-Block Planner
                 </button>
@@ -156,7 +169,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                     onSelectPlannerType('office');
                     onNavigate('/planner');
                   }}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Office Work Planner
                 </button>
@@ -165,7 +178,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/unit-converter')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Universal Unit Converter
                 </button>
@@ -174,7 +187,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/tools/time-zone-converter')}
-                  className="hover:text-amber-300 transition cursor-pointer"
+                  className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-800'}`}
                 >
                   Time Zone Converter
                 </button>
@@ -184,10 +197,10 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
 
           {/* Legal & Company (Col 5) */}
           <div>
-            <h4 className="font-bold text-amber-300 text-sm mb-3">
+            <h3 className={`font-bold text-sm mb-3 ${isDark ? 'text-amber-300' : 'text-slate-900'}`}>
               Company &amp; Legal
-            </h4>
-            <ul className="space-y-2 text-slate-400">
+            </h3>
+            <ul className={`space-y-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               <li>
                 <button
                   type="button"
@@ -246,9 +259,9 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, onSelectPlannerType 
                 <button
                   type="button"
                   onClick={() => onNavigate('/sitemap')}
-                  className="hover:text-amber-300 transition flex items-center gap-1 cursor-pointer"
+                  className="hover:text-amber-300 transition cursor-pointer"
                 >
-                  Sitemap <ArrowUpRight className="w-3 h-3 text-slate-500" />
+                  Sitemap
                 </button>
               </li>
             </ul>

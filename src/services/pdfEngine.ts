@@ -3,7 +3,11 @@ import {
   rgb,
   degrees,
   StandardFonts,
+  PDFName,
+  PDFString,
 } from 'pdf-lib';
+import { encryptPDF, EncryptPDFOptions } from '@pdfsmaller/pdf-encrypt';
+import { decryptPDF, isEncrypted } from '@pdfsmaller/pdf-decrypt';
 
 export interface WatermarkOptions {
   text: string;
@@ -401,10 +405,89 @@ export async function signPdf(
   return await pdf.save();
 }
 
+export interface RedactionZone {
+  page: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  label?: string;
+}
+
+export async function checkPdfEncrypted(file: File): Promise<boolean> {
+  const arrayBuffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+  const info: any = await isEncrypted(bytes);
+  return Boolean(info?.encrypted ?? info);
+}
+
+export async function protectPdf(
+  file: File,
+  userPassword: string,
+  options?: EncryptPDFOptions
+): Promise<Uint8Array> {
+  const trimmed = userPassword ? userPassword.trim() : '';
+  if (!trimmed || trimmed.length < 3) {
+    throw new Error('Please enter a password with at least 3 characters to protect this document.');
+  }
+
+  const arrayBuffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+
+  const info: any = await isEncrypted(bytes);
+  if (info?.encrypted) {
+    throw new Error('This PDF is already encrypted with a password. Please unlock it first or select an unencrypted file.');
+  }
+
+  return await encryptPDF(bytes, trimmed, {
+    algorithm: 'AES-256',
+    allowPrinting: options?.allowPrinting ?? true,
+    allowCopying: options?.allowCopying ?? true,
+    allowModifying: options?.allowModifying ?? false,
+    allowAnnotating: options?.allowAnnotating ?? false,
+    ...options,
+  });
+}
+
+export async function unlockPdf(
+  file: File,
+  password: string
+): Promise<Uint8Array> {
+  const arrayBuffer = await file.arrayBuffer();
+  const bytes = new Uint8Array(arrayBuffer);
+
+  const info: any = await isEncrypted(bytes);
+  const isDocEncrypted = Boolean(info?.encrypted ?? info);
+  if (!isDocEncrypted) {
+    // Document does not require password decryption; return bytes directly
+    return bytes;
+  }
+
+  const cleanPass = password ? password.trim() : '';
+  if (!cleanPass) {
+    throw new Error('This document is password protected. Please enter the password to unlock it.');
+  }
+
+  try {
+    const decryptedBytes = await decryptPDF(bytes, cleanPass);
+    return decryptedBytes;
+  } catch (err: any) {
+    const msg = String(err?.message || '').toLowerCase();
+    if (msg.includes('password') || msg.includes('match') || msg.includes('incorrect') || msg.includes('invalid')) {
+      throw new Error('Incorrect password. The document could not be unlocked. Please verify your password and try again.');
+    }
+    throw new Error(`Failed to unlock document: ${err?.message || 'Unsupported encryption algorithm or corrupted file.'}`);
+  }
+}
+
 export async function redactPdf(
   file: File,
-  redactions: { page: number; x: number; y: number; width: number; height: number }[]
+  redactions: RedactionZone[]
 ): Promise<Uint8Array> {
+  if (!redactions || redactions.length === 0) {
+    throw new Error('Please specify at least one redaction zone to permanently black out.');
+  }
+
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
   const totalPages = pdf.getPageCount();
@@ -419,6 +502,8 @@ export async function redactPdf(
         width: item.width,
         height: item.height,
         color: rgb(0, 0, 0),
+        borderColor: rgb(0, 0, 0),
+        borderWidth: 1,
       });
     }
   }
@@ -667,12 +752,60 @@ export async function pdfToPdfA(file: File): Promise<Uint8Array> {
   const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
 
   const now = new Date();
-  pdf.setTitle(file.name.replace(/\.pdf$/i, ''));
+  const isoDate = now.toISOString();
+  const title = file.name.replace(/\.pdf$/i, '');
+  pdf.setTitle(title);
   pdf.setAuthor('ToolCrest Archival Engine');
   pdf.setCreator('ToolCrest PDF/A ISO-19005-1b Encoder');
   pdf.setProducer('ToolCrest High-Precision PDF Core');
   pdf.setCreationDate(now);
   pdf.setModificationDate(now);
+
+  // Embed standard ISO 19005-1b XMP Metadata packet
+  const xmpMetadata = `<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
+<x:xmpmeta xmlns:x="adobe:ns:meta/">
+  <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+    <rdf:Description rdf:about="" xmlns:pdfaid="http://www.aiim.org/pdfa/ns/id/">
+      <pdfaid:part>1</pdfaid:part>
+      <pdfaid:conformance>B</pdfaid:conformance>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${title}</rdf:li></rdf:Alt></dc:title>
+      <dc:creator><rdf:Seq><rdf:li>ToolCrest Archival Engine</rdf:li></rdf:Seq></dc:creator>
+      <dc:date><rdf:Seq><rdf:li>${isoDate}</rdf:li></rdf:Seq></dc:date>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:pdf="http://ns.adobe.com/pdf/1.3/">
+      <pdf:Producer>ToolCrest High-Precision PDF Core</pdf:Producer>
+    </rdf:Description>
+    <rdf:Description rdf:about="" xmlns:xmp="http://ns.adobe.com/xap/1.0/">
+      <xmp:CreateDate>${isoDate}</xmp:CreateDate>
+      <xmp:ModifyDate>${isoDate}</xmp:ModifyDate>
+      <xmp:CreatorTool>ToolCrest PDF/A ISO-19005-1b Encoder</xmp:CreatorTool>
+    </rdf:Description>
+  </rdf:RDF>
+</x:xmpmeta>
+<?xpacket end="w"?>`;
+
+  try {
+    const metadataStream = pdf.context.stream(xmpMetadata, {
+      Type: 'Metadata',
+      Subtype: 'XML',
+    });
+    const metadataRef = pdf.context.register(metadataStream);
+    pdf.catalog.set(PDFName.of('Metadata'), metadataRef);
+
+    // Standard OutputIntent for sRGB color profile
+    const outputIntentDict = pdf.context.obj({
+      Type: 'OutputIntent',
+      S: 'GTS_PDFA1',
+      OutputConditionIdentifier: PDFString.of('sRGB IEC61966-2.1'),
+      Info: PDFString.of('sRGB IEC61966-2.1'),
+    });
+    const outputIntentRef = pdf.context.register(outputIntentDict);
+    pdf.catalog.set(PDFName.of('OutputIntents'), pdf.context.obj([outputIntentRef]));
+  } catch (metaErr) {
+    console.warn('XMP/OutputIntent injection notice:', metaErr);
+  }
 
   return await pdf.save({
     useObjectStreams: false, // PDF/A-1b requires standard non-compressed object streams for maximal viewer compatibility

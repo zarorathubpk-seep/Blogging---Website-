@@ -1,3 +1,7 @@
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2415561422904473"
-     crossorigin="anonymous"></script>
-google.com, pub-2415561422904473, DIRECT, f08c47fec0942fa0
+# ToolCrest Authorized Digital Sellers (ads.txt)
+# https://toolcrest.site/ads.txt
+# This file contains strictly authorized seller lines according to IAB Tech Lab standards.
+# No HTML, CSS, or JavaScript is permitted in ads.txt.
+
+# Once your Google AdSense publisher ID is approved, replace or uncomment below:
+# google.com, pub-2415561422904473, DIRECT, f08c47fec0942fa0

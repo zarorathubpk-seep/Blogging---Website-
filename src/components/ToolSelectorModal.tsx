@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 
 import { TOOL_ICON_MAP, getCategoryStyles } from './tools/ToolCard';
+import { useTheme } from '../context/ThemeContext';
 
 interface ToolSelectorModalProps {
   isOpen: boolean;
@@ -36,6 +37,8 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
   onClose,
   onSelectTool,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [search, setSearch] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<ToolCategory>('all');
   const [dontShowAgain, setDontShowAgain] = useState(false);
@@ -95,37 +98,68 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto animate-fadeIn">
-      {/* Backdrop */}
+      {/* Gentle translucent backdrop preventing pitch-black blackout */}
       <div
-        className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"
+        className={`fixed inset-0 transition-opacity ${
+          isDark
+            ? 'bg-slate-950/50 backdrop-blur-xs'
+            : 'bg-slate-900/25 backdrop-blur-xs'
+        }`}
         onClick={handleClose}
+        aria-hidden="true"
       />
 
-      {/* Modal Dialog Card */}
-      <div className="relative w-full max-w-3xl bg-white rounded-3xl shadow-2xl border border-slate-200/90 overflow-hidden z-10 flex flex-col max-h-[90vh]">
+      {/* Modal Dialog Card (Centered on top of backdrop) */}
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modal-headline"
+        className={`relative w-full max-w-3xl rounded-2xl shadow-2xl border overflow-hidden z-10 flex flex-col max-h-[90vh] animate-fadeIn transition-colors duration-200 ${
+          isDark
+            ? 'bg-slate-950 border-amber-500/30 text-slate-100'
+            : 'bg-white border-slate-200 text-slate-900 shadow-2xl'
+        }`}
+      >
+        {/* Shimmering Top Gold Accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500" />
+
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-blue-950 text-white p-5 sm:p-6 flex items-start justify-between border-b border-slate-800">
+        <div
+          className={`p-5 sm:p-6 flex items-start justify-between border-b ${
+            isDark
+              ? 'bg-[#0c101d] text-white border-amber-500/20'
+              : 'bg-gradient-to-r from-amber-50/80 via-yellow-50/50 to-white text-slate-900 border-amber-200/60'
+          }`}
+        >
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="p-1 bg-blue-500/30 rounded-lg text-cyan-300">
+              <span
+                className={`p-1 rounded-xl ${
+                  isDark ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-100 text-amber-800'
+                }`}
+              >
                 <Sparkles className="w-4 h-4" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-cyan-300">
+              <span className={`text-xs font-bold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
                 Quick Tool Discovery
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight">
+            <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
               What would you like to do today?
             </h2>
-            <p className="text-xs sm:text-sm text-slate-300 max-w-xl">
-              Choose from 39+ instant client-side tools. Fast, free, and no file uploads to external servers.
+            <p className={`text-xs sm:text-sm max-w-xl ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+              Choose from 39+ instant client-side tools. Fast, private, and zero server file uploads.
             </p>
           </div>
 
           <button
             type="button"
             onClick={handleClose}
-            className="p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-xl transition"
+            className={`p-2 rounded-xl transition cursor-pointer ${
+              isDark
+                ? 'text-slate-400 hover:text-white hover:bg-slate-900'
+                : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+            }`}
             aria-label="Close modal"
           >
             <X className="w-5 h-5" />
@@ -133,22 +167,30 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
         </div>
 
         {/* Search & Category Filter Bar */}
-        <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/70 space-y-3">
+        <div
+          className={`p-4 sm:p-5 border-b space-y-3 ${
+            isDark ? 'border-amber-500/15 bg-[#090d18]' : 'border-slate-200 bg-slate-50/70'
+          }`}
+        >
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-blue-600" />
+            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-amber-500" />
             <input
               ref={inputRef}
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by tool name (e.g. merge, compress, qr, convert, budget, counter)..."
-              className="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-2xl text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:outline-hidden shadow-2xs font-medium"
+              className={`w-full pl-10 pr-16 py-2.5 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-amber-400 focus:outline-hidden font-medium ${
+                isDark
+                  ? 'bg-slate-900 border border-amber-500/30 text-white placeholder:text-slate-400 shadow-inner'
+                  : 'bg-white border border-slate-300 text-slate-900 placeholder:text-slate-500 shadow-xs'
+              }`}
             />
             {search && (
               <button
                 type="button"
                 onClick={() => setSearch('')}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-amber-500 hover:text-amber-600 text-xs font-bold px-2 py-1 rounded-lg"
               >
                 Clear
               </button>
@@ -169,10 +211,12 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
                 key={cat.id}
                 type="button"
                 onClick={() => setSelectedCategory(cat.id)}
-                className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition ${
+                className={`px-3 py-1.5 rounded-xl whitespace-nowrap transition cursor-pointer ${
                   selectedCategory === cat.id
-                    ? 'bg-blue-600 text-white shadow-2xs font-bold'
-                    : 'bg-white text-slate-600 hover:bg-slate-200/60 border border-slate-200/80'
+                    ? 'bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-bold shadow-xs'
+                    : isDark
+                    ? 'bg-slate-900 text-slate-300 hover:text-white hover:bg-slate-800 border border-amber-500/20'
+                    : 'bg-white text-slate-700 hover:text-amber-900 hover:bg-amber-50 border border-slate-200 shadow-2xs'
                 }`}
               >
                 {cat.label}
@@ -182,9 +226,9 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
         </div>
 
         {/* Tools Results Grid */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-2">
+        <div className={`p-4 sm:p-6 overflow-y-auto flex-1 space-y-2 ${isDark ? 'bg-[#080c16]' : 'bg-slate-50/40'}`}>
           {filteredTools.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 space-y-2">
+            <div className={`py-12 text-center space-y-2 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
               <p className="text-sm font-semibold">No tools found matching "{search}"</p>
               <button
                 type="button"
@@ -192,7 +236,7 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
                   setSearch('');
                   setSelectedCategory('all');
                 }}
-                className="text-xs font-bold text-emerald-700 hover:underline"
+                className={`text-xs font-bold hover:underline cursor-pointer ${isDark ? 'text-amber-400' : 'text-amber-700'}`}
               >
                 View all available tools
               </button>
@@ -201,35 +245,58 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {filteredTools.map((tool) => {
                 const IconComp = TOOL_ICON_MAP[tool.iconName] || Layers;
-                const styles = getCategoryStyles(tool.category);
                 return (
                   <button
                     key={tool.id}
                     type="button"
                     onClick={() => handleChoose(tool.slug)}
-                    className="p-3.5 rounded-2xl border border-slate-200/90 hover:border-emerald-500 hover:bg-slate-50/80 text-left transition group flex items-start gap-3.5 shadow-2xs hover:shadow-xs"
+                    className={`p-3.5 rounded-xl border text-left transition group flex items-start gap-3.5 cursor-pointer ${
+                      isDark
+                        ? 'border-amber-500/20 bg-[#0c101d] hover:border-amber-400/50 hover:bg-[#11172a] shadow-md'
+                        : 'border-slate-200/90 bg-white hover:border-amber-400/80 hover:bg-amber-50/40 shadow-xs'
+                    }`}
                   >
-                    <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 transition ${styles.iconBg}`}>
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
+                        isDark
+                          ? 'bg-amber-500/15 border border-amber-500/30 text-amber-400'
+                          : 'bg-amber-100 border border-amber-300 text-amber-800'
+                      }`}
+                    >
                       <IconComp className="w-5 h-5 stroke-[2.2]" />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-1">
-                        <span className="font-bold text-xs sm:text-sm text-slate-900 group-hover:text-emerald-800 transition truncate">
+                      <div className="flex items-center justify-between gap-1.5">
+                        <span
+                          className={`font-bold text-xs sm:text-sm transition leading-snug break-words ${
+                            isDark ? 'text-white group-hover:text-amber-300' : 'text-slate-900 group-hover:text-amber-800'
+                          }`}
+                        >
                           {tool.name}
                         </span>
                         {tool.badge && (
-                          <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200/80 shrink-0">
+                          <span
+                            className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full shrink-0 border ${
+                              isDark
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                                : 'bg-amber-100 text-amber-900 border-amber-300'
+                            }`}
+                          >
                             {tool.badge}
                           </span>
                         )}
                       </div>
-                      <p className="text-[11px] text-slate-500 line-clamp-1 mt-0.5 leading-relaxed">
+                      <p className={`text-xs line-clamp-1 mt-0.5 leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                         {tool.shortDesc}
                       </p>
                     </div>
 
-                    <ArrowRight className="w-4 h-4 text-slate-300 group-hover:text-emerald-600 group-hover:translate-x-0.5 transition shrink-0 mt-2.5" />
+                    <ArrowRight
+                      className={`w-4 h-4 group-hover:translate-x-0.5 transition shrink-0 mt-2.5 ${
+                        isDark ? 'text-slate-500 group-hover:text-amber-400' : 'text-slate-400 group-hover:text-amber-700'
+                      }`}
+                    />
                   </button>
                 );
               })}
@@ -238,25 +305,47 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:px-6 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+        <div
+          className={`p-4 sm:px-6 border-t flex flex-col sm:flex-row items-center justify-between gap-3 text-xs ${
+            isDark
+              ? 'bg-[#0c101d] border-amber-500/20 text-slate-300'
+              : 'bg-slate-50 border-slate-200 text-slate-700'
+          }`}
+        >
           <label className="flex items-center gap-2 cursor-pointer select-none">
             <input
               type="checkbox"
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
-              className="rounded text-emerald-600 focus:ring-emerald-500 w-3.5 h-3.5"
+              className="rounded-lg text-amber-500 focus:ring-amber-400 w-3.5 h-3.5"
             />
-            <span className="text-[11px] text-slate-600">Don't show this popup automatically on page load</span>
+            <span className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+              Don't show this popup automatically on page load
+            </span>
           </label>
 
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] text-slate-400">
-              Press <kbd className="font-mono bg-white px-1.5 py-0.5 rounded border text-[10px]">Esc</kbd> to close
+          <div className="flex items-center gap-3">
+            <span className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+              Press{' '}
+              <kbd
+                className={`font-mono px-1.5 py-0.5 rounded-lg border text-xs ${
+                  isDark
+                    ? 'bg-slate-900 border-amber-500/30 text-amber-300'
+                    : 'bg-white border-slate-300 text-slate-700'
+                }`}
+              >
+                Esc
+              </kbd>{' '}
+              to close
             </span>
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-1.5 font-bold text-xs bg-slate-200 hover:bg-slate-300 text-slate-800 rounded-xl transition"
+              className={`px-4 py-1.5 font-bold text-xs rounded-xl transition cursor-pointer border ${
+                isDark
+                  ? 'bg-slate-900 hover:bg-slate-800 text-amber-300 border-amber-500/30'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-2xs'
+              }`}
             >
               Close
             </button>

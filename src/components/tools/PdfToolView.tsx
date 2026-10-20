@@ -13,6 +13,9 @@ import {
   imagesToPdf,
   signPdf,
   redactPdf,
+  protectPdf,
+  unlockPdf,
+  RedactionZone,
   createPdfDoc,
   comparePdfs,
   repairPdf,
@@ -49,6 +52,7 @@ import {
   PenTool,
   Lock,
   Unlock,
+  Eye,
   EyeOff,
   GitCompare,
   Plus,
@@ -73,6 +77,7 @@ import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
+import { useTheme } from '../../context/ThemeContext';
 
 interface PdfToolViewProps {
   tool: ToolItem;
@@ -85,6 +90,8 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   onNavigate,
   onSelectTool,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   // Delegate specialized tools to their dedicated interactive components
   if (tool.id === 'split-pdf' || tool.id === 'extract-pdf-pages') {
     return <AdvancedSplitPdfTool onNavigate={onNavigate} />;
@@ -113,6 +120,17 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   const [pageNumberPos, setPageNumberPos] = useState<'bottom-center' | 'bottom-right' | 'top-right'>('bottom-right');
   const [imageOrientation, setImageOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [passwordInput, setPasswordInput] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [allowPrintingOption, setAllowPrintingOption] = useState<boolean>(true);
+  const [allowCopyingOption, setAllowCopyingOption] = useState<boolean>(true);
+
+  // Redaction parameters
+  const [redactionPreset, setRedactionPreset] = useState<'custom' | 'header' | 'footer' | 'address-block'>('header');
+  const [redactionPage, setRedactionPage] = useState<number>(1);
+  const [redactionX, setRedactionX] = useState<number>(50);
+  const [redactionY, setRedactionY] = useState<number>(750);
+  const [redactionWidth, setRedactionWidth] = useState<number>(240);
+  const [redactionHeight, setRedactionHeight] = useState<number>(36);
   const [customTitle, setCustomTitle] = useState<string>('Document Summary');
   const [customBody, setCustomBody] = useState<string>(
     '# Executive Summary\n\nThis document was generated securely inside the browser via ToolCrest.\n\nAll tools execute locally on your device without transmitting sensitive files to remote servers.'
@@ -453,25 +471,50 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           break;
         }
 
-        case 'protect-pdf':
-          resultBytes = await splitPdf(primaryFile, '');
-          setSuccessInfo(
-            `PDF encrypted with password protection (${passwordInput ? 'Set custom passphrase' : 'Default secured'}).`
-          );
+        case 'protect-pdf': {
+          if (!passwordInput || passwordInput.trim().length < 3) {
+            throw new Error('Please enter a password with at least 3 characters to protect this PDF.');
+          }
+          resultBytes = await protectPdf(primaryFile, passwordInput.trim(), {
+            allowPrinting: allowPrintingOption,
+            allowCopying: allowCopyingOption,
+          });
+          setSuccessInfo('PDF encrypted with AES-256 standard password protection. Passphrase is now required to open.');
           break;
+        }
 
-        case 'unlock-pdf':
-          resultBytes = await splitPdf(primaryFile, '');
-          setSuccessInfo('Password restrictions unlocked. Clean copy generated.');
+        case 'unlock-pdf': {
+          resultBytes = await unlockPdf(primaryFile, passwordInput);
+          setSuccessInfo('Password verified successfully! Restrictions removed and clean unlocked PDF generated.');
           break;
+        }
 
-        case 'redact-pdf':
-          resultBytes = await redactPdf(primaryFile, [
-            { page: 1, x: 48, y: 720, width: 220, height: 24 },
-            { page: 1, x: 48, y: 680, width: 160, height: 20 },
-          ]);
-          setSuccessInfo('Sensitive information permanently blacked out from PDF bytes.');
+        case 'redact-pdf': {
+          let zones: RedactionZone[] = [];
+          if (redactionPreset === 'header') {
+            zones = [{ page: redactionPage, x: 40, y: 770, width: 515, height: 45, label: 'Header Margin' }];
+          } else if (redactionPreset === 'footer') {
+            zones = [{ page: redactionPage, x: 40, y: 30, width: 515, height: 45, label: 'Footer Margin' }];
+          } else if (redactionPreset === 'address-block') {
+            zones = [
+              { page: redactionPage, x: 48, y: 680, width: 240, height: 60, label: 'Address & Contact Block' },
+            ];
+          } else {
+            zones = [
+              {
+                page: redactionPage,
+                x: Number(redactionX) || 40,
+                y: Number(redactionY) || 700,
+                width: Number(redactionWidth) || 200,
+                height: Number(redactionHeight) || 30,
+                label: 'Custom Redaction Box',
+              },
+            ];
+          }
+          resultBytes = await redactPdf(primaryFile, zones);
+          setSuccessInfo(`Permanently blacked out ${zones.length} zone(s) on Page ${redactionPage} from the PDF streams.`);
           break;
+        }
 
         case 'pdf-forms': {
           // Fill form text into structured document
@@ -533,8 +576,14 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
       {/* 1. UNIFIED TOOL HEADER */}
       <ToolHeader tool={tool} onNavigate={onNavigate} />
 
-      {/* Main Interactive Tool Workbench (Dark Obsidian & Regal Gold) */}
-      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6 text-slate-100">
+      {/* Main Interactive Tool Workbench */}
+      <div
+        className={`rounded-3xl p-6 sm:p-8 space-y-6 transition-colors duration-200 border ${
+          isDark
+            ? 'bg-[#0c101d] border-amber-500/25 shadow-2xl text-slate-100'
+            : 'bg-white border-slate-200/90 shadow-sm text-slate-900'
+        }`}
+      >
         {/* Upload Zone */}
         {tool.id !== 'create-pdf' &&
           tool.id !== 'webpage-to-pdf' &&
@@ -542,7 +591,11 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           tool.id !== 'excel-to-pdf' && (
             <div
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-amber-500/35 hover:border-amber-400 rounded-3xl p-8 sm:p-12 text-center cursor-pointer bg-[#070a14]/90 hover:bg-amber-500/5 transition-all group"
+              className={`border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all group ${
+                isDark
+                  ? 'border-amber-500/35 hover:border-amber-400 bg-[#070a14]/90 hover:bg-amber-500/5'
+                  : 'border-amber-300 hover:border-amber-500 bg-amber-50/40 hover:bg-amber-50/80'
+              }`}
             >
               <input
                 ref={fileInputRef}
@@ -556,17 +609,23 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                 onChange={handleFileChange}
                 className="hidden"
               />
-              <div className="w-16 h-16 rounded-2xl bg-[#0e1424] border border-amber-500/30 group-hover:border-amber-400 shadow-md flex items-center justify-center mx-auto text-amber-400 mb-4 transition">
+              <div
+                className={`w-16 h-16 rounded-2xl border shadow-md flex items-center justify-center mx-auto mb-4 transition ${
+                  isDark
+                    ? 'bg-[#0e1424] border-amber-500/30 group-hover:border-amber-400 text-amber-400'
+                    : 'bg-amber-100 border-amber-300 group-hover:border-amber-400 text-amber-800'
+                }`}
+              >
                 <UploadCloud className="w-8 h-8 group-hover:scale-105 transition" />
               </div>
-              <h3 className="text-base font-bold text-white">
+              <h3 className={`text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
                 {tool.id === 'images-to-pdf'
                   ? 'Choose or drag pictures (JPG, PNG, WEBP)'
                   : tool.id === 'merge-pdf' || tool.id === 'compare-pdfs'
                   ? 'Choose multiple PDF files to combine or compare'
                   : 'Select or drop your document here'}
               </h3>
-              <p className="text-xs text-slate-400 mt-1.5">
+              <p className={`text-xs mt-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
                 100% Client-Side Processing • Zero Cloud Uploads • Max file size: 100MB
               </p>
             </div>
@@ -1025,6 +1084,182 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             </div>
           )}
 
+          {/* Password Protection Controls */}
+          {tool.id === 'protect-pdf' && (
+            <div className="space-y-4 p-4 rounded-2xl bg-[#0B1020] border border-[#F3B542]/30 text-[#CBD5E1]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#F3B542]">
+                <Lock className="w-4 h-4" />
+                <span>AES-256 Client-Side Encryption Passphrase</span>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Set Document Password (Minimum 3 characters)
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="Enter secure password to protect PDF..."
+                    className="w-full text-xs bg-[#111827] border border-[#F3B542]/30 text-white rounded-xl pl-3.5 pr-10 py-2.5 focus:border-[#F3B542] focus:ring-1 focus:ring-[#F3B542] focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-4 pt-1 text-xs">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={allowPrintingOption}
+                    onChange={(e) => setAllowPrintingOption(e.target.checked)}
+                    className="rounded text-amber-500 focus:ring-amber-400 w-3.5 h-3.5"
+                  />
+                  <span>Allow High-Resolution Printing</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={allowCopyingOption}
+                    onChange={(e) => setAllowCopyingOption(e.target.checked)}
+                    className="rounded text-amber-500 focus:ring-amber-400 w-3.5 h-3.5"
+                  />
+                  <span>Allow Text & Graphic Copying</span>
+                </label>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Your passphrase encrypts the document binary in your browser using AES-256 standard (V=5, R=6). Neither the file nor the password is ever sent to any server.
+              </p>
+            </div>
+          )}
+
+          {/* Unlock PDF Controls */}
+          {tool.id === 'unlock-pdf' && (
+            <div className="space-y-4 p-4 rounded-2xl bg-[#0B1020] border border-[#F3B542]/30 text-[#CBD5E1]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#F3B542]">
+                <Unlock className="w-4 h-4" />
+                <span>Remove Password Restrictions</span>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-[#CBD5E1] mb-1.5">
+                  Enter Password to Unlock Document
+                </label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    value={passwordInput}
+                    onChange={(e) => setPasswordInput(e.target.value)}
+                    placeholder="Enter the password for this encrypted PDF..."
+                    className="w-full text-xs bg-[#111827] border border-[#F3B542]/30 text-white rounded-xl pl-3.5 pr-10 py-2.5 focus:border-[#F3B542] focus:ring-1 focus:ring-[#F3B542] focus:outline-hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition"
+                    title={showPassword ? 'Hide password' : 'Show password'}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+              </div>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                If the document is encrypted with standard AES or RC4 encryption, providing the correct password decrypts the file and strips all restrictions, generating a clean, unprotected PDF.
+              </p>
+            </div>
+          )}
+
+          {/* Redact PDF Controls */}
+          {tool.id === 'redact-pdf' && (
+            <div className="space-y-4 p-4 rounded-2xl bg-[#0B1020] border border-[#F3B542]/30 text-[#CBD5E1]">
+              <div className="flex items-center gap-2 text-xs font-bold text-[#F3B542]">
+                <EyeOff className="w-4 h-4" />
+                <span>Permanent Blackout & Redaction Settings</span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label className="block text-xs font-semibold text-[#CBD5E1] mb-1">
+                    Redaction Area Preset
+                  </label>
+                  <select
+                    value={redactionPreset}
+                    onChange={(e: any) => setRedactionPreset(e.target.value)}
+                    className="w-full text-xs bg-[#111827] border border-[#F3B542]/30 text-white rounded-xl px-3 py-2"
+                  >
+                    <option value="header">Top Header (Names, Dates & Case Numbers)</option>
+                    <option value="footer">Bottom Footer (Metadata & Footnotes)</option>
+                    <option value="address-block">Address & Contact Information Block</option>
+                    <option value="custom">Custom Area (Specify Box Coordinates)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#CBD5E1] mb-1">
+                    Target Page Number
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={redactionPage}
+                    onChange={(e) => setRedactionPage(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                    className="w-full text-xs bg-[#111827] border border-[#F3B542]/30 text-white rounded-xl px-3 py-2 font-mono"
+                  />
+                </div>
+              </div>
+
+              {redactionPreset === 'custom' && (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs pt-1">
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">X Coord (pt)</label>
+                    <input
+                      type="number"
+                      value={redactionX}
+                      onChange={(e) => setRedactionX(parseInt(e.target.value, 10) || 0)}
+                      className="w-full text-xs bg-[#111827] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Y Coord (pt)</label>
+                    <input
+                      type="number"
+                      value={redactionY}
+                      onChange={(e) => setRedactionY(parseInt(e.target.value, 10) || 0)}
+                      className="w-full text-xs bg-[#111827] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Width (pt)</label>
+                    <input
+                      type="number"
+                      value={redactionWidth}
+                      onChange={(e) => setRedactionWidth(parseInt(e.target.value, 10) || 0)}
+                      className="w-full text-xs bg-[#111827] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] text-slate-400 mb-1">Height (pt)</label>
+                    <input
+                      type="number"
+                      value={redactionHeight}
+                      onChange={(e) => setRedactionHeight(parseInt(e.target.value, 10) || 0)}
+                      className="w-full text-xs bg-[#111827] border border-slate-700 text-white rounded-lg px-2.5 py-1.5 font-mono"
+                    />
+                  </div>
+                </div>
+              )}
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Redaction permanently overwrites the page content stream with solid blackout boxes. The underlying text and images in the designated zone are irrecoverable.
+              </p>
+            </div>
+          )}
+
           {/* Document Content Input for Word / Text / Markdown */}
           {(tool.id === 'create-pdf' ||
             tool.id === 'webpage-to-pdf' ||
@@ -1111,13 +1346,13 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         )}
 
         {successInfo && (
-          <div className="p-3.5 bg-amber-950/40 border border-amber-500/40 rounded-2xl text-xs text-amber-200 flex items-center justify-between gap-2">
+          <div className="p-3.5 bg-emerald-950/40 border border-emerald-500/40 rounded-2xl text-xs text-emerald-200 flex items-center justify-between gap-2 animate-fadeIn">
             <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-amber-400 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
               <span>{successInfo}</span>
             </div>
             {processedBytes && (
-              <span className="font-mono text-[11px] text-amber-300 font-bold">
+              <span className="font-mono text-[11px] text-emerald-300 font-bold">
                 Ready for download
               </span>
             )}

@@ -28,7 +28,11 @@ import { ToolSelectorModal } from './components/ToolSelectorModal';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
 import { Sparkles } from 'lucide-react';
 
+import { useTheme } from './context/ThemeContext';
+
 export default function App() {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
   const [plannerState, setPlannerState] = useState<StoredPlannerState>(() => loadPlannerState());
   const [articles, setArticles] = useState<Article[]>(INITIAL_ARTICLES);
   const [isToolSelectorOpen, setIsToolSelectorOpen] = useState<boolean>(false);
@@ -342,13 +346,19 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0B0F19] text-slate-100 font-sans selection:bg-amber-500/30 selection:text-amber-200">
+    <div
+      className={`min-h-screen flex flex-col font-sans transition-colors duration-200 selection:bg-amber-500/30 ${
+        isDark ? 'bg-[#0B0F19] text-slate-100 selection:text-amber-200' : 'bg-[#F8FAFC] text-slate-900 selection:text-amber-700'
+      }`}
+    >
       <Header
         currentPath={currentPath}
         onNavigate={navigate}
         currency={plannerState.currency}
         onCurrencyChange={handleCurrencyChange}
         onOpenToolSelector={() => setIsToolSelectorOpen(true)}
+        theme={theme}
+        onToggleTheme={toggleTheme}
       />
 
       <div className="flex-1">{renderCurrentView()}</div>
@@ -364,6 +374,7 @@ export default function App() {
       <CookieConsentBanner onNavigate={navigate} />
 
       <Footer
+        theme={theme}
         onNavigate={navigate}
         onSelectPlannerType={(type: PlannerType) => {
           setPlannerState((prev) => ({ ...prev, activeType: type }));

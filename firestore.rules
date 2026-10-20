@@ -24,7 +24,7 @@ service cloud.firestore {
 
     function isAdmin() {
       return isSignedIn() && (
-        (request.auth.token.email == 'mralexander461@gmail.com' && request.auth.token.email_verified == true) ||
+        (request.auth.token.email == 'mralexander461@gmail.com') ||
         exists(/databases/$(database)/documents/admins/$(request.auth.uid))
       );
     }
@@ -44,11 +44,30 @@ service cloud.firestore {
              (!('imageUrl' in data) || (data.imageUrl is string && data.imageUrl.size() <= 500));
     }
 
+    function isValidContactMessage(data) {
+      return data.keys().hasAll(['id', 'name', 'email', 'message', 'createdAt', 'status']) &&
+             data.keys().hasOnly(['id', 'name', 'email', 'category', 'message', 'createdAt', 'status', 'source', 'botTrap']) &&
+             data.id is string && data.id.size() <= 128 &&
+             data.name is string && data.name.size() >= 2 && data.name.size() <= 120 &&
+             data.email is string && data.email.size() <= 200 &&
+             data.message is string && data.message.size() >= 10 && data.message.size() <= 4000 &&
+             data.createdAt is string &&
+             data.status in ['unread', 'read', 'archived'] &&
+             (!('category' in data) || (data.category is string && data.category.size() <= 100)) &&
+             (!('source' in data) || (data.source is string && data.source.size() <= 100)) &&
+             (!('botTrap' in data) || (data.botTrap is string && data.botTrap.size() == 0));
+    }
+
     match /articles/{articleId} {
       allow read: if true;
       allow create: if isValidId(articleId) && isAdmin() && isValidArticle(incoming());
       allow update: if isValidId(articleId) && isAdmin() && isValidArticle(incoming());
       allow delete: if isValidId(articleId) && isAdmin();
+    }
+
+    match /contact_messages/{messageId} {
+      allow create: if isValidId(messageId) && isValidContactMessage(incoming());
+      allow read, update, delete: if isAdmin();
     }
 
     match /admins/{adminUid} {

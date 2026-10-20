@@ -3,6 +3,7 @@ import { Article } from '../types/article';
 import { AuthorBox } from '../components/AuthorBox';
 import { AppImage } from '../components/AppImage';
 import { resolveArticleImage } from '../utils/assets';
+import { useTheme } from '../context/ThemeContext';
 import {
   Clock,
   Calendar,
@@ -32,6 +33,8 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
   onSelectArticle,
   onNavigate,
 }) => {
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const [copied, setCopied] = useState(false);
 
   // Extract headings for Table of Contents
@@ -92,26 +95,26 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
         elements.push(
           <div key={`table-${elements.length}`} className="my-6 overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse border border-amber-500/25 rounded-xl overflow-hidden">
-              <thead className="bg-[#070a14] text-amber-300 font-bold border-b border-amber-500/20">
+            <table className={`w-full text-left text-xs sm:text-sm border-collapse border rounded-xl overflow-hidden ${isDark ? 'border-amber-500/25' : 'border-slate-200'}`}>
+              <thead className={`font-bold border-b ${isDark ? 'bg-[#070a14] text-amber-300 border-amber-500/20' : 'bg-amber-50 text-amber-900 border-slate-200'}`}>
                 <tr>
                   {headers.map((h, i) => (
-                    <th key={i} className="p-3 border-b border-amber-500/20">
+                    <th key={i} className={`p-3 border-b ${isDark ? 'border-amber-500/20' : 'border-slate-200'}`}>
                       {h}
                     </th>
                   ))}
                 </tr>
               </thead>
-              <tbody className="divide-y divide-amber-500/10">
+              <tbody className={`divide-y ${isDark ? 'divide-amber-500/10' : 'divide-slate-200'}`}>
                 {rows.map((rowStr, rIdx) => {
                   const cells = rowStr
                     .split('|')
                     .map((c) => c.trim())
                     .filter((c) => c.length > 0);
                   return (
-                    <tr key={rIdx} className="hover:bg-amber-500/5 transition">
+                    <tr key={rIdx} className={`transition ${isDark ? 'hover:bg-amber-500/5' : 'hover:bg-amber-50/50'}`}>
                       {cells.map((cell, cIdx) => (
-                        <td key={cIdx} className="p-3 text-slate-300">
+                        <td key={cIdx} className={`p-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
                           {cell}
                         </td>
                       ))}
@@ -145,9 +148,11 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           <h3
             key={idx}
             id={hid}
-            className="text-lg sm:text-xl font-bold text-white mt-8 mb-3 scroll-mt-24 flex items-center gap-2"
+            className={`text-lg sm:text-xl font-bold mt-8 mb-3 scroll-mt-24 flex items-center gap-2 ${
+              isDark ? 'text-white' : 'text-slate-900'
+            }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
             <span>{text}</span>
           </h3>
         );
@@ -158,7 +163,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       if (line.startsWith('**') && line.endsWith('**')) {
         const boldText = line.replace(/\*\*/g, '');
         elements.push(
-          <p key={idx} className="font-bold text-amber-200 mt-4 mb-2">
+          <p key={idx} className={`font-bold mt-4 mb-2 ${isDark ? 'text-amber-200' : 'text-amber-900'}`}>
             {boldText}
           </p>
         );
@@ -169,7 +174,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       if (line.trim().startsWith('- ')) {
         const bulletText = line.trim().replace('- ', '');
         elements.push(
-          <li key={idx} className="text-slate-300 leading-relaxed text-sm sm:text-base ml-4 list-disc mb-1.5 marker:text-amber-400">
+          <li key={idx} className={`leading-relaxed text-sm sm:text-base ml-4 list-disc mb-1.5 marker:text-amber-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
             {bulletText}
           </li>
         );
@@ -179,7 +184,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       // Numbered lists
       if (/^\d+\.\s/.test(line.trim())) {
         elements.push(
-          <li key={idx} className="text-slate-300 leading-relaxed text-sm sm:text-base ml-4 list-decimal mb-1.5 marker:text-amber-400 font-medium">
+          <li key={idx} className={`leading-relaxed text-sm sm:text-base ml-4 list-decimal mb-1.5 marker:text-amber-500 font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
             {line.trim().replace(/^\d+\.\s/, '')}
           </li>
         );
@@ -193,7 +198,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
       // Standard paragraphs
       elements.push(
-        <p key={idx} className="text-slate-300 leading-relaxed text-sm sm:text-base my-3">
+        <p key={idx} className={`leading-relaxed text-sm sm:text-base my-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
           {line}
         </p>
       );
@@ -207,31 +212,31 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
   const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 3);
 
   return (
-    <div className="min-h-screen bg-[#0B0F19] text-slate-100 py-10">
+    <div className={`min-h-screen py-10 transition-colors duration-200 ${isDark ? 'bg-[#0B0F19] text-slate-100' : 'bg-[#F8FAFC] text-slate-900'}`}>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400">
+        <nav className={`flex items-center gap-1.5 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
           <button
             type="button"
             onClick={() => onNavigate('/')}
-            className="hover:text-amber-300 transition cursor-pointer"
+            className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-700'}`}
           >
             Home
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-amber-500/40" />
+          <ChevronRight className={`w-3.5 h-3.5 ${isDark ? 'text-amber-500/40' : 'text-slate-400'}`} />
           <button
             type="button"
             onClick={() => onNavigate('/blog')}
-            className="hover:text-amber-300 transition cursor-pointer"
+            className={`transition cursor-pointer ${isDark ? 'hover:text-amber-300' : 'hover:text-amber-700'}`}
           >
             Blog
           </button>
-          <ChevronRight className="w-3.5 h-3.5 text-amber-500/40" />
-          <span className="text-amber-300 font-bold line-clamp-1">{article.title}</span>
+          <ChevronRight className={`w-3.5 h-3.5 ${isDark ? 'text-amber-500/40' : 'text-slate-400'}`} />
+          <span className={`font-bold line-clamp-1 ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>{article.title}</span>
         </nav>
 
         {/* Article Header Card */}
-        <header className="bg-[#0c101d] border border-amber-500/25 rounded-2xl overflow-hidden shadow-2xl">
+        <header className={`border rounded-2xl overflow-hidden shadow-2xl ${isDark ? 'bg-[#0c101d] border-amber-500/25' : 'bg-white border-slate-200/90 shadow-sm'}`}>
           {/* Hero Banner Image */}
           <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-slate-900">
             <AppImage
@@ -242,77 +247,97 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           </div>
 
           <div className="p-6 sm:p-8 space-y-4">
-            <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400">
+            <div className={`flex flex-wrap items-center gap-3 text-xs ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
               <span className="font-black text-xs text-slate-950 bg-gradient-to-r from-amber-400 to-yellow-500 px-3 py-1 rounded-md uppercase tracking-wider shadow-sm">
                 {article.category}
               </span>
-              <span className="flex items-center gap-1 text-amber-300/80">
-                <Clock className="w-3.5 h-3.5 text-amber-400" />
+              <span className={`flex items-center gap-1 ${isDark ? 'text-amber-300/80' : 'text-amber-800'}`}>
+                <Clock className="w-3.5 h-3.5 text-amber-500" />
                 {article.readingTime}
               </span>
               <span>•</span>
               <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5 text-amber-400" />
+                <Calendar className="w-3.5 h-3.5 text-amber-500" />
                 {article.publishedAt}
               </span>
               <span>•</span>
-              <span className="font-semibold text-slate-300">By {article.author}</span>
+              <span className={`font-semibold ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>By {article.author}</span>
             </div>
 
-            <h1 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+            <h1 className={`text-2xl sm:text-4xl font-black tracking-tight leading-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
               {article.title}
             </h1>
 
-            <p className="text-slate-300 text-sm sm:text-base leading-relaxed">
+            <p className={`text-sm sm:text-base leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
               {article.subtitle}
             </p>
 
             {/* Social Share Buttons Bar */}
-            <div className="pt-4 border-t border-amber-500/20 flex flex-wrap items-center justify-between gap-3">
-              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
-                <Share2 className="w-4 h-4 text-amber-400" /> Share this guide:
+            <div className={`pt-4 border-t flex flex-wrap items-center justify-between gap-3 ${isDark ? 'border-amber-500/20' : 'border-slate-100'}`}>
+              <span className={`text-xs font-bold flex items-center gap-1.5 ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
+                <Share2 className="w-4 h-4 text-amber-500" /> Share this guide:
               </span>
               <div className="flex items-center gap-1.5">
                 <button
                   type="button"
                   onClick={handleCopyLink}
-                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition text-xs font-semibold flex items-center gap-1 cursor-pointer"
+                  className={`p-2 rounded-lg border transition text-xs font-semibold flex items-center gap-1 cursor-pointer ${
+                    isDark
+                      ? 'bg-[#070a14] border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300'
+                      : 'bg-slate-50 border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-900 shadow-2xs'
+                  }`}
                   title="Copy article link"
                 >
-                  {copied ? <Check className="w-3.5 h-3.5 text-amber-400" /> : <Copy className="w-3.5 h-3.5 text-amber-400" />}
+                  {copied ? <Check className="w-3.5 h-3.5 text-amber-500" /> : <Copy className="w-3.5 h-3.5 text-amber-500" />}
                   <span className="hidden sm:inline">{copied ? 'Copied' : 'Copy'}</span>
                 </button>
                 <button
                   type="button"
                   onClick={handleShareTwitter}
-                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
+                  className={`p-2 rounded-lg border transition cursor-pointer ${
+                    isDark
+                      ? 'bg-[#070a14] border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300'
+                      : 'bg-slate-50 border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-900 shadow-2xs'
+                  }`}
                   title="Share on X / Twitter"
                 >
-                  <Twitter className="w-3.5 h-3.5 text-amber-400" />
+                  <Twitter className="w-3.5 h-3.5 text-amber-500" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShareLinkedIn}
-                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
+                  className={`p-2 rounded-lg border transition cursor-pointer ${
+                    isDark
+                      ? 'bg-[#070a14] border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300'
+                      : 'bg-slate-50 border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-900 shadow-2xs'
+                  }`}
                   title="Share on LinkedIn"
                 >
-                  <Linkedin className="w-3.5 h-3.5 text-amber-400" />
+                  <Linkedin className="w-3.5 h-3.5 text-amber-500" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShareFacebook}
-                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
+                  className={`p-2 rounded-lg border transition cursor-pointer ${
+                    isDark
+                      ? 'bg-[#070a14] border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300'
+                      : 'bg-slate-50 border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-900 shadow-2xs'
+                  }`}
                   title="Share on Facebook"
                 >
-                  <Facebook className="w-3.5 h-3.5 text-amber-400" />
+                  <Facebook className="w-3.5 h-3.5 text-amber-500" />
                 </button>
                 <button
                   type="button"
                   onClick={handleShareEmail}
-                  className="p-2 rounded-lg bg-[#070a14] border border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300 transition cursor-pointer"
+                  className={`p-2 rounded-lg border transition cursor-pointer ${
+                    isDark
+                      ? 'bg-[#070a14] border-amber-500/25 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300'
+                      : 'bg-slate-50 border-slate-200 hover:bg-amber-50 hover:border-amber-300 text-slate-700 hover:text-amber-900 shadow-2xs'
+                  }`}
                   title="Share via Email"
                 >
-                  <Mail className="w-3.5 h-3.5 text-amber-400" />
+                  <Mail className="w-3.5 h-3.5 text-amber-500" />
                 </button>
               </div>
             </div>
@@ -321,9 +346,9 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
         {/* Table of Contents */}
         {headings.length > 0 && (
-          <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-4 sm:p-5 shadow-xl">
-            <h3 className="font-bold text-xs uppercase tracking-wider text-amber-300 mb-2 flex items-center gap-1.5">
-              <List className="w-4 h-4 text-amber-400" />
+          <div className={`border rounded-2xl p-4 sm:p-5 shadow-xl ${isDark ? 'bg-[#0c101d] border-amber-500/25' : 'bg-white border-slate-200/90 shadow-sm'}`}>
+            <h3 className={`font-bold text-xs uppercase tracking-wider mb-2 flex items-center gap-1.5 ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
+              <List className="w-4 h-4 text-amber-500" />
               Table of Contents
             </h3>
             <ul className="space-y-1.5 text-xs">
@@ -331,9 +356,9 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                 <li key={h.id}>
                   <a
                     href={`#${h.id}`}
-                    className="text-slate-300 hover:text-amber-300 transition flex items-center gap-1.5"
+                    className={`transition flex items-center gap-1.5 ${isDark ? 'text-slate-300 hover:text-amber-300' : 'text-slate-600 hover:text-amber-800'}`}
                   >
-                    <span className="text-amber-400">•</span>
+                    <span className="text-amber-500">•</span>
                     {h.text}
                   </a>
                 </li>
@@ -343,17 +368,23 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
         )}
 
         {/* Main Article Content */}
-        <main className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-6 sm:p-8 shadow-2xl">
+        <main className={`border rounded-2xl p-6 sm:p-8 shadow-2xl ${isDark ? 'bg-[#0c101d] border-amber-500/25' : 'bg-white border-slate-200/90 shadow-sm'}`}>
           {renderFormattedContent(article.content)}
 
           {/* Call to action at end linking back to tools */}
-          <div className="mt-10 p-5 bg-gradient-to-r from-[#101728] via-[#0d1322] to-[#070a14] border border-amber-500/35 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+          <div
+            className={`mt-10 p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl border ${
+              isDark
+                ? 'bg-gradient-to-r from-[#101728] via-[#0d1322] to-[#070a14] border-amber-500/35 text-white'
+                : 'bg-gradient-to-r from-amber-50 via-yellow-50 to-amber-100/70 border-amber-300 text-slate-900 shadow-sm'
+            }`}
+          >
             <div>
-              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-300 mb-1">
-                <Sparkles className="w-4 h-4 text-amber-400" />
+              <div className={`flex items-center gap-1.5 text-xs font-bold mb-1 ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>
+                <Sparkles className="w-4 h-4 text-amber-500" />
                 Ready to put this into practice?
               </div>
-              <p className="text-xs text-slate-300">
+              <p className={`text-xs ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
                 Explore our full suite of free, interactive productivity and document tools. 100% private, client-side.
               </p>
             </div>
@@ -371,8 +402,8 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
         <AuthorBox />
 
         {/* Related Articles */}
-        <div className="bg-[#0c101d] border border-amber-500/25 rounded-2xl p-6 shadow-2xl space-y-4">
-          <h3 className="font-bold text-base text-white flex items-center gap-2">
+        <div className={`border rounded-2xl p-6 shadow-2xl space-y-4 ${isDark ? 'bg-[#0c101d] border-amber-500/25' : 'bg-white border-slate-200/90 shadow-sm'}`}>
+          <h3 className={`font-bold text-base flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
             <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]"></span>
             <span>Related Articles</span>
           </h3>
@@ -384,7 +415,11 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                   onSelectArticle(rel.slug);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="rounded-xl border border-amber-500/20 hover:border-amber-400/50 bg-[#070a14] hover:bg-[#0c101d] transition duration-300 cursor-pointer flex flex-col justify-between group overflow-hidden"
+                className={`rounded-xl border transition duration-300 cursor-pointer flex flex-col justify-between group overflow-hidden ${
+                  isDark
+                    ? 'border-amber-500/20 hover:border-amber-400/50 bg-[#070a14] hover:bg-[#0c101d]'
+                    : 'border-slate-200 hover:border-amber-400/80 bg-slate-50/70 hover:bg-amber-50/30 shadow-xs'
+                }`}
               >
                 <div className="w-full h-28 overflow-hidden bg-slate-900">
                   <AppImage
@@ -394,14 +429,14 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                   />
                 </div>
                 <div className="p-3.5">
-                  <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider block mb-1">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
                     {rel.category}
                   </span>
-                  <h4 className="text-xs font-bold text-slate-200 group-hover:text-amber-300 transition line-clamp-2 mb-1">
+                  <h4 className={`text-xs font-bold transition line-clamp-2 mb-1 ${isDark ? 'text-slate-200 group-hover:text-amber-300' : 'text-slate-900 group-hover:text-amber-800'}`}>
                     {rel.title}
                   </h4>
-                  <span className="text-[11px] text-slate-400 mt-2 block flex items-center gap-1">
-                    <Clock className="w-3 h-3 text-amber-400" /> {rel.readingTime}
+                  <span className={`text-[11px] mt-2 block flex items-center gap-1 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                    <Clock className="w-3.5 h-3.5 text-amber-500" /> {rel.readingTime}
                   </span>
                 </div>
               </div>

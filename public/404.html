@@ -1,146 +1,26 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ToolCrest — All Your Essential Online Tools in One Place</title>
-    <meta name="description" content="Free, fast, and private online tools: Complete PDF Suite, QR Code Generator, Unit Converter, Time Zone Converter, Productivity Planners, and Knowledge Center. 100% in-browser processing." />
-    <link rel="canonical" href="https://toolcrest.site/" />
-    <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="ToolCrest — All Your Essential Online Tools in One Place" />
-    <meta property="og:description" content="Free, fast, and private online tools: Complete PDF Suite, QR Code Generator, Unit Converter, Time Zone Converter, Productivity Planners, and Knowledge Center. 100% in-browser processing." />
-    <meta property="og:site_name" content="ToolCrest" />
-    <meta property="og:type" content="website" />
-    <meta name="theme-color" content="#0f172a" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="alternate icon" href="/favicon.ico" />
-    <link rel="apple-touch-icon" href="/favicon.svg" />
-    <!-- 1. Google Consent Mode v2 Default (Must precede CookieYes and Google tags) -->
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-
-      // Establish Google Consent Mode v2 baseline defaults
-      gtag('consent', 'default', {
-        'analytics_storage': 'denied',
-        'ad_storage': 'denied',
-        'ad_user_data': 'denied',
-        'ad_personalization': 'denied',
-        'functionality_storage': 'granted',
-        'personalization_storage': 'denied',
-        'security_storage': 'granted',
-        'wait_for_update': 500
-      });
-
-      gtag('set', 'ads_data_redaction', true);
-      gtag('set', 'url_passthrough', true);
-
-      // Pre-check if visitor previously granted consent (CookieYes cookie or local preference)
-      try {
-        var ckyMatch = document.cookie.match(/(?:^|;\s*)cookieyes-consent=([^;]+)/);
-        var ckyVal = ckyMatch ? decodeURIComponent(ckyMatch[1]) : '';
-        var localConsent = '';
-        try { localConsent = localStorage.getItem('toolcrest_analytics_consent') || ''; } catch (e) {}
-
-        var isAnalyticsGranted = ckyVal.indexOf('analytics:yes') !== -1 || localConsent === 'granted' || localConsent === 'true';
-        var isAdsGranted = ckyVal.indexOf('advertisement:yes') !== -1 || localConsent === 'granted';
-
-        if (isAnalyticsGranted) {
-          gtag('consent', 'update', {
-            'analytics_storage': 'granted',
-            'ad_storage': isAdsGranted ? 'granted' : 'denied',
-            'ad_user_data': isAdsGranted ? 'granted' : 'denied',
-            'ad_personalization': isAdsGranted ? 'granted' : 'denied'
-          });
-          window.__toolcrest_consent_already_granted = true;
-        }
-      } catch (e) {}
+    <meta charset="utf-8" />
+    <title>ToolCrest — Redirecting...</title>
+    <meta name="robots" content="noindex, follow" />
+    <script type="text/javascript">
+      // Single Page Apps for GitHub Pages
+      // MIT License
+      // https://github.com/rafgraph/spa-github-pages
+      // This script takes the 404 URL and redirects the browser to the index.html page with the path in query string
+      var pathSegmentsToKeep = 0;
+      var l = window.location;
+      l.replace(
+        l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
+        l.pathname.split('/').slice(0, 1 + pathSegmentsToKeep).join('/') + '/?/' +
+        l.pathname.slice(1).split('/').slice(pathSegmentsToKeep).join('/').replace(/&/g, '~and~') +
+        (l.search ? '&' + l.search.slice(1).replace(/&/g, '~and~') : '') +
+        l.hash
+      );
     </script>
-
-    <!-- 2. CookieYes CMP Script Placeholder (Place your CookieYes script tag here if using CookieYes CMP) -->
-    <!-- Example: <script id="cookieyes" type="text/javascript" src="https://cdn-cookieyes.com/client_data/YOUR_COOKIEYES_KEY/script.js"></script> -->
-
-    <!-- 3. CookieYes Consent Listener & Consent Mode v2 Synchronization -->
-    <script>
-      function onCookieYesConsent(detail) {
-        try {
-          var accepted = [];
-          if (detail) {
-            if (Array.isArray(detail.accepted)) {
-              accepted = detail.accepted;
-            } else if (Array.isArray(detail.categories)) {
-              accepted = detail.categories;
-            } else if (typeof detail.accepted === 'string') {
-              accepted = detail.accepted.split(',').map(function(s){ return s.trim(); });
-            }
-          }
-          var ckyMatch = document.cookie.match(/(?:^|;\s*)cookieyes-consent=([^;]+)/);
-          var ckyVal = ckyMatch ? decodeURIComponent(ckyMatch[1]) : '';
-
-          var analyticsGranted = accepted.indexOf('analytics') !== -1 || ckyVal.indexOf('analytics:yes') !== -1;
-          var adsGranted = accepted.indexOf('advertisement') !== -1 || ckyVal.indexOf('advertisement:yes') !== -1;
-          var functionalGranted = accepted.indexOf('functional') !== -1 || ckyVal.indexOf('functional:yes') !== -1;
-
-          if (analyticsGranted) {
-            gtag('consent', 'update', {
-              'analytics_storage': 'granted',
-              'ad_storage': adsGranted ? 'granted' : 'denied',
-              'ad_user_data': adsGranted ? 'granted' : 'denied',
-              'ad_personalization': adsGranted ? 'granted' : 'denied',
-              'personalization_storage': functionalGranted ? 'granted' : 'denied',
-              'functionality_storage': 'granted'
-            });
-
-            // If a consented page_view hasn't fired yet for the initial view, fire it now
-            if (!window.__toolcrest_consented_pv_fired) {
-              window.__toolcrest_consented_pv_fired = true;
-              var isGaDebug = window.location.search.indexOf('gtm_debug=') !== -1 ||
-                              window.location.search.indexOf('debug_mode=true') !== -1 ||
-                              window.location.search.indexOf('ga_debug') !== -1;
-              var pvParams = {
-                page_path: window.location.pathname || '/',
-                page_title: document.title || 'ToolCrest',
-                page_location: window.location.href,
-                send_to: 'G-EM9BQ097R4'
-              };
-              if (isGaDebug) pvParams.debug_mode = true;
-              gtag('event', 'page_view', pvParams);
-            }
-          }
-        } catch (err) {}
-      }
-
-      document.addEventListener('cookieyes_consent_update', function (e) {
-        onCookieYesConsent(e ? e.detail : null);
-      });
-      window.addEventListener('cookieyes_consent_update', function (e) {
-        onCookieYesConsent(e ? e.detail : null);
-      });
-    </script>
-
-    <!-- 4. Google tag (gtag.js) - Google Analytics 4 -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EM9BQ097R4"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      // Auto-detect DebugView for Google Tag Assistant and GA4 Debugging
-      var isGaDebug = window.location.search.indexOf('gtm_debug=') !== -1 ||
-                      window.location.search.indexOf('debug_mode=true') !== -1 ||
-                      window.location.search.indexOf('ga_debug') !== -1;
-
-      gtag('config', 'G-EM9BQ097R4', {
-        send_page_view: false, // Prevents duplicate initial hit; manual page_view is fired authoritatively
-        debug_mode: isGaDebug
-      });
-    </script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   </head>
-  <body class="bg-slate-50 text-slate-900 font-sans antialiased selection:bg-emerald-100 selection:text-emerald-900">
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+  <body>
+    <p>Redirecting to <a href="https://toolcrest.site/">ToolCrest</a>...</p>
   </body>
 </html>
