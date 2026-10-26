@@ -26,7 +26,9 @@ import { AdminPage } from './pages/AdminPage';
 import { SitemapPage } from './pages/SitemapPage';
 import { ToolSelectorModal } from './components/ToolSelectorModal';
 import { CookieConsentBanner } from './components/CookieConsentBanner';
-import { Sparkles } from 'lucide-react';
+import { GeminiChatbot } from './components/chat/GeminiChatbot';
+import { HexCrestGame } from './components/game/HexCrestGame';
+import { Sparkles, Gamepad2 } from 'lucide-react';
 
 import { useTheme } from './context/ThemeContext';
 
@@ -36,6 +38,7 @@ export default function App() {
   const [plannerState, setPlannerState] = useState<StoredPlannerState>(() => loadPlannerState());
   const [articles, setArticles] = useState<Article[]>(INITIAL_ARTICLES);
   const [isToolSelectorOpen, setIsToolSelectorOpen] = useState<boolean>(false);
+  const [isChatOpen, setIsChatOpen] = useState<boolean>(false);
   const [currentPath, setCurrentPath] = useState<string>(() => {
     const path = window.location.pathname;
     return path || '/';
@@ -220,6 +223,12 @@ export default function App() {
         canonicalPath: '/admin',
         noindex: true,
       });
+    } else if (currentPath === '/arcade' || currentPath === '/game') {
+      updatePageSeo({
+        title: 'HexCrest 3D Cyber Odyssey — Free Online Three.js Arcade | ToolCrest',
+        description: 'Pilot the Crest-V golden interceptor in 3D through the cyber canyon. High-speed Three.js flight runner with live Firestore leaderboard.',
+        canonicalPath: '/arcade',
+      });
     }
   }, [currentPath, articles]);
 
@@ -345,6 +354,11 @@ export default function App() {
     );
   };
 
+  // 8. Full-Viewport Game Shell (Title Screen -> Playing -> GameOver, zero website navbar/footer clutter)
+  if (currentPath === '/arcade' || currentPath === '/game') {
+    return <HexCrestGame onExit={() => navigate('/')} />;
+  }
+
   return (
     <div
       className={`min-h-screen flex flex-col font-sans transition-colors duration-200 selection:bg-amber-500/30 ${
@@ -359,9 +373,25 @@ export default function App() {
         onOpenToolSelector={() => setIsToolSelectorOpen(true)}
         theme={theme}
         onToggleTheme={toggleTheme}
+        onOpenChat={() => setIsChatOpen(true)}
+        onOpenGame={() => navigate('/arcade')}
       />
 
       <div className="flex-1">{renderCurrentView()}</div>
+
+      {/* Floating Gemini AI Assistant Trigger Button */}
+      <button
+        type="button"
+        onClick={() => setIsChatOpen(true)}
+        className="fixed bottom-6 right-6 z-40 p-3.5 rounded-full bg-gradient-to-r from-[#F3B542] via-amber-400 to-[#d97706] text-slate-950 shadow-2xl hover:scale-105 active:scale-95 transition-transform cursor-pointer flex items-center gap-2 font-black border border-amber-300/60 drop-shadow-[0_4px_16px_rgba(243,181,66,0.4)]"
+        title="Ask ToolCrest AI with Search Grounding"
+      >
+        <Sparkles className="w-5 h-5 fill-current animate-pulse" />
+        <span className="hidden sm:inline text-xs font-black tracking-wide pr-1">Ask AI</span>
+      </button>
+
+      {/* Gemini AI Multi-Turn Chatbot Drawer */}
+      <GeminiChatbot isOpen={isChatOpen} onClose={() => setIsChatOpen(false)} />
 
       {/* Tool Selector Modal Popup */}
       <ToolSelectorModal

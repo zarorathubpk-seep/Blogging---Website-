@@ -19,9 +19,16 @@ import {
   Archive,
   Sun,
   Moon,
+  Gamepad2,
+  Sparkles,
+  LogOut,
+  User as UserIcon,
 } from 'lucide-react';
 import { Currency } from '../types/planner';
 import { Theme } from '../context/ThemeContext';
+import { auth } from '../firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { signInWithGoogle, logOutUser } from '../services/userService';
 
 interface HeaderProps {
   currentPath: string;
@@ -31,6 +38,8 @@ interface HeaderProps {
   onOpenToolSelector?: () => void;
   theme?: Theme;
   onToggleTheme?: () => void;
+  onOpenChat?: () => void;
+  onOpenGame?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -41,12 +50,25 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenToolSelector,
   theme = 'dark',
   onToggleTheme,
+  onOpenChat,
+  onOpenGame,
 }) => {
   const isDark = theme === 'dark';
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [megaMenuOpen, setMegaMenuOpen] = useState(false);
   const [convertDropdownOpen, setConvertDropdownOpen] = useState(false);
   const convertDropdownRef = useRef<HTMLDivElement | null>(null);
+
+  const [user, setUser] = useState<User | null>(null);
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const userMenuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsub();
+  }, []);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -56,6 +78,12 @@ export const Header: React.FC<HeaderProps> = ({
         !convertDropdownRef.current.contains(e.target as Node)
       ) {
         setConvertDropdownOpen(false);
+      }
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setUserMenuOpen(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
@@ -311,6 +339,39 @@ export const Header: React.FC<HeaderProps> = ({
                 <BookOpen className="w-3.5 h-3.5 text-amber-500" />
                 <span>Blog &amp; Guides</span>
               </button>
+
+              {/* 5. 3D Arcade Game */}
+              <button
+                type="button"
+                onClick={() => handleNavClick('/arcade')}
+                className={`px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold ${
+                  currentPath === '/arcade'
+                    ? isDark
+                      ? 'text-amber-300 bg-slate-900 border border-amber-500/40 shadow-xs'
+                      : 'text-amber-900 bg-amber-100/70 border border-amber-300 shadow-xs'
+                    : isDark
+                    ? 'text-slate-200 hover:text-amber-300 hover:bg-slate-900/80'
+                    : 'text-slate-700 hover:text-amber-800 hover:bg-amber-50/80'
+                }`}
+              >
+                <Gamepad2 className="w-3.5 h-3.5 text-amber-500" />
+                <span>3D Arcade</span>
+                <span className="text-[9px] px-1.5 py-0.2 rounded-md bg-[#F3B542]/20 text-[#F3B542] border border-[#F3B542]/30 font-bold">
+                  3D
+                </span>
+              </button>
+
+              {/* 6. AI Assistant */}
+              {onOpenChat && (
+                <button
+                  type="button"
+                  onClick={onOpenChat}
+                  className="px-3 py-2 rounded-xl transition flex items-center gap-1.5 cursor-pointer font-bold text-[#F3B542] bg-[#F3B542]/10 hover:bg-[#F3B542]/20 border border-[#F3B542]/30 shadow-xs"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-[#F3B542] animate-pulse" />
+                  <span>AI Assistant</span>
+                </button>
+              )}
             </div>
 
             {/* Desktop Right Utilities & Action Center */}
@@ -360,6 +421,97 @@ export const Header: React.FC<HeaderProps> = ({
                   ) : (
                     <Moon className="w-4 h-4 text-amber-700" />
                   )}
+                </button>
+              )}
+
+              {/* Google Sign-In & User Sync (Firebase Auth) */}
+              {user ? (
+                <div className="relative" ref={userMenuRef}>
+                  <button
+                    type="button"
+                    onClick={() => setUserMenuOpen((p) => !p)}
+                    className={`flex items-center gap-2 p-1 pl-2 pr-2.5 rounded-xl border transition cursor-pointer ${
+                      isDark
+                        ? 'border-amber-500/30 hover:border-amber-400 bg-slate-900/80 text-slate-200'
+                        : 'border-slate-300 hover:border-amber-500 bg-white text-slate-800'
+                    }`}
+                  >
+                    {user.photoURL ? (
+                      <img src={user.photoURL} alt={user.displayName || 'User'} className="w-6 h-6 rounded-full border border-amber-400/50" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-amber-500 text-slate-950 font-bold flex items-center justify-center text-xs">
+                        {(user.displayName || user.email || 'U')[0].toUpperCase()}
+                      </div>
+                    )}
+                    <span className="text-xs font-semibold max-w-[90px] truncate">
+                      {user.displayName?.split(' ')[0] || 'Account'}
+                    </span>
+                    <ChevronDown className="w-3 h-3 text-slate-400" />
+                  </button>
+
+                  {userMenuOpen && (
+                    <div
+                      className={`absolute right-0 top-full mt-2 w-56 rounded-2xl border shadow-2xl p-3 z-50 text-xs space-y-2 animate-fadeIn ${
+                        isDark ? 'bg-slate-950 border-amber-500/30 text-slate-200' : 'bg-white border-slate-200 text-slate-800'
+                      }`}
+                    >
+                      <div className={`border-b pb-2 ${isDark ? 'border-slate-800' : 'border-slate-100'}`}>
+                        <p className={`font-bold truncate ${isDark ? 'text-white' : 'text-slate-900'}`}>{user.displayName || 'Google Pilot'}</p>
+                        <p className="text-[11px] text-slate-400 truncate">{user.email}</p>
+                      </div>
+                      <div className="py-1 space-y-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            onNavigate('/arcade');
+                          }}
+                          className={`w-full py-1.5 px-2 rounded-lg text-left transition flex items-center gap-2 font-medium ${
+                            isDark ? 'hover:bg-slate-900 text-slate-300' : 'hover:bg-slate-50 text-slate-700'
+                          }`}
+                        >
+                          <Gamepad2 className="w-3.5 h-3.5 text-amber-500" />
+                          <span>3D Arcade Leaderboard</span>
+                        </button>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setUserMenuOpen(false);
+                          await logOutUser();
+                        }}
+                        className="w-full py-2 px-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 font-semibold text-left transition flex items-center gap-2 cursor-pointer"
+                      >
+                        <LogOut className="w-3.5 h-3.5" />
+                        <span>Sign Out</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await signInWithGoogle();
+                    } catch (e) {
+                      console.warn('Google sign-in error:', e);
+                    }
+                  }}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition border cursor-pointer shadow-xs ${
+                    isDark
+                      ? 'border-amber-500/30 bg-slate-900/90 text-slate-200 hover:text-white hover:border-amber-400'
+                      : 'border-slate-300 bg-white text-slate-700 hover:text-slate-900 hover:border-amber-400'
+                  }`}
+                  title="Sign In with Google to sync bookmarks and high scores"
+                >
+                  <svg className="w-3.5 h-3.5 shrink-0" viewBox="0 0 24 24">
+                    <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"/>
+                    <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.27 21.39 7.33 24 12 24z"/>
+                    <path fill="#FBBC05" d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z"/>
+                    <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.27 2.61 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"/>
+                  </svg>
+                  <span className="hidden xl:inline">Google Sign In</span>
                 </button>
               )}
 
