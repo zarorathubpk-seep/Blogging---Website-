@@ -129,7 +129,7 @@ export const Header: React.FC<HeaderProps> = ({
       <header
         className={`sticky top-0 z-40 backdrop-blur-md border-b print:hidden transition-colors duration-200 ${
           isDark
-            ? 'bg-slate-950/95 border-amber-500/20 text-slate-100'
+            ? 'bg-[#101114]/95 border-slate-800 text-[#F5F5F5]'
             : 'bg-white/95 border-slate-200/90 text-slate-800 shadow-xs'
         }`}
       >
@@ -137,7 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
         <div
           className={`py-1.5 px-4 sm:px-6 lg:px-8 text-xs flex items-center justify-between border-b transition-colors duration-200 ${
             isDark
-              ? 'bg-[#050812] text-slate-300 border-amber-500/15'
+              ? 'bg-[#141519] text-[#B5B8BE] border-slate-800'
               : 'bg-gradient-to-r from-amber-50/90 via-yellow-50/70 to-amber-50/90 text-slate-700 border-amber-200/60'
           }`}
         >

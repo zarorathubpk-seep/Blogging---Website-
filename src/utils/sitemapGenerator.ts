@@ -65,6 +65,26 @@ export function getSitemapEntries(customArticles?: Article[]): SitemapEntry[] {
     });
   });
 
+  // Direct short URLs for top high-demand search landing pages
+  const directShortSlugs = [
+    'merge-pdf',
+    'split-pdf',
+    'image-to-pdf',
+    'pdf-to-image',
+    'compress-pdf',
+    'compress-image',
+    'qr-generator',
+    'unit-converter',
+  ];
+  directShortSlugs.forEach((slug) => {
+    entries.push({
+      loc: `${CANONICAL_DOMAIN}/${slug}`,
+      lastmod: today,
+      changefreq: 'weekly',
+      priority: '0.9',
+    });
+  });
+
   // 3. All Published Blog Articles (actual published articles, excluding drafts)
   const articlesList = customArticles && customArticles.length > 0 ? customArticles : INITIAL_ARTICLES;
   articlesList

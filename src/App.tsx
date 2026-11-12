@@ -147,14 +147,28 @@ export default function App() {
           'Build a free weekly, budget, work, study, or project planner in seconds. Customize it, print it, or save it as a PDF.',
         canonicalPath: '/planner',
       });
-    } else if (currentPath.startsWith('/tools/')) {
-      const slug = currentPath.replace('/tools/', '');
-      const tool = TOOLS_DATA.find((t) => t.slug === slug);
+    } else if (
+      currentPath.startsWith('/tools/') ||
+      TOOLS_DATA.some(
+        (t) =>
+          '/' + t.slug === currentPath ||
+          '/' + t.id === currentPath ||
+          (currentPath === '/image-to-pdf' && t.id === 'images-to-pdf') ||
+          (currentPath === '/pdf-to-image' && t.id === 'pdf-to-images')
+      )
+    ) {
+      const slug = currentPath.startsWith('/tools/')
+        ? currentPath.replace('/tools/', '')
+        : currentPath.replace(/^\//, '');
+      const tool =
+        TOOLS_DATA.find((t) => t.slug === slug || t.id === slug) ||
+        (slug === 'image-to-pdf' ? TOOLS_DATA.find((t) => t.id === 'images-to-pdf') : undefined) ||
+        (slug === 'pdf-to-image' ? TOOLS_DATA.find((t) => t.id === 'pdf-to-images') : undefined);
       if (tool) {
         updatePageSeo({
           title: `${tool.name} — Free Online Tool | ToolCrest`,
           description: tool.shortDesc,
-          canonicalPath: `/tools/${slug}`,
+          canonicalPath: currentPath,
         });
       }
     } else if (currentPath === '/blog') {
@@ -242,9 +256,21 @@ export default function App() {
 
   // Route matching
   const renderCurrentView = () => {
-    // 1. Tool Page
-    if (currentPath.startsWith('/tools/')) {
-      const slug = currentPath.replace('/tools/', '');
+    // 1. Tool Page (Supports both /tools/:slug and direct URLs like /image-to-pdf, /merge-pdf, etc.)
+    const directSlug = currentPath.replace(/^\//, '');
+    const isDirectTool =
+      TOOLS_DATA.some(
+        (t) =>
+          t.slug === directSlug ||
+          t.id === directSlug ||
+          (directSlug === 'image-to-pdf' && t.id === 'images-to-pdf') ||
+          (directSlug === 'pdf-to-image' && t.id === 'pdf-to-images')
+      );
+
+    if (currentPath.startsWith('/tools/') || isDirectTool) {
+      const slug = currentPath.startsWith('/tools/')
+        ? currentPath.replace('/tools/', '')
+        : directSlug;
       return (
         <ToolPage
           toolSlug={slug}

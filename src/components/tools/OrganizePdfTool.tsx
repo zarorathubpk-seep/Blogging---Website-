@@ -20,6 +20,8 @@ import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
 import { TOOLS_DATA } from '../../data/toolsData';
+import { PdfThumbnailEngine, getPdfDocumentSummary } from '../../services/pdfThumbnailRenderer';
+import { PdfPageThumbnailCard } from '../pdf/PdfPageThumbnailCard';
 
 interface OrganizePdfToolProps {
   onNavigate: (path: string) => void;
@@ -30,6 +32,9 @@ interface PageItem {
   originalIndex: number;
   rotation: number;
   label: string;
+  thumbnailUrl?: string;
+  width?: number;
+  height?: number;
 }
 
 export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) => {
@@ -41,6 +46,16 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processedBytes, setProcessedBytes] = useState<Uint8Array | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const engineRef = useRef<PdfThumbnailEngine | null>(null);
+
+  React.useEffect(() => {
+    return () => {
+      if (engineRef.current) {
+        engineRef.current.destroy();
+        engineRef.current = null;
+      }
+    };
+  }, []);
 
   const handleFile = async (selectedFile: File) => {
     try {
@@ -52,16 +67,40 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
       const doc = await PDFDocument.load(buffer, { ignoreEncryption: true });
       const count = doc.getPageCount();
 
-      const initialPages: PageItem[] = Array.from({ length: count }, (_, idx) => ({
+      if (engineRef.current) {
+        engineRef.current.destroy();
+      }
+      const engine = new PdfThumbnailEngine();
+      await engine.loadDocument(buffer);
+      engineRef.current = engine;
+
+      const summary = await getPdfDocumentSummary(buffer);
+
+      const initialPages: PageItem[] = summary.pages.map((p, idx) => ({
         id: `page-${idx}-${Date.now()}`,
         originalIndex: idx,
         rotation: 0,
         label: `Page ${idx + 1}`,
+        width: p.width,
+        height: p.height,
       }));
 
       setPdfDoc(doc);
       setPages(initialPages);
       setFile(selectedFile);
+
+      // Render thumbnails asynchronously
+      for (const p of summary.pages) {
+        engine.renderPageThumbnail(p.pageNumber, p, 0.45).then((thumb) => {
+          setPages((prev) =>
+            prev.map((item) =>
+              item.originalIndex === p.pageNumber - 1
+                ? { ...item, thumbnailUrl: thumb }
+                : item
+            )
+          );
+        });
+      }
     } catch (err: any) {
       setErrorMessage(err?.message || 'Failed to read PDF document.');
     } finally {
@@ -299,88 +338,33 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
           {/* Pages Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {pages.map((item, idx) => (
-              <div
+              <PdfPageThumbnailCard
                 key={item.id}
-                className="relative group bg-[#070a14] border-2 border-amber-500/25 hover:border-amber-400/70 rounded-2xl p-3 flex flex-col items-center justify-between transition-all hover:shadow-lg hover:shadow-amber-500/10"
-              >
-                {/* Page Position Badge */}
-                <div className="w-full flex items-center justify-between mb-2">
-                  <span className="text-[11px] font-black text-amber-300 bg-[#0e1424] border border-amber-500/30 px-2 py-0.5 rounded-md shadow-xs">
-                    #{idx + 1}
-                  </span>
-                  {item.rotation !== 0 && (
-                    <span className="text-[10px] font-bold text-amber-300 bg-amber-500/20 border border-amber-500/40 px-1.5 py-0.5 rounded">
-                      {item.rotation}°
-                    </span>
-                  )}
-                </div>
-
-                {/* Simulated Visual Sheet Preview */}
-                <div
-                  className="w-24 h-32 bg-[#0d1220] border border-amber-500/20 rounded-lg shadow-inner flex flex-col justify-between p-2 my-2 transition-transform duration-200"
-                  style={{ transform: `rotate(${item.rotation}deg)` }}
-                >
-                  <div className="space-y-1">
-                    <div className="w-12 h-1.5 bg-amber-500/40 rounded-full" />
-                    <div className="w-16 h-1 bg-slate-700 rounded-full" />
-                    <div className="w-14 h-1 bg-slate-700 rounded-full" />
-                    <div className="w-10 h-1 bg-slate-700 rounded-full" />
-                  </div>
-                  <div className="text-[9px] font-bold text-amber-400/80 text-center">
-                    {item.label}
-                  </div>
-                </div>
-
-                {/* Per-Page Controls */}
-                <div className="w-full pt-2 border-t border-slate-800 flex items-center justify-between gap-1">
-                  <button
-                    type="button"
-                    disabled={idx === 0}
-                    onClick={() => movePage(idx, idx - 1)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-slate-800 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
-                    title="Move page left"
-                  >
-                    <MoveLeft className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => rotatePage(idx)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-amber-500/10 transition cursor-pointer"
-                    title="Rotate 90 degrees"
-                  >
-                    <RotateCw className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => duplicatePage(idx)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-amber-500/10 transition cursor-pointer"
-                    title="Duplicate page"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => deletePage(idx)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 transition cursor-pointer"
-                    title="Delete page"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </button>
-
-                  <button
-                    type="button"
-                    disabled={idx === pages.length - 1}
-                    onClick={() => movePage(idx, idx + 1)}
-                    className="p-1 rounded-lg text-slate-400 hover:text-amber-300 hover:bg-slate-800 disabled:opacity-20 disabled:pointer-events-none transition cursor-pointer"
-                    title="Move page right"
-                  >
-                    <MoveRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
+                pageNumber={idx + 1}
+                thumbnailUrl={item.thumbnailUrl}
+                status={item.thumbnailUrl ? 'ready' : 'rendering'}
+                isSelected={true}
+                rotation={item.rotation}
+                width={item.width}
+                height={item.height}
+                canMoveLeft={idx > 0}
+                canMoveRight={idx < pages.length - 1}
+                onMoveLeft={() => movePage(idx, idx - 1)}
+                onMoveRight={() => movePage(idx, idx + 1)}
+                onRotate={() => rotatePage(idx)}
+                onRemove={() => deletePage(idx)}
+                onRetry={() => {
+                  if (engineRef.current) {
+                    engineRef.current
+                      .renderPageThumbnail(item.originalIndex + 1, undefined, 0.45)
+                      .then((thumb) =>
+                        setPages((prev) =>
+                          prev.map((p) => (p.id === item.id ? { ...p, thumbnailUrl: thumb } : p))
+                        )
+                      );
+                  }
+                }}
+              />
             ))}
           </div>
 

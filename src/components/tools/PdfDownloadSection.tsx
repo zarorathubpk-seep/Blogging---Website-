@@ -16,7 +16,7 @@ import { downloadBytesAsFile } from '../../services/pdfEngine';
 interface PdfDownloadSectionProps {
   processedBytes: Uint8Array | null;
   defaultFileName: string;
-  targetExtension?: 'pdf' | 'zip' | 'png' | 'jpg';
+  targetExtension?: 'pdf' | 'zip' | 'png' | 'jpg' | 'docx' | 'pptx' | 'xlsx' | 'txt' | 'csv';
   statusMessage?: string | null;
   fileSizeBytes?: number;
   originalSizeBytes?: number;
@@ -57,6 +57,11 @@ export const PdfDownloadSection: React.FC<PdfDownloadSectionProps> = ({
       zip: 'application/zip',
       png: 'image/png',
       jpg: 'image/jpeg',
+      docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+      xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      txt: 'text/plain;charset=utf-8',
+      csv: 'text/csv;charset=utf-8',
     };
     const mimeType = mimeTypes[targetExtension] || 'application/pdf';
     downloadBytesAsFile(processedBytes, finalFullName, mimeType);

@@ -237,14 +237,14 @@ export const HomePage: React.FC<HomePageProps> = ({
   return (
     <div
       className={`space-y-12 pb-16 transition-colors duration-200 ${
-        isDark ? 'bg-[#090D16] text-slate-100' : 'bg-[#F8FAFC] text-slate-800'
+        isDark ? 'bg-[#101114] text-[#F5F5F5]' : 'bg-[#F8FAFC] text-slate-800'
       }`}
     >
       {/* 1. HERO DISCOVERY SECTION (Dynamic Light & Dark Palette) */}
       <section
         className={`pt-12 pb-16 sm:pt-20 sm:pb-20 border-b relative overflow-hidden transition-colors duration-200 ${
           isDark
-            ? 'border-amber-500/20 bg-gradient-to-b from-[#050811] via-[#090D16] to-[#0D1220]'
+            ? 'border-slate-800 bg-gradient-to-b from-[#101114] via-[#14161C] to-[#101114]'
             : 'border-amber-200/60 bg-gradient-to-b from-amber-50/80 via-slate-50 to-[#F8FAFC]'
         }`}
       >

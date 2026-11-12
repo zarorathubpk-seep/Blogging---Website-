@@ -1,8 +1,20 @@
 @import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --color-primary-dark: #101114;
+  --color-secondary-charcoal: #1B1D22;
+  --color-gold-premium: #D4AF37;
+  --color-gold-soft: #E6C768;
+  --color-text-main: #F5F5F5;
+  --color-text-muted: #B5B8BE;
+}
 
 @layer base {
   body {
     font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #101114;
+    color: #F5F5F5;
   }
 }
 

@@ -35,6 +35,16 @@ import {
   PdfSummaryResult,
 } from '../../services/pdfEngine';
 import {
+  convertPdfToWord,
+  convertPdfToPowerPoint,
+  convertPdfToExcel,
+  extractPdfImagesToZip,
+  overlayPdfDocuments,
+  editPdfDocument,
+  translatePdfDocument,
+  performPdfOcr,
+} from '../../services/documentConverter';
+import {
   UploadCloud,
   FileText,
   Trash2,
@@ -67,6 +77,7 @@ import {
   FileCode2,
   Copy,
   Check,
+  Layers,
 } from 'lucide-react';
 
 import { AdvancedSplitPdfTool } from './AdvancedSplitPdfTool';
@@ -108,6 +119,19 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   const [processedBytes, setProcessedBytes] = useState<Uint8Array | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successInfo, setSuccessInfo] = useState<string | null>(null);
+
+  // Dynamic output extension & conversion states
+  const [currentTargetExt, setCurrentTargetExt] = useState<
+    'pdf' | 'docx' | 'pptx' | 'xlsx' | 'zip' | 'txt' | 'csv'
+  >('pdf');
+  const [ocrResultText, setOcrResultText] = useState<string>('');
+  const [ocrProgress, setOcrProgress] = useState<string>('');
+  const [conversionStatus, setConversionStatus] = useState<string>('');
+  const [secondaryOverlayFile, setSecondaryOverlayFile] = useState<File | null>(null);
+  const [overlayOpacity, setOverlayOpacity] = useState<number>(0.65);
+  const [editHeaderText, setEditHeaderText] = useState<string>('ToolCrest Verified Document');
+  const [editFooterText, setEditFooterText] = useState<string>('CONFIDENTIAL • ALL RIGHTS RESERVED');
+  const [editStampText, setEditStampText] = useState<string>('APPROVED');
 
   // Standard tool options
   const [splitRange, setSplitRange] = useState<string>('1-2');
@@ -322,54 +346,117 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           setSuccessInfo('Margins trimmed and cropped successfully.');
           break;
 
-        case 'pdf-to-pdfa':
+        case 'pdf-to-pdfa': {
+          if (!primaryFile) throw new Error('Please select a PDF file to convert to PDF/A.');
           resultBytes = await pdfToPdfA(primaryFile);
-          setSuccessInfo('Converted into ISO-19005 archival compliant PDF/A-1b format.');
+          setCurrentTargetExt('pdf');
+          setSuccessInfo('Converted into ISO-19005-1b archival compliant PDF/A format.');
           break;
+        }
 
         case 'word-to-pdf': {
           const textToConvert = primaryFile
             ? await primaryFile.text()
             : customBody;
           resultBytes = await convertDocToPdf(customTitle, textToConvert);
+          setCurrentTargetExt('pdf');
           setSuccessInfo('Word document converted to styled PDF.');
           break;
         }
 
         case 'powerpoint-to-pdf':
           resultBytes = await convertSlideDeckToPdf(customTitle, slides);
+          setCurrentTargetExt('pdf');
           setSuccessInfo('Presentation converted to 16:9 widescreen PDF slide deck.');
           break;
 
         case 'excel-to-pdf':
           resultBytes = await convertTableToPdf(customTitle, tableHeaders, tableRows);
+          setCurrentTargetExt('pdf');
           setSuccessInfo('Spreadsheet data converted into paginated PDF table.');
           break;
 
         case 'pdf-to-word': {
-          const text = primaryFile ? await primaryFile.text().catch(() => customBody) : customBody;
-          downloadTextFile(
-            `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${customTitle}</title></head><body><h1>${customTitle}</h1><pre>${text || customBody}</pre></body></html>`,
-            `${(primaryFile?.name || 'document').replace(/\.pdf$/i, '')}.doc`,
-            'application/msword'
-          );
-          setSuccessInfo('Converted PDF into editable Word-compatible document.');
+          if (!primaryFile) throw new Error('Please select a PDF file to convert to Microsoft Word.');
+          const docxBlob = await convertPdfToWord(primaryFile);
+          const buf = await docxBlob.arrayBuffer();
+          resultBytes = new Uint8Array(buf);
+          setCurrentTargetExt('docx');
+          setSuccessInfo('Extracted text and converted into genuine Microsoft Word (.docx) document.');
           break;
         }
 
         case 'pdf-to-powerpoint': {
-          const pptSlides = [
-            { title: primaryFile?.name?.replace(/\.pdf$/i, '') || 'Slide Deck', bullets: ['Key takeaway 1', 'Key takeaway 2'] }
-          ];
-          resultBytes = await convertSlideDeckToPdf(customTitle, pptSlides);
-          setSuccessInfo('Converted PDF pages into presentation slides.');
+          if (!primaryFile) throw new Error('Please select a PDF file to convert to PowerPoint.');
+          setConversionStatus('Rendering presentation slides...');
+          const pptxBlob = await convertPdfToPowerPoint(primaryFile, (cur, tot) => {
+            setConversionStatus(`Rendering slide ${cur} of ${tot}...`);
+          });
+          const buf = await pptxBlob.arrayBuffer();
+          resultBytes = new Uint8Array(buf);
+          setCurrentTargetExt('pptx');
+          setSuccessInfo('PDF pages rendered into genuine Microsoft PowerPoint (.pptx) presentation.');
           break;
         }
 
         case 'pdf-to-excel': {
-          const csvContent = [tableHeaders.join(','), ...tableRows.map((r) => r.join(','))].join('\n');
-          downloadTextFile(csvContent, `${(primaryFile?.name || 'table').replace(/\.pdf$/i, '')}.csv`, 'text/csv');
-          setSuccessInfo('Extracted tabular records into CSV/Excel spreadsheet.');
+          if (!primaryFile) throw new Error('Please select a PDF file to extract table data.');
+          const xlsxBlob = await convertPdfToExcel(primaryFile);
+          const buf = await xlsxBlob.arrayBuffer();
+          resultBytes = new Uint8Array(buf);
+          setCurrentTargetExt('xlsx');
+          setSuccessInfo('Extracted tabular records into genuine Excel (.xlsx) workbook.');
+          break;
+        }
+
+        case 'pdf-to-images':
+        case 'extract-pdf-images': {
+          if (!primaryFile) throw new Error('Please select a PDF file to extract images.');
+          setConversionStatus('Extracting images from pages...');
+          const { zipBlob, count } = await extractPdfImagesToZip(primaryFile, (cur, tot) => {
+            setConversionStatus(`Extracting page ${cur} of ${tot}...`);
+          });
+          const buf = await zipBlob.arrayBuffer();
+          resultBytes = new Uint8Array(buf);
+          setCurrentTargetExt('zip');
+          setSuccessInfo(`Extracted ${count} high-resolution image pages and packaged into ZIP archive.`);
+          break;
+        }
+
+        case 'pdf-ocr': {
+          if (!primaryFile) throw new Error('Please select a PDF file to run OCR.');
+          setOcrProgress('Initializing OCR engine...');
+          const ocrRes = await performPdfOcr(primaryFile, (info) => {
+            setOcrProgress(info.status);
+          });
+          setOcrResultText(ocrRes.fullText);
+          resultBytes = ocrRes.textPdfBytes;
+          setCurrentTargetExt('pdf');
+          setSuccessInfo('Optical Character Recognition completed. Searchable text layer and document generated.');
+          break;
+        }
+
+        case 'overlay-pdf': {
+          if (!primaryFile) throw new Error('Please select a primary PDF document.');
+          const secondaryDoc = secondaryOverlayFile || (selectedFiles.length > 1 ? selectedFiles[1] : null);
+          if (!secondaryDoc) {
+            throw new Error('Please upload an overlay PDF template to superimpose onto your document.');
+          }
+          resultBytes = await overlayPdfDocuments(primaryFile, secondaryDoc, { opacity: overlayOpacity });
+          setCurrentTargetExt('pdf');
+          setSuccessInfo('Successfully overlaid background template onto PDF pages.');
+          break;
+        }
+
+        case 'edit-pdf': {
+          if (!primaryFile) throw new Error('Please select a PDF file to edit.');
+          resultBytes = await editPdfDocument(primaryFile, {
+            headerText: editHeaderText,
+            footerText: editFooterText,
+            stampText: editStampText,
+          });
+          setCurrentTargetExt('pdf');
+          setSuccessInfo('Headers, footers, and annotations stamped onto PDF.');
           break;
         }
 
@@ -377,16 +464,18 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           const sample = customBody.length > 50 ? customBody : 'Comprehensive executive documentation reviewing deliverables and timelines.';
           const summary = summarizePdfText(sample);
           setSummaryResult(summary);
+          setCurrentTargetExt('pdf');
           setSuccessInfo('Executive summary generated from document content.');
           break;
         }
 
         case 'translate-pdf': {
-          const text = customBody;
-          const tr = translatePdfText(text, targetLanguage);
+          if (!primaryFile) throw new Error('Please select a PDF file to translate.');
+          const tr = await translatePdfDocument(primaryFile, targetLanguage);
           setTranslatedContent(tr.translatedText);
-          resultBytes = await convertDocToPdf(`Translated - ${customTitle}`, tr.translatedText);
-          setSuccessInfo(`Document translated to ${tr.language}.`);
+          resultBytes = tr.pdfBytes;
+          setCurrentTargetExt('pdf');
+          setSuccessInfo(`Document text extracted and translated into ${targetLanguage}.`);
           break;
         }
 
@@ -885,6 +974,114 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             </div>
           )}
 
+          {/* PDF OCR RECOGNITION OPTIONS */}
+          {tool.id === 'pdf-ocr' && (
+            <div className="p-4 bg-[#0c111e] rounded-2xl border border-amber-500/25 space-y-3">
+              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                <Sparkles className="w-4 h-4 text-amber-400" />
+                <span>Optical Character Recognition (OCR) Engine</span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Extracts machine-readable text from scanned PDF documents and image layers in-browser using Tesseract OCR.
+              </p>
+              {ocrProgress && (
+                <div className="p-3 bg-slate-900 border border-amber-500/30 rounded-xl flex items-center gap-2.5 text-xs text-amber-300 font-mono">
+                  <Loader2 className="w-4 h-4 animate-spin text-amber-400 shrink-0" />
+                  <span>{ocrProgress}</span>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* PDF OVERLAY CONTROLS */}
+          {tool.id === 'overlay-pdf' && (
+            <div className="p-4 bg-[#0c111e] rounded-2xl border border-amber-500/25 space-y-3">
+              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                <Layers className="w-4 h-4 text-amber-400" />
+                <span>Overlay PDF Template / Background</span>
+              </div>
+              <p className="text-xs text-slate-300">
+                Superimpose a letterhead, watermark background, or secondary PDF template onto every page of your primary document.
+              </p>
+              <div>
+                <label className="block text-xs font-bold text-amber-200 mb-1">
+                  Secondary PDF File (Overlay Template)
+                </label>
+                <input
+                  type="file"
+                  accept="application/pdf"
+                  onChange={(e) => {
+                    if (e.target.files && e.target.files[0]) {
+                      setSecondaryOverlayFile(e.target.files[0]);
+                    }
+                  }}
+                  className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500/20 file:text-amber-300 hover:file:bg-amber-500/30 cursor-pointer"
+                />
+                {secondaryOverlayFile && (
+                  <p className="text-[11px] text-emerald-400 font-mono mt-1">
+                    Selected overlay: {secondaryOverlayFile.name} ({(secondaryOverlayFile.size / 1024).toFixed(1)} KB)
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-amber-200 mb-1">
+                  Overlay Opacity: {Math.round(overlayOpacity * 100)}%
+                </label>
+                <input
+                  type="range"
+                  min="0.1"
+                  max="1.0"
+                  step="0.05"
+                  value={overlayOpacity}
+                  onChange={(e) => setOverlayOpacity(parseFloat(e.target.value))}
+                  className="w-full accent-amber-400"
+                />
+              </div>
+            </div>
+          )}
+
+          {/* EDIT PDF ANNOTATION CONTROLS */}
+          {tool.id === 'edit-pdf' && (
+            <div className="p-4 bg-[#0c111e] rounded-2xl border border-amber-500/25 space-y-3">
+              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
+                <PenTool className="w-4 h-4 text-amber-400" />
+                <span>Document Header, Footer & Stamp Annotations</span>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-amber-200 mb-1">Running Header Text</label>
+                  <input
+                    type="text"
+                    value={editHeaderText}
+                    onChange={(e) => setEditHeaderText(e.target.value)}
+                    className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-medium focus:border-amber-400"
+                    placeholder="e.g. Project Proposal 2026"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-amber-200 mb-1">Running Footer Text</label>
+                  <input
+                    type="text"
+                    value={editFooterText}
+                    onChange={(e) => setEditFooterText(e.target.value)}
+                    className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-medium focus:border-amber-400"
+                    placeholder="e.g. Confidential • All Rights Reserved"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-amber-200 mb-1">Approval / Status Stamp</label>
+                <input
+                  type="text"
+                  value={editStampText}
+                  onChange={(e) => setEditStampText(e.target.value)}
+                  className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-bold text-amber-300 focus:border-amber-400"
+                  placeholder="e.g. APPROVED, CONFIDENTIAL, DRAFT"
+                />
+              </div>
+            </div>
+          )}
+
           {/* PDF FORMS FILLER */}
           {tool.id === 'pdf-forms' && (
             <div className="space-y-3">
@@ -1378,20 +1575,111 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           </div>
         )}
 
+        {/* Conversion Progress Status */}
+        {conversionStatus && (
+          <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-xl flex items-center gap-2.5 text-xs text-amber-300 font-mono">
+            <Loader2 className="w-4 h-4 animate-spin text-amber-400 shrink-0" />
+            <span>{conversionStatus}</span>
+          </div>
+        )}
+
+        {/* OCR Extracted Text Preview Card */}
+        {ocrResultText && (
+          <div className="p-4 bg-[#070a14] rounded-2xl border border-amber-500/30 space-y-3 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <FileText className="w-4 h-4 text-amber-400" />
+                <span>OCR Extracted Text ({ocrResultText.split(/\s+/).filter(Boolean).length} words)</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(ocrResultText)}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-amber-300 font-semibold flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedText ? 'Copied' : 'Copy Text'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadTextFile(
+                      ocrResultText,
+                      `${selectedFiles[0]?.name?.replace(/\.pdf$/i, '') || 'ocr'}_extracted.txt`,
+                      'text/plain;charset=utf-8'
+                    )
+                  }
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs text-amber-300 font-semibold flex items-center gap-1 border border-amber-500/40 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download .txt</span>
+                </button>
+              </div>
+            </div>
+            <textarea
+              readOnly
+              rows={6}
+              value={ocrResultText}
+              className="w-full text-xs bg-[#0c111e] border border-slate-800 text-slate-200 rounded-xl p-3 font-mono focus:outline-hidden"
+            />
+          </div>
+        )}
+
+        {/* Translated Text Preview Card */}
+        {translatedContent && (
+          <div className="p-4 bg-[#070a14] rounded-2xl border border-amber-500/30 space-y-3 animate-fadeIn">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-amber-300 flex items-center gap-1.5">
+                <Languages className="w-4 h-4 text-amber-400" />
+                <span>Translated Document Preview</span>
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => copyToClipboard(translatedContent)}
+                  className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs text-amber-300 font-semibold flex items-center gap-1 border border-slate-700 cursor-pointer"
+                >
+                  {copiedText ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copiedText ? 'Copied' : 'Copy'}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() =>
+                    downloadTextFile(
+                      translatedContent,
+                      `${selectedFiles[0]?.name?.replace(/\.pdf$/i, '') || 'document'}_translated.txt`,
+                      'text/plain;charset=utf-8'
+                    )
+                  }
+                  className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-xs text-amber-300 font-semibold flex items-center gap-1 border border-amber-500/40 cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download .txt</span>
+                </button>
+              </div>
+            </div>
+            <textarea
+              readOnly
+              rows={5}
+              value={translatedContent}
+              className="w-full text-xs bg-[#0c111e] border border-slate-800 text-slate-200 rounded-xl p-3 font-mono focus:outline-hidden"
+            />
+          </div>
+        )}
+
         {/* Download Section */}
         {processedBytes && (
           <div className="pt-2">
             <PdfDownloadSection
               processedBytes={processedBytes}
               defaultFileName={getSuggestedDefaultFileName(selectedFiles[0]?.name, tool.slug)}
-              targetExtension={
-                tool.id === 'pdf-to-images' || tool.id === 'extract-pdf-images' ? 'zip' : 'pdf'
-              }
+              targetExtension={currentTargetExt}
               statusMessage={successInfo}
               originalSizeBytes={selectedFiles[0]?.size}
               onReset={() => {
                 setProcessedBytes(null);
                 setSuccessInfo(null);
+                setConversionStatus('');
               }}
             />
           </div>

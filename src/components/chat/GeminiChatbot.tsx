@@ -12,10 +12,11 @@ import {
   Maximize2,
   Trash2,
   ExternalLink,
-  ChevronRight,
-  ShieldCheck,
+  AlertTriangle,
+  RotateCcw,
   Zap,
-  HelpCircle,
+  Clock,
+  CheckCircle,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -27,6 +28,12 @@ export interface ChatMessage {
   groundingChunks?: { title: string; uri: string }[];
   webSearchQueries?: string[];
   modelUsed?: string;
+  fallbackNotice?: string;
+  errorInfo?: {
+    type: 'BILLING_TIER_RESTRICTION' | 'PER_MINUTE_RATE_LIMIT' | 'DAILY_QUOTA_EXHAUSTED' | 'MODEL_TEMPORARILY_OVERLOADED' | 'RATE_LIMIT_EXCEEDED' | 'API_KEY_ERROR' | 'GENERAL_ERROR';
+    retryAfterSeconds?: number;
+    suggestedModel?: string;
+  };
 }
 
 interface GeminiChatbotProps {
@@ -48,18 +55,20 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
       id: 'welcome',
       role: 'assistant',
       content:
-        'Hello! I am **ToolCrest AI**, your document workflows and productivity assistant powered by Gemini. Ask me anything about PDF tools, conversions, planning methods, or toggle **Google Search** for real-time web research.',
+        'Hello! I am **ToolCrest AI**, your document workflows and productivity engineer. Ask me anything about PDF tools, conversions, budget planning, or toggle **Google Search** for real-time web research.',
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
     },
   ]);
 
   const [input, setInput] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.8-flash' | 'gemini-3.1-flash-lite' | 'gemini-4-argon'>('gemini-3.8-flash');
-  const [useSearch, setUseSearch] = useState<boolean>(true);
+  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-flash-lite' | 'gemini-3.8-flash' | 'gemini-4-argon'>('gemini-3.1-flash-lite');
+  const [useSearch, setUseSearch] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [countdown, setCountdown] = useState<number | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const inFlightRef = useRef<boolean>(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -77,9 +86,40 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
     }
   }, [initialPrompt, isOpen]);
 
-  const handleSend = async (textToSend?: string) => {
+  // Handle countdown timer for rate limit cooldown
+  useEffect(() => {
+    if (countdown === null || countdown <= 0) return;
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev === null || prev <= 1) {
+          clearInterval(timer);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [countdown]);
+
+  const handleSend = async (textToSend?: string, overrideModel?: 'gemini-3.1-flash-lite' | 'gemini-3.8-flash' | 'gemini-4-argon') => {
     const queryText = (textToSend || input).trim();
-    if (!queryText || isLoading) return;
+    if (!queryText || isLoading || inFlightRef.current) return;
+
+    const activeModel = overrideModel || selectedModel;
+
+    // Prevent submitting argon without warning
+    if (activeModel === 'gemini-4-argon') {
+      const confirmArgon = window.confirm(
+        'Notice: gemini-4-argon requires a Google Cloud paid billing account. Free tier requests will return a quota limit error. Do you want to continue or switch to Gemini Flash Lite?'
+      );
+      if (!confirmArgon) {
+        setSelectedModel('gemini-3.1-flash-lite');
+        return;
+      }
+    }
+
+    inFlightRef.current = true;
+    setIsLoading(true);
 
     const userMsg: ChatMessage = {
       id: `user_${Date.now()}`,
@@ -91,10 +131,20 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
     const newHistory = [...messages, userMsg];
     setMessages(newHistory);
     setInput('');
-    setIsLoading(true);
 
     try {
-      const response = await fetch('/api/chat', {
+      // Determine endpoint: on GitHub Pages (static), route to the dedicated backend; on local/dev, use relative /api/chat
+      const chatApiUrl =
+        (import.meta as any).env?.VITE_BACKEND_API_URL
+          ? `${(import.meta as any).env.VITE_BACKEND_API_URL.replace(/\/+$/, '')}/api/chat`
+          : typeof window !== 'undefined' &&
+            (window.location.hostname === 'localhost' ||
+              window.location.hostname === '127.0.0.1' ||
+              window.location.hostname.includes('run.app'))
+          ? '/api/chat'
+          : 'https://ais-dev-3o76hln6aw4zqs53eyitdj-380437212275.asia-southeast1.run.app/api/chat';
+
+      const response = await fetch(chatApiUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -102,17 +152,35 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
             role: m.role === 'assistant' ? 'model' : 'user',
             content: m.content,
           })),
-          model: selectedModel,
-          useSearch,
+          model: activeModel,
+          useSearch: useSearch && activeModel === 'gemini-3.8-flash',
         }),
       });
 
-      if (!response.ok) {
-        const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error || `Server responded with status ${response.status}`);
-      }
+      const data = await response.json().catch(() => ({}));
 
-      const data = await response.json();
+      if (!response.ok) {
+        const errorType = data.errorType || 'GENERAL_ERROR';
+        const retrySec = data.retryAfterSeconds;
+
+        if (retrySec && retrySec > 0 && retrySec <= 120) {
+          setCountdown(retrySec);
+        }
+
+        const errorMsg: ChatMessage = {
+          id: `err_${Date.now()}`,
+          role: 'assistant',
+          content: data.error || `Server responded with status ${response.status}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          errorInfo: {
+            type: errorType,
+            retryAfterSeconds: retrySec,
+            suggestedModel: data.suggestedModel,
+          },
+        };
+        setMessages((prev) => [...prev, errorMsg]);
+        return;
+      }
 
       const assistantMsg: ChatMessage = {
         id: `ai_${Date.now()}`,
@@ -121,7 +189,8 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         groundingChunks: data.groundingChunks || [],
         webSearchQueries: data.webSearchQueries || [],
-        modelUsed: data.model || selectedModel,
+        modelUsed: data.model || activeModel,
+        fallbackNotice: data.fallbackNotice,
       };
 
       setMessages((prev) => [...prev, assistantMsg]);
@@ -130,12 +199,17 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
       const errorMsg: ChatMessage = {
         id: `err_${Date.now()}`,
         role: 'assistant',
-        content: `⚠️ **Connection Issue**: ${err.message || 'Could not communicate with the Gemini service.'} Please try again or switch to standard Flash mode.`,
+        content: `Could not connect to the Gemini service (${err.message || 'Network error'}). Please try again or switch to Gemini Flash Lite.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        errorInfo: {
+          type: 'GENERAL_ERROR',
+          suggestedModel: 'gemini-3.1-flash-lite',
+        },
       };
       setMessages((prev) => [...prev, errorMsg]);
     } finally {
       setIsLoading(false);
+      inFlightRef.current = false;
     }
   };
 
@@ -148,6 +222,23 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
       },
     ]);
+    setCountdown(null);
+  };
+
+  const handleSwitchToLiteAndRetry = (lastUserPrompt?: string) => {
+    setSelectedModel('gemini-3.1-flash-lite');
+    setCountdown(null);
+    if (lastUserPrompt) {
+      handleSend(lastUserPrompt, 'gemini-3.1-flash-lite');
+    }
+  };
+
+  // Find the last user query in message history
+  const getLastUserMessage = (): string | undefined => {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      if (messages[i].role === 'user') return messages[i].content;
+    }
+    return undefined;
   };
 
   if (!isOpen) return null;
@@ -180,11 +271,11 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
                 ToolCrest AI
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F3B542]/20 text-[#F3B542] border border-[#F3B542]/30 font-semibold">
-                {selectedModel === 'gemini-4-argon' ? 'Argon 4' : selectedModel === 'gemini-3.1-flash-lite' ? 'Lite' : 'Flash 3.8'}
+                {selectedModel === 'gemini-4-argon' ? 'Argon 4' : selectedModel === 'gemini-3.8-flash' ? 'Flash 3.8' : 'Flash Lite'}
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              {useSearch ? 'Search Grounding Active' : 'Offline Knowledge Engine'}
+              {useSearch && selectedModel === 'gemini-3.8-flash' ? 'Search Grounding Active' : 'Cost-Optimized Assistant'}
             </p>
           </div>
         </div>
@@ -219,7 +310,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
 
       {/* Control Bar: Model Selector + Google Search Toggle */}
       <div
-        className={`px-4 py-2 border-b flex items-center justify-between text-xs shrink-0 ${
+        className={`px-4 py-2 border-b flex flex-wrap items-center justify-between gap-2 text-xs shrink-0 ${
           isDark ? 'bg-[#080d1a] border-slate-800/80 text-slate-300' : 'bg-slate-100/70 border-slate-200 text-slate-700'
         }`}
       >
@@ -234,24 +325,31 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
                 : 'bg-white border-slate-300 text-slate-800'
             }`}
           >
-            <option value="gemini-3.8-flash">gemini-3.8-flash (General + Search)</option>
-            <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Fast Tasks)</option>
-            <option value="gemini-4-argon">gemini-4-argon (Complex Tasks)</option>
+            <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Fast & Quota-Friendly)</option>
+            <option value="gemini-3.8-flash">gemini-3.8-flash (General + Search Grounding)</option>
+            <option value="gemini-4-argon">gemini-4-argon (Complex · Paid Tier Only)</option>
           </select>
         </div>
 
         <button
           type="button"
-          onClick={() => setUseSearch((prev) => !prev)}
+          onClick={() => {
+            if (selectedModel !== 'gemini-3.8-flash') {
+              setSelectedModel('gemini-3.8-flash');
+              setUseSearch(true);
+            } else {
+              setUseSearch((prev) => !prev);
+            }
+          }}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold text-[11px] transition cursor-pointer border ${
-            useSearch
+            useSearch && selectedModel === 'gemini-3.8-flash'
               ? 'bg-amber-500/20 text-[#F3B542] border-[#F3B542]/40'
               : 'bg-slate-800/50 text-slate-400 border-slate-700'
           }`}
-          title="Toggle Google Search live grounding"
+          title="Toggle Google Search live grounding (supported on Flash 3.8)"
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Google Search {useSearch ? 'ON' : 'OFF'}</span>
+          <span>Search {useSearch && selectedModel === 'gemini-3.8-flash' ? 'ON' : 'OFF'}</span>
         </button>
       </div>
 
@@ -274,12 +372,75 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
               className={`max-w-[85%] rounded-2xl p-3.5 text-xs sm:text-sm leading-relaxed ${
                 msg.role === 'user'
                   ? 'bg-gradient-to-r from-[#F3B542] to-amber-500 text-slate-950 font-medium shadow-md'
+                  : msg.errorInfo
+                  ? 'bg-amber-950/30 border border-amber-500/40 text-amber-100 shadow-md'
                   : isDark
                   ? 'bg-[#111827] border border-slate-800 text-slate-200 shadow-sm'
                   : 'bg-slate-100 border border-slate-200 text-slate-800'
               }`}
             >
-              <div className="whitespace-pre-wrap">{msg.content}</div>
+              {/* Fallback Notice Badge */}
+              {msg.fallbackNotice && (
+                <div className="mb-2 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-[#F3B542]/20 border border-[#F3B542]/40 text-[#F3B542] text-[10px] font-semibold">
+                  <Zap className="w-3 h-3" />
+                  <span>{msg.fallbackNotice}</span>
+                </div>
+              )}
+
+              {/* Error Guidance Card */}
+              {msg.errorInfo ? (
+                <div className="space-y-2.5">
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="w-4 h-4 text-[#F3B542] shrink-0 mt-0.5" />
+                    <div>
+                      <h4 className="font-bold text-xs text-[#F3B542]">
+                        {msg.errorInfo.type === 'BILLING_TIER_RESTRICTION'
+                          ? 'Google Cloud Paid Tier Required'
+                          : msg.errorInfo.type === 'PER_MINUTE_RATE_LIMIT'
+                          ? 'Temporary Rate Limit Reached'
+                          : msg.errorInfo.type === 'DAILY_QUOTA_EXHAUSTED'
+                          ? 'Daily Quota Limit Reached'
+                          : msg.errorInfo.type === 'MODEL_TEMPORARILY_OVERLOADED'
+                          ? 'Model Temporarily at Capacity'
+                          : 'Gemini Request Limit'}
+                      </h4>
+                      <p className="mt-1 text-xs text-slate-200">{msg.content}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions for resolving error */}
+                  <div className="pt-2 border-t border-amber-500/20 flex flex-wrap gap-2">
+                    {selectedModel !== 'gemini-3.1-flash-lite' && (
+                      <button
+                        type="button"
+                        onClick={() => handleSwitchToLiteAndRetry(getLastUserMessage())}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#F3B542] text-slate-950 font-bold text-xs hover:bg-[#dfa234] transition cursor-pointer shadow-sm"
+                      >
+                        <Zap className="w-3.5 h-3.5" />
+                        <span>Switch to Flash Lite & Retry</span>
+                      </button>
+                    )}
+
+                    {countdown !== null && countdown > 0 ? (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-300">
+                        <Clock className="w-3.5 h-3.5 text-[#F3B542] animate-pulse" />
+                        <span>Cooldown: {countdown}s</span>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleSend(getLastUserMessage())}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-200 hover:text-white hover:bg-slate-700 transition cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5" />
+                        <span>Retry</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <div className="whitespace-pre-wrap">{msg.content}</div>
+              )}
 
               {/* Citations / Grounding sources */}
               {msg.groundingChunks && msg.groundingChunks.length > 0 && (
@@ -307,7 +468,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
 
               <div
                 className={`text-[10px] mt-1.5 text-right opacity-70 ${
-                  msg.role === 'user' ? 'text-slate-900' : 'text-slate-400'
+                  msg.role === 'user' ? 'text-slate-900 font-semibold' : 'text-slate-400'
                 }`}
               >
                 {msg.timestamp}
@@ -329,7 +490,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
             </div>
             <div className="bg-[#111827] border border-slate-800 rounded-2xl p-3 flex items-center gap-2 text-xs text-slate-300">
               <Loader2 className="w-4 h-4 animate-spin text-[#F3B542]" />
-              <span>Thinking with {selectedModel}{useSearch ? ' & Grounding' : ''}...</span>
+              <span>Thinking with {selectedModel}{useSearch && selectedModel === 'gemini-3.8-flash' ? ' & Google Search' : ''}...</span>
             </div>
           </div>
         )}
@@ -344,7 +505,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
             'How do I password-protect a PDF in ToolCrest?',
             'Explain the 50/30/20 budget method',
             'What is ISO 19005-1b PDF/A?',
-            'Latest news in tech productivity',
+            'How does ToolCrest ensure PDF privacy?',
           ].map((prompt, idx) => (
             <button
               key={idx}
@@ -355,6 +516,23 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
               {prompt}
             </button>
           ))}
+        </div>
+      )}
+
+      {/* Cooldown Warning Notice if Rate-Limited */}
+      {countdown !== null && countdown > 0 && (
+        <div className="px-4 py-1.5 bg-amber-500/10 border-t border-amber-500/20 flex items-center justify-between text-xs text-amber-300">
+          <span className="flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" />
+            Rate limit cooldown active ({countdown}s)
+          </span>
+          <button
+            type="button"
+            onClick={() => handleSwitchToLiteAndRetry(getLastUserMessage())}
+            className="text-[11px] font-bold underline hover:text-white"
+          >
+            Use Flash Lite instead
+          </button>
         </div>
       )}
 
@@ -373,8 +551,12 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Ask ToolCrest AI anything..."
-            disabled={isLoading}
+            placeholder={
+              countdown !== null && countdown > 0
+                ? `Please wait ${countdown}s before sending next message...`
+                : 'Ask ToolCrest AI anything...'
+            }
+            disabled={isLoading || (countdown !== null && countdown > 0)}
             className={`flex-1 text-xs sm:text-sm px-4 py-3 rounded-2xl border focus:outline-hidden ${
               isDark
                 ? 'bg-slate-900 border-slate-700 text-white placeholder-slate-500 focus:border-[#F3B542]'
@@ -383,7 +565,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
           />
           <button
             type="submit"
-            disabled={!input.trim() || isLoading}
+            disabled={!input.trim() || isLoading || (countdown !== null && countdown > 0)}
             className="p-3 rounded-2xl bg-[#F3B542] hover:bg-[#dfa234] text-slate-950 font-bold transition disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer shadow-md"
           >
             {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}

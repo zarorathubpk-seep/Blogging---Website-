@@ -150,28 +150,80 @@ export function sendInitialPageViewAfterConsent(): void {
   trackPageView(path, title, true);
 }
 
+export interface ConsentPreferences {
+  necessary: boolean;
+  analytics: boolean;
+  advertising: boolean;
+}
+
 /**
- * Updates analytics consent (grant / deny) manually and updates GCM v2
+ * Reads granular consent preferences from localStorage
  */
-export function setAnalyticsConsent(granted: boolean): void {
-  if (typeof window === 'undefined') return;
+export function getStoredConsentPreferences(): ConsentPreferences | null {
+  if (typeof window === 'undefined') return null;
   try {
-    localStorage.setItem('toolcrest_analytics_consent', granted ? 'granted' : 'denied');
+    const raw = localStorage.getItem('toolcrest_consent_preferences');
+    if (raw) {
+      return JSON.parse(raw);
+    }
+    // Check legacy fallback
+    const legacy = localStorage.getItem('toolcrest_analytics_consent');
+    if (legacy === 'granted' || legacy === 'true') {
+      return { necessary: true, analytics: true, advertising: false };
+    }
+    if (legacy === 'denied' || legacy === 'false') {
+      return { necessary: true, analytics: false, advertising: false };
+    }
+  } catch {}
+  return null;
+}
+
+/**
+ * Triggers the Cookie Preferences modal across the application
+ */
+export function openCookiePreferencesModal(): void {
+  if (typeof window === 'undefined') return;
+  window.dispatchEvent(new CustomEvent('toolcrest_open_cookie_preferences'));
+}
+
+/**
+ * Updates granular consent (separating analytics from advertising) and updates Google Consent Mode v2
+ */
+export function setDetailedConsent(prefs: { analytics: boolean; advertising: boolean }): void {
+  if (typeof window === 'undefined') return;
+  const fullPrefs: ConsentPreferences = {
+    necessary: true,
+    analytics: prefs.analytics,
+    advertising: prefs.advertising,
+  };
+
+  try {
+    localStorage.setItem('toolcrest_consent_preferences', JSON.stringify(fullPrefs));
+    localStorage.setItem('toolcrest_analytics_consent', prefs.analytics ? 'granted' : 'denied');
   } catch {}
 
   if (typeof window.gtag === 'function') {
     window.gtag('consent', 'update', {
-      analytics_storage: granted ? 'granted' : 'denied',
-      ad_storage: granted ? 'granted' : 'denied',
-      ad_user_data: granted ? 'granted' : 'denied',
-      ad_personalization: granted ? 'granted' : 'denied',
+      analytics_storage: prefs.analytics ? 'granted' : 'denied',
+      ad_storage: prefs.advertising ? 'granted' : 'denied',
+      ad_user_data: prefs.advertising ? 'granted' : 'denied',
+      ad_personalization: prefs.advertising ? 'granted' : 'denied',
+      functionality_storage: 'granted',
+      security_storage: 'granted',
     });
   }
 
-  if (granted) {
+  if (prefs.analytics) {
     window.__toolcrest_consent_already_granted = true;
     sendInitialPageViewAfterConsent();
   }
+}
+
+/**
+ * Legacy wrapper: updates analytics consent
+ */
+export function setAnalyticsConsent(granted: boolean): void {
+  setDetailedConsent({ analytics: granted, advertising: false });
 }
 
 /**

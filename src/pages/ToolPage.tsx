@@ -11,6 +11,10 @@ import { MarkdownEditorTool } from '../components/tools/MarkdownEditorTool';
 import { AdvancedSplitPdfTool } from '../components/tools/AdvancedSplitPdfTool';
 import { OrganizePdfTool } from '../components/tools/OrganizePdfTool';
 import { ScanToPdfTool } from '../components/tools/ScanToPdfTool';
+import { ImageToPdfTool } from '../components/tools/ImageToPdfTool';
+import { PdfToImageTool } from '../components/tools/PdfToImageTool';
+import { MergePdfTool } from '../components/tools/MergePdfTool';
+import { ImageStudioTool } from '../components/tools/ImageStudioTool';
 import { PlannerType, StoredPlannerState } from '../types/planner';
 import { PlannerPage } from './PlannerPage';
 import { Article } from '../types/article';
@@ -114,19 +118,59 @@ export const ToolPage: React.FC<ToolPageProps> = ({
     return <MarkdownEditorTool onNavigate={onNavigate} />;
   }
 
+  // Image to PDF Converter (Dedicated high-fidelity workflow)
+  if (tool.id === 'images-to-pdf' || toolSlug === 'images-to-pdf' || toolSlug === 'image-to-pdf') {
+    return <ImageToPdfTool onNavigate={onNavigate} />;
+  }
+
+  // PDF to Image Converter (PNG, JPG, ZIP exports)
+  if (
+    tool.id === 'pdf-to-images' ||
+    toolSlug === 'pdf-to-images' ||
+    toolSlug === 'pdf-to-image' ||
+    toolSlug === 'pdf-to-jpg'
+  ) {
+    return <PdfToImageTool onNavigate={onNavigate} />;
+  }
+
+  // Merge PDF (Visual document & page reordering)
+  if (tool.id === 'merge-pdf' || toolSlug === 'merge-pdf') {
+    return <MergePdfTool onNavigate={onNavigate} />;
+  }
+
   // Advanced Split PDF Tool (5 Modes, Visual Thumbnails, Ranges, ZIPs, Image Exports)
-  if (tool.id === 'split-pdf' || tool.id === 'extract-pdf-pages') {
+  if (tool.id === 'split-pdf' || tool.id === 'extract-pdf-pages' || toolSlug === 'split-pdf') {
     return <AdvancedSplitPdfTool onNavigate={onNavigate} />;
   }
 
   // Visual Page Organization
-  if (tool.id === 'organize-pdf') {
+  if (tool.id === 'organize-pdf' || toolSlug === 'organize-pdf') {
     return <OrganizePdfTool onNavigate={onNavigate} />;
   }
 
   // Camera / Document Scanner
-  if (tool.id === 'scan-to-pdf') {
+  if (tool.id === 'scan-to-pdf' || toolSlug === 'scan-to-pdf') {
     return <ScanToPdfTool onNavigate={onNavigate} />;
+  }
+
+  // Image Utilities Studio
+  if (toolSlug === 'compress-image') {
+    return <ImageStudioTool initialMode="compress" toolSlug="compress-image" onNavigate={onNavigate} />;
+  }
+  if (toolSlug === 'resize-image') {
+    return <ImageStudioTool initialMode="resize" toolSlug="resize-image" onNavigate={onNavigate} />;
+  }
+  if (toolSlug === 'rotate-image') {
+    return <ImageStudioTool initialMode="rotate" toolSlug="rotate-image" onNavigate={onNavigate} />;
+  }
+  if (toolSlug === 'jpg-to-png') {
+    return <ImageStudioTool initialMode="convert" targetFormat="image/png" toolSlug="jpg-to-png" onNavigate={onNavigate} />;
+  }
+  if (toolSlug === 'png-to-jpg') {
+    return <ImageStudioTool initialMode="convert" targetFormat="image/jpeg" toolSlug="png-to-jpg" onNavigate={onNavigate} />;
+  }
+  if (toolSlug === 'webp-converter') {
+    return <ImageStudioTool initialMode="convert" targetFormat="image/webp" toolSlug="webp-converter" onNavigate={onNavigate} />;
   }
 
   // PDF Suite Tools

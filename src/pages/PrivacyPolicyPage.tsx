@@ -96,18 +96,19 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
           </ul>
         </section>
 
-        <section className="space-y-2">
+        <section className="space-y-3">
           <h2 className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
             <Cookie className="w-4 h-4 text-amber-500" />
-            3. Advertising & Cookies Disclosure
+            3. Advertising &amp; Cookies Disclosure (RevBid &amp; Google AdSense)
           </h2>
           <p>
-            ToolCrest complies strictly with Google publisher policies and industry standards:
+            ToolCrest complies strictly with Google publisher policies, IAB standards, and global advertising guidelines:
           </p>
           <ul className={`list-disc list-inside space-y-1.5 ml-2 ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-            <li>We do not automate traffic, execute artificial clicks, or deploy unauthorized ad scripts.</li>
-            <li>Our <code className={`px-1.5 py-0.5 rounded text-xs font-mono ${isDark ? 'bg-slate-800 text-amber-300' : 'bg-slate-100 text-slate-800'}`}>ads.txt</code> file contains only authorized digital seller declarations and contains no scripts or malicious HTML.</li>
-            <li>Advertising partners (such as Google AdSense) may utilize non-personalized or personalized cookies only in compliance with your explicit cookie choices and applicable regional privacy laws.</li>
+            <li>We do not automate traffic, execute artificial clicks, or deploy unvetted third-party scripts.</li>
+            <li>Our <code className={`px-1.5 py-0.5 rounded text-xs font-mono ${isDark ? 'bg-slate-800 text-amber-300' : 'bg-slate-100 text-slate-800'}`}>ads.txt</code> file contains only authorized digital seller lines compliant with IAB Tech Lab standards and contains zero scripts or unauthorized tags.</li>
+            <li>Advertising monetization partners (including RevBid and Google AdSense) serve ads to support our free operations. Cookies for ad measurement, frequency capping, and ad personalization are strictly segregated and require your consent under Google Consent Mode v2.</li>
+            <li>You can manage or revoke your advertising and analytics cookie consents at any time using our on-site cookie manager.</li>
           </ul>
         </section>
 

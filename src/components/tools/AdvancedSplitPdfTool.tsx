@@ -32,9 +32,11 @@ import { FaqSection } from '../FaqSection';
 import {
   getPdfDocumentSummary,
   renderPageThumbnail,
+  PdfThumbnailEngine,
   PageInfo,
   PdfDocumentSummary,
 } from '../../services/pdfThumbnailRenderer';
+import { PdfPageThumbnailCard } from '../pdf/PdfPageThumbnailCard';
 import {
   extractPagesToSinglePdf,
   extractPagesToSeparatePdfsZip,
@@ -107,10 +109,20 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
   } | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const engineRef = useRef<PdfThumbnailEngine | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (engineRef.current) {
+        engineRef.current.destroy();
+        engineRef.current = null;
+      }
+    };
+  }, []);
 
   // Handle file drop/upload
   const handleSelectFile = async (uploadedFile: File) => {
-    if (!uploadedFile.name.toLowerCase().endsWith('.pdf')) {
+    if (!uploadedFile.name.toLowerCase().endsWith('.pdf') && uploadedFile.type !== 'application/pdf') {
       setErrorMessage('Please select a valid PDF file.');
       return;
     }
@@ -122,24 +134,29 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
     setThumbnails({});
 
     try {
-      const summary = await getPdfDocumentSummary(uploadedFile);
+      if (engineRef.current) {
+        engineRef.current.destroy();
+      }
+
+      const buffer = await uploadedFile.arrayBuffer();
+      const engine = new PdfThumbnailEngine();
+      await engine.loadDocument(buffer);
+      engineRef.current = engine;
+
+      const summary = await getPdfDocumentSummary(buffer);
       setDocSummary(summary);
 
-      // Default selection: select all pages initially or first 2 pages
+      // Default selection: select all pages initially
       const total = summary.pageCount;
-      if (total <= 5) {
-        setSelectedPages(Array.from({ length: total }, (_, i) => i + 1));
-      } else {
-        setSelectedPages([1, 2]);
-      }
+      setSelectedPages(Array.from({ length: total }, (_, i) => i + 1));
 
       // Initialize default range
       setRanges([
         { id: `r-${Date.now()}`, name: 'Section 1', start: 1, end: Math.min(3, total) },
       ]);
 
-      // Lazy load first batch of thumbnails asynchronously
-      loadThumbnails(uploadedFile, summary);
+      // Render all pages progressively
+      loadThumbnails(engine, summary);
     } catch (err: any) {
       console.error(err);
       setErrorMessage(
@@ -152,20 +169,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
     }
   };
 
-  // Asynchronously render thumbnails
-  const loadThumbnails = async (pdfFile: File, summary: PdfDocumentSummary) => {
-    try {
-      const arrayBuffer = await pdfFile.arrayBuffer();
-      // Render up to first 24 pages immediately, rest lazily
-      const count = Math.min(summary.pageCount, 30);
-      for (let i = 1; i <= count; i++) {
-        const pageInfo = summary.pages[i - 1];
-        renderPageThumbnail(arrayBuffer, i, pageInfo, 0.45).then((dataUrl) => {
-          setThumbnails((prev) => ({ ...prev, [i]: dataUrl }));
-        });
+  // Asynchronously render thumbnails for all pages
+  const loadThumbnails = async (engine: PdfThumbnailEngine, summary: PdfDocumentSummary) => {
+    for (const pageInfo of summary.pages) {
+      try {
+        const thumb = await engine.renderPageThumbnail(pageInfo.pageNumber, pageInfo, 0.45);
+        setThumbnails((prev) => ({ ...prev, [pageInfo.pageNumber]: thumb }));
+      } catch (err) {
+        console.warn(`Thumbnail rendering error for page ${pageInfo.pageNumber}:`, err);
       }
-    } catch (err) {
-      console.warn('Thumbnail rendering process noticed:', err);
     }
   };
 
@@ -618,69 +630,32 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
               </div>
 
               {/* Responsive Page Thumbnails Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 max-h-[520px] overflow-y-auto p-1 custom-scrollbar">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-[560px] overflow-y-auto p-1 custom-scrollbar">
                 {docSummary.pages.map((p) => {
                   const isSelected = selectedPages.includes(p.pageNumber);
                   const thumb = thumbnails[p.pageNumber];
 
                   return (
-                    <div
+                    <PdfPageThumbnailCard
                       key={p.pageNumber}
-                      onClick={() => togglePageSelection(p.pageNumber)}
-                      className={`relative rounded-2xl border-2 overflow-hidden cursor-pointer transition select-none group flex flex-col ${
-                        isSelected
-                          ? 'border-amber-400 bg-amber-500/10 ring-2 ring-amber-400/30 shadow-lg'
-                          : 'border-slate-800 hover:border-amber-500/40 bg-[#070a14]'
-                      }`}
-                    >
-                      {/* Checkbox overlay badge */}
-                      <div className="absolute top-2 left-2 z-10 flex items-center gap-1">
-                        <div
-                          className={`w-6 h-6 rounded-lg flex items-center justify-center transition shadow-xs ${
-                            isSelected
-                              ? 'bg-gradient-to-br from-amber-400 to-yellow-500 text-slate-950 font-black'
-                              : 'bg-slate-900/80 text-transparent border border-slate-700 group-hover:border-amber-500/50'
-                          }`}
-                        >
-                          <Check className="w-3.5 h-3.5 stroke-[3]" />
-                        </div>
-                      </div>
-
-                      {/* Page number badge top right */}
-                      <div className="absolute top-2 right-2 z-10">
-                        <span className="bg-slate-950/90 border border-amber-500/30 text-amber-300 text-[10px] font-bold px-2 py-0.5 rounded-md shadow-xs">
-                          Page {p.pageNumber}
-                        </span>
-                      </div>
-
-                      {/* Thumbnail Image display */}
-                      <div className="w-full h-44 sm:h-48 bg-slate-900/90 flex items-center justify-center overflow-hidden p-2">
-                        {thumb ? (
-                          <img
-                            src={thumb}
-                            alt={`Page ${p.pageNumber}`}
-                            className="max-h-full max-w-full object-contain shadow-xs rounded transition group-hover:scale-102 bg-white"
-                          />
-                        ) : (
-                          <div className="flex flex-col items-center justify-center text-slate-500">
-                            <FileText className="w-10 h-10 animate-pulse text-amber-400/40" />
-                            <span className="text-[10px] font-mono mt-1 text-slate-400">
-                              Rendering...
-                            </span>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Bottom Footer Info */}
-                      <div className="p-2 bg-[#090d19] border-t border-amber-500/15 flex items-center justify-between text-[10px] text-slate-400">
-                        <span className="font-bold text-amber-300">
-                          {p.orientation === 'landscape' ? 'Landscape' : 'Portrait'}
-                        </span>
-                        <span className="font-mono text-slate-400">
-                          {p.width}×{p.height}
-                        </span>
-                      </div>
-                    </div>
+                      pageNumber={p.pageNumber}
+                      thumbnailUrl={thumb}
+                      status={thumb ? 'ready' : 'rendering'}
+                      isSelected={isSelected}
+                      width={p.width}
+                      height={p.height}
+                      orientation={p.orientation}
+                      onToggleSelect={() => togglePageSelection(p.pageNumber)}
+                      onRetry={() => {
+                        if (engineRef.current) {
+                          engineRef.current
+                            .renderPageThumbnail(p.pageNumber, p, 0.45)
+                            .then((newThumb) =>
+                              setThumbnails((prev) => ({ ...prev, [p.pageNumber]: newThumb }))
+                            );
+                        }
+                      }}
+                    />
                   );
                 })}
               </div>

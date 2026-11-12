@@ -1,7 +1,16 @@
 # ToolCrest Authorized Digital Sellers (ads.txt)
 # https://toolcrest.site/ads.txt
-# This file contains strictly authorized seller lines according to IAB Tech Lab standards.
-# No HTML, CSS, or JavaScript is permitted in ads.txt.
+# Standard compliant with IAB Tech Lab ads.txt Specification v1.1
+# Note: In compliance with Google & RevBid publisher policies, authorized seller
+# declarations must be uncommented only upon publisher account approval.
 
-# Once your Google AdSense publisher ID is approved, replace or uncomment below:
+# --- Google AdSense ---
+# Once your Google AdSense publisher account is activated, uncomment the line below:
 # google.com, pub-2415561422904473, DIRECT, f08c47fec0942fa0
+
+# --- RevBid Exchange & SSP Partners ---
+# Once RevBid publisher onboarding is approved, append the authorized seller lines
+# supplied by your RevBid account representative below:
+# Example format:
+# <advertising-system-domain>, <seller-account-id>, <RESELLER|DIRECT>, <certification-authority-id>
+

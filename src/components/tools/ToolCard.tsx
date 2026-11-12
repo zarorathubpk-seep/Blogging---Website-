@@ -242,7 +242,7 @@ export const ToolCard: React.FC<ToolCardProps> = ({
       onClick={() => onSelect(tool.slug)}
       className={`group relative border rounded-2xl shadow-xl transition-all duration-300 ease-out cursor-pointer flex flex-col justify-between hover:-translate-y-1 select-none h-full overflow-hidden ${
         isDark
-          ? 'bg-gradient-to-b from-[#101626] via-[#0c101c] to-[#080b14] hover:from-[#141b2e] hover:via-[#0f1524] hover:to-[#0a0d18] border-amber-500/20 hover:border-amber-400/70 hover:shadow-[0_12px_32px_-6px_rgba(245,158,11,0.2)] text-slate-100'
+          ? 'bg-[#1B1D22] border-slate-800 hover:border-[#D4AF37]/70 hover:shadow-[0_12px_32px_-6px_rgba(212,175,55,0.15)] text-[#F5F5F5]'
           : 'bg-white hover:bg-amber-50/25 border-slate-200/90 hover:border-amber-400/80 shadow-sm hover:shadow-[0_12px_28px_-6px_rgba(217,119,6,0.15)] text-slate-900'
       } ${compact ? 'p-4' : 'p-5 sm:p-5.5'}`}
     >

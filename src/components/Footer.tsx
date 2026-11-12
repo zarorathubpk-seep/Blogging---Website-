@@ -3,6 +3,7 @@ import { ToolCrestLogo } from './ToolCrestLogo';
 import { ShieldCheck, ArrowUpRight } from 'lucide-react';
 import { PlannerType } from '../types/planner';
 import { Theme } from '../context/ThemeContext';
+import { openCookiePreferencesModal } from '../utils/analytics';
 
 interface FooterProps {
   onNavigate: (path: string) => void;
@@ -20,7 +21,7 @@ export const Footer: React.FC<FooterProps> = ({
     <footer
       className={`pt-12 pb-8 border-t print:hidden text-xs transition-colors duration-200 ${
         isDark
-          ? 'bg-[#050811] text-slate-300 border-amber-500/20'
+          ? 'bg-[#101114] text-[#B5B8BE] border-slate-800'
           : 'bg-slate-50/90 text-slate-700 border-slate-200/90 shadow-2xs'
       }`}
     >
@@ -258,6 +259,15 @@ export const Footer: React.FC<FooterProps> = ({
               <li>
                 <button
                   type="button"
+                  onClick={() => openCookiePreferencesModal()}
+                  className="hover:text-amber-300 transition cursor-pointer text-left"
+                >
+                  Manage Cookie Preferences
+                </button>
+              </li>
+              <li>
+                <button
+                  type="button"
                   onClick={() => onNavigate('/sitemap')}
                   className="hover:text-amber-300 transition cursor-pointer"
                 >
@@ -288,6 +298,14 @@ export const Footer: React.FC<FooterProps> = ({
               className="hover:text-amber-400 cursor-pointer"
             >
               Terms
+            </button>
+            <span>•</span>
+            <button
+              type="button"
+              onClick={() => openCookiePreferencesModal()}
+              className="hover:text-amber-400 cursor-pointer"
+            >
+              Cookies
             </button>
             <span>•</span>
             <button
