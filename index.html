@@ -39,24 +39,42 @@
       gtag('set', 'ads_data_redaction', true);
       gtag('set', 'url_passthrough', true);
 
-      // Pre-check if visitor previously granted consent (CookieYes cookie or local preference)
+      // Pre-check if visitor previously granted consent (CookieYes cookie or granular local preferences)
       try {
         var ckyMatch = document.cookie.match(/(?:^|;\s*)cookieyes-consent=([^;]+)/);
         var ckyVal = ckyMatch ? decodeURIComponent(ckyMatch[1]) : '';
+        var storedPrefsRaw = '';
         var localConsent = '';
-        try { localConsent = localStorage.getItem('toolcrest_analytics_consent') || ''; } catch (e) {}
+        try {
+          storedPrefsRaw = localStorage.getItem('toolcrest_consent_preferences') || '';
+          localConsent = localStorage.getItem('toolcrest_analytics_consent') || '';
+        } catch (e) {}
 
-        var isAnalyticsGranted = ckyVal.indexOf('analytics:yes') !== -1 || localConsent === 'granted' || localConsent === 'true';
-        var isAdsGranted = ckyVal.indexOf('advertisement:yes') !== -1 || localConsent === 'granted';
+        var storedPrefs = null;
+        if (storedPrefsRaw) {
+          try { storedPrefs = JSON.parse(storedPrefsRaw); } catch (e) {}
+        }
 
-        if (isAnalyticsGranted) {
+        var hasCky = ckyVal.indexOf('analytics:') !== -1 || ckyVal.indexOf('advertisement:') !== -1;
+        var isAnalyticsGranted = hasCky
+          ? ckyVal.indexOf('analytics:yes') !== -1
+          : storedPrefs !== null
+          ? Boolean(storedPrefs.analytics)
+          : (localConsent === 'granted' || localConsent === 'true');
+        var isAdsGranted = hasCky
+          ? ckyVal.indexOf('advertisement:yes') !== -1
+          : storedPrefs !== null
+          ? Boolean(storedPrefs.advertising)
+          : false;
+
+        if (hasCky || storedPrefs !== null || localConsent !== '') {
           gtag('consent', 'update', {
-            'analytics_storage': 'granted',
+            'analytics_storage': isAnalyticsGranted ? 'granted' : 'denied',
             'ad_storage': isAdsGranted ? 'granted' : 'denied',
             'ad_user_data': isAdsGranted ? 'granted' : 'denied',
             'ad_personalization': isAdsGranted ? 'granted' : 'denied'
           });
-          window.__toolcrest_consent_already_granted = true;
+          window.__toolcrest_consent_already_granted = isAnalyticsGranted;
         }
       } catch (e) {}
     </script>
@@ -85,31 +103,32 @@
           var adsGranted = accepted.indexOf('advertisement') !== -1 || ckyVal.indexOf('advertisement:yes') !== -1;
           var functionalGranted = accepted.indexOf('functional') !== -1 || ckyVal.indexOf('functional:yes') !== -1;
 
-          if (analyticsGranted) {
-            gtag('consent', 'update', {
-              'analytics_storage': 'granted',
-              'ad_storage': adsGranted ? 'granted' : 'denied',
-              'ad_user_data': adsGranted ? 'granted' : 'denied',
-              'ad_personalization': adsGranted ? 'granted' : 'denied',
-              'personalization_storage': functionalGranted ? 'granted' : 'denied',
-              'functionality_storage': 'granted'
-            });
+          gtag('consent', 'update', {
+            'analytics_storage': analyticsGranted ? 'granted' : 'denied',
+            'ad_storage': adsGranted ? 'granted' : 'denied',
+            'ad_user_data': adsGranted ? 'granted' : 'denied',
+            'ad_personalization': adsGranted ? 'granted' : 'denied',
+            'personalization_storage': functionalGranted ? 'granted' : 'denied',
+            'functionality_storage': 'granted'
+          });
 
-            // If a consented page_view hasn't fired yet for the initial view, fire it now
-            if (!window.__toolcrest_consented_pv_fired) {
-              window.__toolcrest_consented_pv_fired = true;
-              var isGaDebug = window.location.search.indexOf('gtm_debug=') !== -1 ||
-                              window.location.search.indexOf('debug_mode=true') !== -1 ||
-                              window.location.search.indexOf('ga_debug') !== -1;
-              var pvParams = {
-                page_path: window.location.pathname || '/',
-                page_title: document.title || 'ToolCrest',
-                page_location: window.location.href,
-                send_to: 'G-EM9BQ097R4'
-              };
-              if (isGaDebug) pvParams.debug_mode = true;
-              gtag('event', 'page_view', pvParams);
-            }
+          window.__toolcrest_consent_already_granted = analyticsGranted;
+
+          if (analyticsGranted && !window.__toolcrest_consented_pv_fired) {
+            window.__toolcrest_consented_pv_fired = true;
+            var isGaDebug = window.location.search.indexOf('gtm_debug=') !== -1 ||
+                            window.location.search.indexOf('debug_mode=true') !== -1 ||
+                            window.location.search.indexOf('ga_debug') !== -1;
+            var pvParams = {
+              page_path: window.location.pathname || '/',
+              page_title: document.title || 'ToolCrest',
+              page_location: window.location.href,
+              send_to: 'G-EM9BQ097R4'
+            };
+            if (isGaDebug) pvParams.debug_mode = true;
+            gtag('event', 'page_view', pvParams);
+          } else if (!analyticsGranted) {
+            window.__toolcrest_consented_pv_fired = false;
           }
         } catch (err) {}
       }

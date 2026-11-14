@@ -1,7 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
-  UploadCloud,
-  FileImage,
   Download,
   RotateCw,
   FlipHorizontal,
@@ -10,14 +8,12 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  Maximize2,
-  Minimize2,
-  RefreshCw,
   Sparkles,
   Lock,
   Unlock,
 } from 'lucide-react';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import { TOOLS_DATA, ToolItem } from '../../data/toolsData';
@@ -60,8 +56,6 @@ export const ImageStudioTool: React.FC<ImageStudioToolProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successInfo, setSuccessInfo] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl);
@@ -70,15 +64,13 @@ export const ImageStudioTool: React.FC<ImageStudioToolProps> = ({
 
   const handleFileSelect = (selectedFile: File) => {
     if (!selectedFile.type.startsWith('image/')) {
-      setErrorMessage('Please select a valid image file (JPG, PNG, WebP).');
+      setErrorMessage('Please select a valid image file (JPG, PNG, WebP, BMP).');
       return;
     }
 
     if (previewUrl) URL.revokeObjectURL(previewUrl);
 
     const url = URL.createObjectURL(selectedFile);
-    setFile(selectedFile);
-    setPreviewUrl(url);
     setResultDataUrl(null);
     setResultBlob(null);
     setErrorMessage(null);
@@ -89,10 +81,18 @@ export const ImageStudioTool: React.FC<ImageStudioToolProps> = ({
 
     const img = new Image();
     img.onload = () => {
+      setFile(selectedFile);
+      setPreviewUrl(url);
       setOrigDimensions({ width: img.naturalWidth, height: img.naturalHeight });
       setTargetWidth(img.naturalWidth);
       setTargetHeight(img.naturalHeight);
-      setAspectRatio(img.naturalWidth / img.naturalHeight);
+      setAspectRatio(img.naturalWidth / Math.max(1, img.naturalHeight));
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      setFile(null);
+      setPreviewUrl(null);
+      setErrorMessage(`Could not read "${selectedFile.name}". The file may be corrupted or unsupported.`);
     };
     img.src = url;
   };
@@ -281,33 +281,23 @@ export const ImageStudioTool: React.FC<ImageStudioToolProps> = ({
 
         {/* Upload Zone */}
         {!file ? (
-          <div className="mt-6 bg-[#1B1D22] border-2 border-dashed border-slate-700 hover:border-[#D4AF37] rounded-2xl p-10 sm:p-14 text-center transition-all shadow-xl">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/jpeg,image/png,image/webp,image/bmp"
-              onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
-              className="hidden"
+          <div className="mt-6 space-y-4">
+            <FileUploadZone
+              accept="image/jpeg,image/png,image/webp,image/bmp,.jpg,.jpeg,.png,.webp,.bmp"
+              multiple={false}
+              title="Select or Drag an Image to Optimize"
+              subtitle="Supports JPG, PNG, WebP, and BMP • 100% In-Browser Processing"
+              fileTypeLabel="JPG, PNG, WebP, BMP"
+              onFilesSelected={(files) => {
+                if (files[0]) handleFileSelect(files[0]);
+              }}
             />
-            <div className="max-w-md mx-auto space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#101114] border border-slate-700 flex items-center justify-center text-[#D4AF37] shadow-md">
-                <FileImage className="w-8 h-8" />
+            {errorMessage && (
+              <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-[#F5F5F5]">Select an Image to Optimize</h2>
-                <p className="text-sm text-[#B5B8BE] mt-1">
-                  Supports JPG, PNG, WebP, and BMP. 100% in-browser processing.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-[#D4AF37] hover:bg-[#E6C768] text-[#101114] font-bold rounded-xl transition shadow-lg cursor-pointer flex items-center gap-2 mx-auto"
-              >
-                <UploadCloud className="w-5 h-5" />
-                <span>Choose Image</span>
-              </button>
-            </div>
+            )}
           </div>
         ) : (
           /* Active Editor Canvas */

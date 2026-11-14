@@ -19,6 +19,18 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { getBackendEndpoint } from '../../utils/backendConfig';
+
+type ChatErrorType =
+  | 'BILLING_TIER_RESTRICTION'
+  | 'PER_MINUTE_RATE_LIMIT'
+  | 'DAILY_QUOTA_EXHAUSTED'
+  | 'MODEL_TEMPORARILY_OVERLOADED'
+  | 'RATE_LIMIT_EXCEEDED'
+  | 'API_KEY_ERROR'
+  | 'CONFIG_MISSING'
+  | 'NETWORK_ERROR'
+  | 'GENERAL_ERROR';
 
 export interface ChatMessage {
   id: string;
@@ -30,7 +42,7 @@ export interface ChatMessage {
   modelUsed?: string;
   fallbackNotice?: string;
   errorInfo?: {
-    type: 'BILLING_TIER_RESTRICTION' | 'PER_MINUTE_RATE_LIMIT' | 'DAILY_QUOTA_EXHAUSTED' | 'MODEL_TEMPORARILY_OVERLOADED' | 'RATE_LIMIT_EXCEEDED' | 'API_KEY_ERROR' | 'GENERAL_ERROR';
+    type: ChatErrorType;
     retryAfterSeconds?: number;
     suggestedModel?: string;
   };
@@ -61,7 +73,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
   ]);
 
   const [input, setInput] = useState<string>('');
-  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-flash-lite' | 'gemini-3.8-flash' | 'gemini-4-argon'>('gemini-3.1-flash-lite');
+  const [selectedModel, setSelectedModel] = useState<'gemini-3.1-flash-lite' | 'gemini-4-hydrogen' | 'gemini-4-argon'>('gemini-3.1-flash-lite');
   const [useSearch, setUseSearch] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
@@ -101,22 +113,14 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
     return () => clearInterval(timer);
   }, [countdown]);
 
-  const handleSend = async (textToSend?: string, overrideModel?: 'gemini-3.1-flash-lite' | 'gemini-3.8-flash' | 'gemini-4-argon') => {
+  const handleSend = async (
+    textToSend?: string,
+    overrideModel?: 'gemini-3.1-flash-lite' | 'gemini-4-hydrogen' | 'gemini-4-argon'
+  ) => {
     const queryText = (textToSend || input).trim();
     if (!queryText || isLoading || inFlightRef.current) return;
 
     const activeModel = overrideModel || selectedModel;
-
-    // Prevent submitting argon without warning
-    if (activeModel === 'gemini-4-argon') {
-      const confirmArgon = window.confirm(
-        'Notice: gemini-4-argon requires a Google Cloud paid billing account. Free tier requests will return a quota limit error. Do you want to continue or switch to Gemini Flash Lite?'
-      );
-      if (!confirmArgon) {
-        setSelectedModel('gemini-3.1-flash-lite');
-        return;
-      }
-    }
 
     inFlightRef.current = true;
     setIsLoading(true);
@@ -133,16 +137,21 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
     setInput('');
 
     try {
-      // Determine endpoint: on GitHub Pages (static), route to the dedicated backend; on local/dev, use relative /api/chat
-      const chatApiUrl =
-        (import.meta as any).env?.VITE_BACKEND_API_URL
-          ? `${(import.meta as any).env.VITE_BACKEND_API_URL.replace(/\/+$/, '')}/api/chat`
-          : typeof window !== 'undefined' &&
-            (window.location.hostname === 'localhost' ||
-              window.location.hostname === '127.0.0.1' ||
-              window.location.hostname.includes('run.app'))
-          ? '/api/chat'
-          : 'https://ais-dev-3o76hln6aw4zqs53eyitdj-380437212275.asia-southeast1.run.app/api/chat';
+      const chatApiUrl = getBackendEndpoint('/api/chat');
+      if (!chatApiUrl) {
+        const configErr: ChatMessage = {
+          id: `err_${Date.now()}`,
+          role: 'assistant',
+          content:
+            'ToolCrest AI backend URL is not configured for this static deployment (missing VITE_BACKEND_API_URL at build time). Set VITE_BACKEND_API_URL in your GitHub repository variables or run on the full-stack server.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          errorInfo: {
+            type: 'CONFIG_MISSING',
+          },
+        };
+        setMessages((prev) => [...prev, configErr]);
+        return;
+      }
 
       const response = await fetch(chatApiUrl, {
         method: 'POST',
@@ -153,14 +162,14 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
             content: m.content,
           })),
           model: activeModel,
-          useSearch: useSearch && activeModel === 'gemini-3.8-flash',
+          useSearch: useSearch && activeModel === 'gemini-4-hydrogen',
         }),
       });
 
       const data = await response.json().catch(() => ({}));
 
       if (!response.ok) {
-        const errorType = data.errorType || 'GENERAL_ERROR';
+        const errorType: ChatErrorType = data.errorType || 'GENERAL_ERROR';
         const retrySec = data.retryAfterSeconds;
 
         if (retrySec && retrySec > 0 && retrySec <= 120) {
@@ -199,10 +208,10 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
       const errorMsg: ChatMessage = {
         id: `err_${Date.now()}`,
         role: 'assistant',
-        content: `Could not connect to the Gemini service (${err.message || 'Network error'}). Please try again or switch to Gemini Flash Lite.`,
+        content: `Could not reach the ToolCrest AI backend (${err.message || 'Network connection failed'}). Please check that the backend server is online or try again.`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
         errorInfo: {
-          type: 'GENERAL_ERROR',
+          type: 'NETWORK_ERROR',
           suggestedModel: 'gemini-3.1-flash-lite',
         },
       };
@@ -271,11 +280,11 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
                 ToolCrest AI
               </h3>
               <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#F3B542]/20 text-[#F3B542] border border-[#F3B542]/30 font-semibold">
-                {selectedModel === 'gemini-4-argon' ? 'Argon 4' : selectedModel === 'gemini-3.8-flash' ? 'Flash 3.8' : 'Flash Lite'}
+                {selectedModel === 'gemini-4-argon' ? 'Argon 4' : selectedModel === 'gemini-4-hydrogen' ? 'Hydrogen 4' : 'Flash Lite'}
               </span>
             </div>
             <p className="text-[11px] text-slate-400">
-              {useSearch && selectedModel === 'gemini-3.8-flash' ? 'Search Grounding Active' : 'Cost-Optimized Assistant'}
+              {useSearch && selectedModel === 'gemini-4-hydrogen' ? 'Search Grounding Active' : 'Cost-Optimized Assistant'}
             </p>
           </div>
         </div>
@@ -325,8 +334,8 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
                 : 'bg-white border-slate-300 text-slate-800'
             }`}
           >
-            <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Fast & Quota-Friendly)</option>
-            <option value="gemini-3.8-flash">gemini-3.8-flash (General + Search Grounding)</option>
+            <option value="gemini-3.1-flash-lite">gemini-3.1-flash-lite (Fast &amp; Quota-Friendly)</option>
+            <option value="gemini-4-hydrogen">gemini-4-hydrogen (General + Search Grounding)</option>
             <option value="gemini-4-argon">gemini-4-argon (Complex · Paid Tier Only)</option>
           </select>
         </div>
@@ -334,24 +343,30 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
         <button
           type="button"
           onClick={() => {
-            if (selectedModel !== 'gemini-3.8-flash') {
-              setSelectedModel('gemini-3.8-flash');
+            if (selectedModel !== 'gemini-4-hydrogen') {
+              setSelectedModel('gemini-4-hydrogen');
               setUseSearch(true);
             } else {
               setUseSearch((prev) => !prev);
             }
           }}
           className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg font-semibold text-[11px] transition cursor-pointer border ${
-            useSearch && selectedModel === 'gemini-3.8-flash'
+            useSearch && selectedModel === 'gemini-4-hydrogen'
               ? 'bg-amber-500/20 text-[#F3B542] border-[#F3B542]/40'
               : 'bg-slate-800/50 text-slate-400 border-slate-700'
           }`}
-          title="Toggle Google Search live grounding (supported on Flash 3.8)"
+          title="Toggle Google Search live grounding (supported on Gemini 4 Hydrogen)"
         >
           <Globe className="w-3.5 h-3.5" />
-          <span>Search {useSearch && selectedModel === 'gemini-3.8-flash' ? 'ON' : 'OFF'}</span>
+          <span>Search {useSearch && selectedModel === 'gemini-4-hydrogen' ? 'ON' : 'OFF'}</span>
         </button>
       </div>
+
+      {selectedModel === 'gemini-4-argon' && (
+        <div className="px-4 py-1.5 bg-amber-500/10 border-b border-amber-500/20 text-[11px] text-amber-300">
+          Note: <strong>gemini-4-argon</strong> requires a Google Cloud paid billing key; free tier keys return a quota error.
+        </div>
+      )}
 
       {/* Scrollable Message Thread */}
       <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
@@ -401,8 +416,16 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
                           : msg.errorInfo.type === 'DAILY_QUOTA_EXHAUSTED'
                           ? 'Daily Quota Limit Reached'
                           : msg.errorInfo.type === 'MODEL_TEMPORARILY_OVERLOADED'
-                          ? 'Model Temporarily at Capacity'
-                          : 'Gemini Request Limit'}
+                          ? 'Model Temporarily Unavailable'
+                          : msg.errorInfo.type === 'API_KEY_ERROR'
+                          ? 'Server API Key Configuration Issue'
+                          : msg.errorInfo.type === 'CONFIG_MISSING'
+                          ? 'Backend API URL Not Configured'
+                          : msg.errorInfo.type === 'NETWORK_ERROR'
+                          ? 'Backend Connection Unavailable'
+                          : msg.errorInfo.type === 'RATE_LIMIT_EXCEEDED'
+                          ? 'Too Many Requests'
+                          : 'Gemini Request Error'}
                       </h4>
                       <p className="mt-1 text-xs text-slate-200">{msg.content}</p>
                     </div>
@@ -490,7 +513,7 @@ export const GeminiChatbot: React.FC<GeminiChatbotProps> = ({
             </div>
             <div className="bg-[#111827] border border-slate-800 rounded-2xl p-3 flex items-center gap-2 text-xs text-slate-300">
               <Loader2 className="w-4 h-4 animate-spin text-[#F3B542]" />
-              <span>Thinking with {selectedModel}{useSearch && selectedModel === 'gemini-3.8-flash' ? ' & Google Search' : ''}...</span>
+              <span>Thinking with {selectedModel}{useSearch && selectedModel === 'gemini-4-hydrogen' ? ' & Google Search' : ''}...</span>
             </div>
           </div>
         )}

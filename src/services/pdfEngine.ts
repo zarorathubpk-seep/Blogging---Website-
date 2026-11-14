@@ -190,6 +190,10 @@ export async function rearrangePdfPages(file: File, newOrder: number[]): Promise
     .map((p) => p - 1)
     .filter((idx) => idx >= 0 && idx < totalPages);
 
+  if (validIndices.length === 0) {
+    throw new Error('Please enter at least one valid page number within the document range.');
+  }
+
   const copiedPages = await targetPdf.copyPages(srcPdf, validIndices);
   copiedPages.forEach((p) => targetPdf.addPage(p));
 
@@ -480,6 +484,24 @@ export async function unlockPdf(
   }
 }
 
+export interface RedactionResult {
+  bytes: Uint8Array;
+  sanitizedPageCount: number;
+  totalRedactionsApplied: number;
+  isRasterSanitized: boolean;
+}
+
+/**
+ * True Irreversible Redaction:
+ * Standard PDF black rectangles only visually obscure text while leaving underlying vector glyphs
+ * and selectable text in the document content stream.
+ *
+ * This function permanently eradicates underlying text, hidden font streams, and image bytes by:
+ * 1. Rendering target pages via PDF.js to an offscreen high-resolution 2D pixel buffer.
+ * 2. Overwriting the redaction coordinates with solid black pixels in the pixel matrix.
+ * 3. Replacing the page content stream with the sanitized raster image, completely eliminating all
+ *    underlying text operators (Tj, TJ) so no software or parser can ever extract the redacted data.
+ */
 export async function redactPdf(
   file: File,
   redactions: RedactionZone[]
@@ -489,26 +511,122 @@ export async function redactPdf(
   }
 
   const arrayBuffer = await file.arrayBuffer();
-  const pdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
-  const totalPages = pdf.getPageCount();
+  const srcPdf = await PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+  const totalPages = srcPdf.getPageCount();
 
+  // Group redactions by page number
+  const redactionsByPage = new Map<number, RedactionZone[]>();
   for (const item of redactions) {
-    const pageIdx = item.page - 1;
-    if (pageIdx >= 0 && pageIdx < totalPages) {
-      const page = pdf.getPage(pageIdx);
-      page.drawRectangle({
-        x: item.x,
-        y: item.y,
-        width: item.width,
-        height: item.height,
-        color: rgb(0, 0, 0),
-        borderColor: rgb(0, 0, 0),
-        borderWidth: 1,
-      });
+    const p = item.page;
+    if (p >= 1 && p <= totalPages) {
+      if (!redactionsByPage.has(p)) {
+        redactionsByPage.set(p, []);
+      }
+      redactionsByPage.get(p)!.push(item);
     }
   }
 
-  return await pdf.save();
+  if (redactionsByPage.size === 0) {
+    throw new Error('No valid redaction zones matched the pages in this document.');
+  }
+
+  // True irreversible stream eradication requires browser Canvas + PDF.js rasterization
+  if (typeof window === 'undefined' || typeof document === 'undefined') {
+    throw new Error(
+      'Irreversible PDF redaction requires a browser Canvas rendering context to permanently sanitize content streams.'
+    );
+  }
+
+  try {
+    const pdfjsLib = await import('pdfjs-dist');
+    const workerUrl = (await import('pdfjs-dist/build/pdf.worker.min.js?url')).default;
+    if (pdfjsLib.GlobalWorkerOptions) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
+    }
+
+    const loadingTask = pdfjsLib.getDocument({
+      data: new Uint8Array(arrayBuffer),
+      useSystemFonts: true,
+    });
+    const pdfjsDoc = await loadingTask.promise;
+
+    try {
+      const outputPdf = await PDFDocument.create();
+
+      for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+        const pageRedactions = redactionsByPage.get(pageNum);
+
+        if (!pageRedactions || pageRedactions.length === 0) {
+          // No redactions on this page: copy original vector page directly
+          const [copiedPage] = await outputPdf.copyPages(srcPdf, [pageNum - 1]);
+          outputPdf.addPage(copiedPage);
+          continue;
+        }
+
+        // Render page with PDF.js at 2.0x scale (~144-200 DPI) for high clarity
+        const pdfPage = await pdfjsDoc.getPage(pageNum);
+        const originalViewport = pdfPage.getViewport({ scale: 1.0 });
+        const renderScale = 2.0;
+        const viewport = pdfPage.getViewport({ scale: renderScale });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.floor(viewport.width);
+        canvas.height = Math.floor(viewport.height);
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+
+        if (!ctx) {
+          throw new Error('Canvas 2D context unavailable for secure redaction.');
+        }
+
+        // Render pure page onto canvas
+        await (pdfPage.render as any)({
+          canvasContext: ctx,
+          viewport,
+        }).promise;
+
+        // Permanently overwrite redaction regions in pixel buffer
+        ctx.fillStyle = '#000000';
+        for (const zone of pageRedactions) {
+          // PDF coordinate system has Y=0 at bottom-left; Canvas has Y=0 at top-left
+          const canvasX = (zone.x / originalViewport.width) * canvas.width;
+          const canvasY =
+            ((originalViewport.height - zone.y - zone.height) / originalViewport.height) *
+            canvas.height;
+          const canvasW = (zone.width / originalViewport.width) * canvas.width;
+          const canvasH = (zone.height / originalViewport.height) * canvas.height;
+
+          ctx.fillRect(canvasX, canvasY, canvasW, canvasH);
+        }
+
+        // Export sanitized image as high-quality PNG/JPEG bytes
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+        canvas.width = 0;
+        canvas.height = 0;
+
+        const imageBytes = await (await fetch(dataUrl)).arrayBuffer();
+        const embeddedImage = await outputPdf.embedJpg(imageBytes);
+
+        // Add page matching original dimensions and draw the sanitized raster image
+        const newPage = outputPdf.addPage([originalViewport.width, originalViewport.height]);
+        newPage.drawImage(embeddedImage, {
+          x: 0,
+          y: 0,
+          width: originalViewport.width,
+          height: originalViewport.height,
+        });
+      }
+
+      return await outputPdf.save();
+    } finally {
+      if (typeof pdfjsDoc.destroy === 'function') {
+        pdfjsDoc.destroy();
+      }
+    }
+  } catch (err: any) {
+    throw new Error(
+      `Secure redaction failed: could not raster-sanitize target pages (${err?.message || 'Canvas rendering error'}). To protect your privacy, no partially redacted PDF was created.`
+    );
+  }
 }
 
 export async function createPdfDoc(doc: {
@@ -754,14 +872,20 @@ export async function pdfToPdfA(file: File): Promise<Uint8Array> {
   const now = new Date();
   const isoDate = now.toISOString();
   const title = file.name.replace(/\.pdf$/i, '');
+  const escapedTitle = title
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
   pdf.setTitle(title);
   pdf.setAuthor('ToolCrest Archival Engine');
-  pdf.setCreator('ToolCrest PDF/A ISO-19005-1b Encoder');
-  pdf.setProducer('ToolCrest High-Precision PDF Core');
+  pdf.setCreator('ToolCrest PDF/A-1b Preparation Tool');
+  pdf.setProducer('ToolCrest Precision PDF Core');
   pdf.setCreationDate(now);
   pdf.setModificationDate(now);
 
-  // Embed standard ISO 19005-1b XMP Metadata packet
+  // Embed ISO 19005-1b XMP Metadata packet (Note: formal ISO validation requires external validator like veraPDF)
   const xmpMetadata = `<?xpacket begin="" id="W5M0MpCehiHzreSzNTczkc9d"?>
 <x:xmpmeta xmlns:x="adobe:ns:meta/">
   <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
@@ -770,7 +894,7 @@ export async function pdfToPdfA(file: File): Promise<Uint8Array> {
       <pdfaid:conformance>B</pdfaid:conformance>
     </rdf:Description>
     <rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">
-      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${title}</rdf:li></rdf:Alt></dc:title>
+      <dc:title><rdf:Alt><rdf:li xml:lang="x-default">${escapedTitle}</rdf:li></rdf:Alt></dc:title>
       <dc:creator><rdf:Seq><rdf:li>ToolCrest Archival Engine</rdf:li></rdf:Seq></dc:creator>
       <dc:date><rdf:Seq><rdf:li>${isoDate}</rdf:li></rdf:Seq></dc:date>
     </rdf:Description>

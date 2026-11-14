@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import JSZip from 'jszip';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import {
@@ -253,46 +254,23 @@ export const PdfToImageTool: React.FC<PdfToImageToolProps> = ({ onNavigate }) =>
 
         {/* Upload State */}
         {!file ? (
-          <div className="mt-8 bg-[#1B1D22] border-2 border-dashed border-slate-700 hover:border-[#D4AF37] rounded-2xl p-10 sm:p-14 text-center transition-all shadow-xl">
-            <input
-              ref={fileInputRef}
-              type="file"
+          <div className="mt-8 space-y-4">
+            <FileUploadZone
+              onFilesSelected={(files) => files[0] && handleFileSelect(files[0])}
               accept=".pdf,application/pdf"
-              onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
-              className="hidden"
+              multiple={false}
+              maxSizeMB={100}
+              disabled={isLoadingDoc}
+              title={isLoadingDoc ? 'Analyzing PDF...' : 'Drag & drop a PDF here to convert to PNG or JPG'}
+              subtitle="Extract individual pages as crisp PNG or JPG graphics • 100% Client-Side"
+              fileTypeLabel="PDF"
             />
-            <div className="max-w-md mx-auto space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#101114] border border-slate-700 flex items-center justify-center text-[#D4AF37] shadow-md">
-                <FileImage className="w-8 h-8" />
+            {errorMessage && (
+              <div className="p-4 rounded-xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+                <span>{errorMessage}</span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-[#F5F5F5]">Select a PDF to Convert to Images</h2>
-                <p className="text-sm text-[#B5B8BE] mt-1">
-                  Extract individual pages as crisp PNG or JPG graphics.
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled={isLoadingDoc}
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-[#D4AF37] hover:bg-[#E6C768] text-[#101114] font-bold rounded-xl transition shadow-lg cursor-pointer flex items-center gap-2 mx-auto disabled:opacity-40"
-              >
-                {isLoadingDoc ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin text-[#101114]" />
-                    <span>Analyzing PDF...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-5 h-5" />
-                    <span>Choose PDF Document</span>
-                  </>
-                )}
-              </button>
-              <p className="text-xs text-[#B5B8BE]/80">
-                100% Client-Side • Private & Fast • Zero Server Uploads
-              </p>
-            </div>
+            )}
           </div>
         ) : (
           /* Active Document Workspace */

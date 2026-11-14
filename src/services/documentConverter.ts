@@ -6,6 +6,7 @@ import PptxGenJS from 'pptxgenjs';
 import * as XLSX from 'xlsx';
 import JSZip from 'jszip';
 import { createWorker } from 'tesseract.js';
+import { getBackendEndpoint } from '../utils/backendConfig';
 
 // Configure local PDF.js worker
 if (typeof window !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
@@ -53,6 +54,7 @@ export async function extractTextAndStructureFromPdf(
       str: string;
       x: number;
       y: number;
+      width: number;
     }
 
     const items: TextItemCoord[] = [];
@@ -60,7 +62,8 @@ export async function extractTextAndStructureFromPdf(
       if (item.str && typeof item.str === 'string') {
         const x = item.transform ? item.transform[4] : 0;
         const y = item.transform ? item.transform[5] : 0;
-        items.push({ str: item.str, x, y });
+        const width = typeof item.width === 'number' ? item.width : item.str.length * 4.5;
+        items.push({ str: item.str, x, y, width });
       }
     }
 
@@ -68,10 +71,10 @@ export async function extractTextAndStructureFromPdf(
     items.sort((a, b) => b.y - a.y || a.x - b.x);
 
     const lineGroups: TextItemCoord[][] = [];
-    const Y_TOLERANCE = 8; // Points tolerance for same line
+    const Y_TOLERANCE = 6; // Points tolerance for same line
 
     for (const item of items) {
-      let matchedGroup = lineGroups.find(
+      const matchedGroup = lineGroups.find(
         (group) => Math.abs(group[0].y - item.y) <= Y_TOLERANCE
       );
       if (matchedGroup) {
@@ -82,18 +85,35 @@ export async function extractTextAndStructureFromPdf(
     }
 
     // Sort items within each line group from left to right (ascending X)
+    // Group adjacent spans with small horizontal gaps (< 14pt) into the same cell so multi-word phrases stay together
     const pageLines: string[] = [];
     const tableRows: string[][] = [];
 
     for (const group of lineGroups) {
       group.sort((a, b) => a.x - b.x);
-      const lineText = group.map((it) => it.str).join(' ').trim();
+
+      const cells: string[] = [];
+      let currentCell = '';
+      let prevEndX = -Infinity;
+
+      for (const it of group) {
+        const cleanStr = it.str.trim();
+        if (!cleanStr) continue;
+        const gap = prevEndX === -Infinity ? 0 : it.x - prevEndX;
+        if (prevEndX === -Infinity || gap < 14) {
+          currentCell = currentCell ? `${currentCell} ${cleanStr}` : cleanStr;
+        } else {
+          if (currentCell) cells.push(currentCell);
+          currentCell = cleanStr;
+        }
+        prevEndX = Math.max(prevEndX, it.x + Math.max(it.width, cleanStr.length * 4.2));
+      }
+      if (currentCell) cells.push(currentCell);
+
+      const lineText = cells.join(' ').trim();
       if (lineText) {
         pageLines.push(lineText);
       }
-
-      // If line contains multiple distinct spaced items, treat as table row
-      const cells = group.map((it) => it.str.trim()).filter(Boolean);
       if (cells.length > 0) {
         tableRows.push(cells);
       }
@@ -414,137 +434,354 @@ export async function editPdfDocument(
 }
 
 /**
- * Dictionary-based translation helper for common technical and administrative terms
+ * Parse real Microsoft Word (.docx) ZIP/XML or plain text files client-side.
  */
-const DICTIONARIES: Record<string, Record<string, string>> = {
-  Spanish: {
-    document: 'documento',
-    invoice: 'factura',
-    report: 'informe',
-    summary: 'resumen',
-    total: 'total',
-    date: 'fecha',
-    name: 'nombre',
-    description: 'descripción',
-    amount: 'cantidad',
-    notes: 'notas',
-    page: 'página',
-    agreement: 'acuerdo',
-    contract: 'contrato',
-    overview: 'visión general',
-    project: 'proyecto',
-    status: 'estado',
-    approved: 'aprobado',
-    pending: 'pendiente',
-    completed: 'completado',
-  },
-  French: {
-    document: 'document',
-    invoice: 'facture',
-    report: 'rapport',
-    summary: 'résumé',
-    total: 'total',
-    date: 'date',
-    name: 'nom',
-    description: 'description',
-    amount: 'montant',
-    notes: 'remarques',
-    page: 'page',
-    agreement: 'accord',
-    contract: 'contrat',
-    overview: 'aperçu',
-    project: 'projet',
-    status: 'statut',
-    approved: 'approuvé',
-    pending: 'en attente',
-    completed: 'terminé',
-  },
-  German: {
-    document: 'Dokument',
-    invoice: 'Rechnung',
-    report: 'Bericht',
-    summary: 'Zusammenfassung',
-    total: 'Gesamt',
-    date: 'Datum',
-    name: 'Name',
-    description: 'Beschreibung',
-    amount: 'Betrag',
-    notes: 'Notizen',
-    page: 'Seite',
-    agreement: 'Vereinbarung',
-    contract: 'Vertrag',
-    overview: 'Übersicht',
-    project: 'Projekt',
-    status: 'Status',
-    approved: 'genehmigt',
-    pending: 'ausstehend',
-    completed: 'abgeschlossen',
-  },
-};
+export async function parseDocxOrTextFile(file: File): Promise<{ title: string; content: string }> {
+  const lower = file.name.toLowerCase();
+  const baseTitle = file.name.replace(/\.[^/.]+$/, '') || 'Document';
 
-/**
- * Translates text and compiles a translated PDF.
- */
-export async function translatePdfDocument(
-  file: File,
-  targetLanguage: string
-): Promise<{ translatedText: string; pdfBytes: Uint8Array }> {
-  const content = await extractTextAndStructureFromPdf(file);
-  const dict = DICTIONARIES[targetLanguage] || DICTIONARIES.Spanish;
-
-  const translatedPages: string[] = [];
-
-  for (const page of content.pages) {
-    const translatedLines = page.lines.map((line) => {
-      let trLine = line;
-      for (const [enWord, trWord] of Object.entries(dict)) {
-        const regex = new RegExp(`\\b${enWord}\\b`, 'gi');
-        trLine = trLine.replace(regex, trWord);
-      }
-      return trLine;
-    });
-    translatedPages.push(translatedLines.join('\n'));
+  if (lower.endsWith('.doc') && !lower.endsWith('.docx')) {
+    throw new Error(
+      'Legacy binary .doc format is not supported directly in-browser. Please save as .docx or .txt and re-upload.'
+    );
   }
 
-  const translatedFullText = translatedPages.join('\n\n--- Page Break ---\n\n');
+  if (lower.endsWith('.txt') || lower.endsWith('.md') || file.type.startsWith('text/')) {
+    const txt = await file.text();
+    if (!txt.trim()) {
+      throw new Error('The uploaded text file appears to be empty.');
+    }
+    return { title: baseTitle, content: txt };
+  }
 
-  // Build clean translated PDF using pdf-lib
-  const pdfDoc = await PDFDocument.create();
-  const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
-  const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+  if (!lower.endsWith('.docx')) {
+    throw new Error('Unsupported document format. Please upload a .docx or .txt file.');
+  }
 
-  for (let i = 0; i < translatedPages.length; i++) {
-    const pageText = translatedPages[i];
-    const page = pdfDoc.addPage([595, 842]); // A4
-    const lines = pageText.split('\n');
+  const buffer = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buffer);
+  const docXmlFile = zip.file('word/document.xml');
+  if (!docXmlFile) {
+    throw new Error('Invalid .docx archive: missing word/document.xml.');
+  }
 
-    page.drawText(`Translated to ${targetLanguage} - Page ${i + 1}`, {
-      x: 40,
-      y: 800,
-      size: 14,
-      font: boldFont,
-      color: rgb(0.1, 0.1, 0.15),
-    });
+  const xmlString = await docXmlFile.async('string');
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
+  const paragraphs = Array.from(xmlDoc.getElementsByTagName('w:p'));
 
-    let y = 770;
-    for (const line of lines) {
-      if (y < 40) break;
-      const truncated = line.slice(0, 95);
-      page.drawText(truncated, {
-        x: 40,
-        y,
-        size: 10,
-        font,
-        color: rgb(0.2, 0.2, 0.25),
-      });
-      y -= 14;
+  const extractedLines: string[] = [];
+  for (const p of paragraphs) {
+    const pStyle = p.getElementsByTagName('w:pStyle')[0]?.getAttribute('w:val') || '';
+    const runs = Array.from(p.getElementsByTagName('w:t'));
+    const text = runs.map((r) => r.textContent || '').join('');
+    const trimmed = text.trim();
+    if (!trimmed) continue;
+
+    if (/heading1|title/i.test(pStyle)) {
+      extractedLines.push(`# ${trimmed}`);
+    } else if (/heading[2-6]|subtitle/i.test(pStyle)) {
+      extractedLines.push(`## ${trimmed}`);
+    } else {
+      extractedLines.push(trimmed);
     }
   }
 
-  const pdfBytes = await pdfDoc.save();
+  if (extractedLines.length === 0) {
+    throw new Error('No readable text paragraphs found inside this .docx file.');
+  }
+
   return {
-    translatedText: translatedFullText,
+    title: baseTitle,
+    content: extractedLines.join('\n\n'),
+  };
+}
+
+/**
+ * Parse real Microsoft PowerPoint (.pptx) ZIP/XML files into slide structures.
+ */
+export async function parsePptxFile(
+  file: File
+): Promise<{ title: string; slides: { title: string; bullets: string[] }[] }> {
+  const lower = file.name.toLowerCase();
+  const baseTitle = file.name.replace(/\.[^/.]+$/, '') || 'Presentation';
+
+  if (!lower.endsWith('.pptx')) {
+    throw new Error('Unsupported presentation format. Please upload a .pptx file.');
+  }
+
+  const buffer = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buffer);
+  const slidePaths = Object.keys(zip.files)
+    .filter((name) => /^ppt\/slides\/slide\d+\.xml$/i.test(name))
+    .sort((a, b) => {
+      const numA = parseInt(a.match(/slide(\d+)\.xml/i)?.[1] || '0', 10);
+      const numB = parseInt(b.match(/slide(\d+)\.xml/i)?.[1] || '0', 10);
+      return numA - numB;
+    });
+
+  if (slidePaths.length === 0) {
+    throw new Error('Invalid .pptx file: no slide XML entries were found.');
+  }
+
+  const parser = new DOMParser();
+  const slides: { title: string; bullets: string[] }[] = [];
+
+  for (let i = 0; i < slidePaths.length; i++) {
+    const xmlStr = await zip.files[slidePaths[i]].async('string');
+    const xmlDoc = parser.parseFromString(xmlStr, 'application/xml');
+    const paras = Array.from(xmlDoc.getElementsByTagName('a:p'));
+
+    const lines: string[] = [];
+    for (const p of paras) {
+      const texts = Array.from(p.getElementsByTagName('a:t'))
+        .map((t) => t.textContent || '')
+        .join('')
+        .trim();
+      if (texts) lines.push(texts);
+    }
+
+    const slideTitle = lines[0] || `Slide ${i + 1}`;
+    const bullets = lines.length > 1 ? lines.slice(1) : ['(No body text on slide)'];
+    slides.push({ title: slideTitle, bullets });
+  }
+
+  return { title: baseTitle, slides };
+}
+
+/**
+ * Parse real Microsoft Excel (.xlsx, .xls) or CSV spreadsheets via SheetJS.
+ */
+export async function parseSpreadsheetFile(
+  file: File
+): Promise<{ title: string; headers: string[]; rows: string[][] }> {
+  const baseTitle = file.name.replace(/\.[^/.]+$/, '') || 'Spreadsheet';
+  const buffer = await file.arrayBuffer();
+  const workbook = XLSX.read(buffer, { type: 'array' });
+
+  const firstSheetName = workbook.SheetNames[0];
+  if (!firstSheetName) {
+    throw new Error('No worksheets found inside the uploaded spreadsheet.');
+  }
+
+  const sheet = workbook.Sheets[firstSheetName];
+  const rawMatrix = XLSX.utils.sheet_to_json<any[]>(sheet, { header: 1, defval: '' });
+  const nonEmpty = rawMatrix.filter((r) => Array.isArray(r) && r.some((cell) => String(cell).trim() !== ''));
+
+  if (nonEmpty.length === 0) {
+    throw new Error('The uploaded worksheet contains no tabular data.');
+  }
+
+  const maxCols = Math.max(...nonEmpty.map((r) => r.length), 1);
+  const normalizeRow = (r: any[]) =>
+    Array.from({ length: maxCols }, (_, idx) => String(r[idx] ?? '').trim());
+
+  const headers = normalizeRow(nonEmpty[0]).map((h, i) => h || `Column ${i + 1}`);
+  const rows = nonEmpty.slice(1).map(normalizeRow);
+
+  return {
+    title: `${baseTitle} (${firstSheetName})`,
+    headers,
+    rows: rows.length > 0 ? rows : [headers.map(() => '')],
+  };
+}
+
+/**
+ * Renders multi-page Unicode text cleanly onto PDF pages (supports Latin, Arabic, Urdu, Hindi, CJK, Cyrillic)
+ * using Canvas typography so non-WinAnsi scripts never fail inside pdf-lib StandardFonts.
+ */
+async function buildUnicodeTextPdf(heading: string, bodyText: string): Promise<Uint8Array> {
+  const pdfDoc = await PDFDocument.create();
+
+  // Check if plain WinAnsi ASCII-safe
+  const isWinAnsiSafe = /^[\x09\x0A\x0D\x20-\x7E\xA0-\xFF]*$/.test(`${heading}\n${bodyText}`);
+
+  if (isWinAnsiSafe) {
+    const font = await pdfDoc.embedFont(StandardFonts.Helvetica);
+    const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold);
+    const margin = 44;
+    const maxWidth = 595.28 - margin * 2;
+
+    let page = pdfDoc.addPage([595.28, 841.89]);
+    let y = 800;
+
+    page.drawText(heading, { x: margin, y, size: 14, font: boldFont, color: rgb(0.1, 0.1, 0.15) });
+    y -= 26;
+
+    const paragraphs = bodyText.split('\n');
+    for (const para of paragraphs) {
+      if (!para.trim()) {
+        y -= 10;
+        continue;
+      }
+      const words = para.split(' ');
+      let currentLine = '';
+      for (const word of words) {
+        const test = currentLine ? `${currentLine} ${word}` : word;
+        if (font.widthOfTextAtSize(test, 10) > maxWidth) {
+          if (y < 48) {
+            page = pdfDoc.addPage([595.28, 841.89]);
+            y = 795;
+          }
+          page.drawText(currentLine, { x: margin, y, size: 10, font, color: rgb(0.15, 0.18, 0.22) });
+          y -= 15;
+          currentLine = word;
+        } else {
+          currentLine = test;
+        }
+      }
+      if (currentLine) {
+        if (y < 48) {
+          page = pdfDoc.addPage([595.28, 841.89]);
+          y = 795;
+        }
+        page.drawText(currentLine, { x: margin, y, size: 10, font, color: rgb(0.15, 0.18, 0.22) });
+        y -= 17;
+      }
+    }
+    return await pdfDoc.save();
+  }
+
+  // Unicode Canvas Raster Renderer for Arabic, Urdu, Hindi, CJK, Cyrillic, etc.
+  if (typeof document === 'undefined') {
+    throw new Error('Canvas unavailable to render non-Latin translated script to PDF.');
+  }
+
+  const pageW = 1190; // 2x A4
+  const pageH = 1684;
+  const margin = 80;
+  const maxTextW = pageW - margin * 2;
+  const lineHeight = 34;
+
+  const measureCanvas = document.createElement('canvas');
+  const mCtx = measureCanvas.getContext('2d')!;
+  mCtx.font = '22px "Plus Jakarta Sans", system-ui, sans-serif';
+
+  const wrappedLines: string[] = [];
+  for (const rawLine of bodyText.split('\n')) {
+    if (!rawLine.trim()) {
+      wrappedLines.push('');
+      continue;
+    }
+    const words = rawLine.split(' ');
+    let cur = '';
+    for (const w of words) {
+      const test = cur ? `${cur} ${w}` : w;
+      if (mCtx.measureText(test).width > maxTextW) {
+        if (cur) wrappedLines.push(cur);
+        cur = w;
+      } else {
+        cur = test;
+      }
+    }
+    if (cur) wrappedLines.push(cur);
+  }
+
+  let cursor = 0;
+  let pageIndex = 0;
+  while (cursor < wrappedLines.length || pageIndex === 0) {
+    const canvas = document.createElement('canvas');
+    canvas.width = pageW;
+    canvas.height = pageH;
+    const ctx = canvas.getContext('2d')!;
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, pageW, pageH);
+
+    let y = margin + 28;
+    if (pageIndex === 0) {
+      ctx.fillStyle = '#0f172a';
+      ctx.font = 'bold 30px "Plus Jakarta Sans", system-ui, sans-serif';
+      ctx.fillText(heading, margin, y);
+      y += 50;
+    }
+
+    ctx.fillStyle = '#1e293b';
+    ctx.font = '22px "Plus Jakarta Sans", system-ui, sans-serif';
+    while (cursor < wrappedLines.length && y < pageH - margin) {
+      if (wrappedLines[cursor]) {
+        ctx.fillText(wrappedLines[cursor], margin, y);
+      }
+      y += lineHeight;
+      cursor++;
+    }
+
+    const jpgUrl = canvas.toDataURL('image/jpeg', 0.92);
+    canvas.width = 0;
+    canvas.height = 0;
+
+    const jpgBytes = await (await fetch(jpgUrl)).arrayBuffer();
+    const embedded = await pdfDoc.embedJpg(jpgBytes);
+    const pdfPage = pdfDoc.addPage([595.28, 841.89]);
+    pdfPage.drawImage(embedded, { x: 0, y: 0, width: 595.28, height: 841.89 });
+    pageIndex++;
+  }
+
+  return await pdfDoc.save();
+}
+
+/**
+ * Genuine PDF / Text translation powered by secure ToolCrest backend (/api/translate).
+ * Never silently returns untranslated English text on failure.
+ */
+export async function translatePdfDocument(
+  file: File | null,
+  targetLanguageLabel: string,
+  customText?: string
+): Promise<{ translatedText: string; pdfBytes: Uint8Array; sourceExtractedChars: number }> {
+  let sourceText = (customText || '').trim();
+
+  if (file) {
+    const content = await extractTextAndStructureFromPdf(file);
+    const extracted = content.fullText.trim();
+    if (!extracted) {
+      throw new Error(
+        'No extractable text was found in this PDF (it may be a scanned image). Please run OCR PDF first, or paste text directly.'
+      );
+    }
+    sourceText = extracted;
+  }
+
+  if (!sourceText) {
+    throw new Error('Please upload a text-based PDF or enter text to translate.');
+  }
+
+  const translateEndpoint = getBackendEndpoint('/api/translate');
+  if (!translateEndpoint) {
+    throw new Error(
+      'AI Translation requires a live ToolCrest backend server (VITE_BACKEND_API_URL is not configured for this static build).'
+    );
+  }
+
+  const response = await fetch(translateEndpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      text: sourceText.slice(0, 12000),
+      targetLanguage: targetLanguageLabel,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(
+      data.error || `Translation service failed with HTTP ${response.status}.`
+    );
+  }
+
+  const translatedText = String(data.translatedText || '').trim();
+  if (!translatedText) {
+    throw new Error('Translation service returned an empty translation.');
+  }
+
+  const pdfBytes = await buildUnicodeTextPdf(
+    `Translated Document (${targetLanguageLabel})`,
+    translatedText
+  );
+
+  return {
+    translatedText,
     pdfBytes,
+    sourceExtractedChars: sourceText.length,
   };
 }
 

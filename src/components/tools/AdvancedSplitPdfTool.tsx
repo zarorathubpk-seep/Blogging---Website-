@@ -27,6 +27,7 @@ import {
 } from 'lucide-react';
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import {
@@ -372,38 +373,15 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
 
       {/* Upload Dropzone if no file selected */}
       {!file && (
-        <div
-          onClick={() => fileInputRef.current?.click()}
-          onDragOver={(e) => e.preventDefault()}
-          onDrop={(e) => {
-            e.preventDefault();
-            if (e.dataTransfer.files?.[0]) {
-              handleSelectFile(e.dataTransfer.files[0]);
-            }
-          }}
-          className="border-2 border-dashed border-amber-500/35 hover:border-amber-400 bg-[#0c101d] hover:bg-amber-500/5 rounded-3xl p-10 sm:p-14 text-center cursor-pointer transition space-y-4 group shadow-2xl"
-        >
-          <div className="w-16 h-16 rounded-3xl bg-[#0e1424] text-amber-400 border border-amber-500/30 group-hover:border-amber-400 flex items-center justify-center mx-auto shadow-md transition group-hover:scale-105">
-            <UploadCloud className="w-8 h-8" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-bold text-white text-base">
-              Drop your PDF here, or <span className="text-amber-400 underline font-black">browse files</span>
-            </h3>
-            <p className="text-xs text-slate-400">
-              Supports single or multi-page documents. All processing executes securely in your browser.
-            </p>
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,application/pdf"
-            onChange={(e) => {
-              if (e.target.files?.[0]) handleSelectFile(e.target.files[0]);
-            }}
-            className="hidden"
-          />
-        </div>
+        <FileUploadZone
+          onFilesSelected={(files) => files[0] && handleSelectFile(files[0])}
+          accept=".pdf,application/pdf"
+          multiple={false}
+          maxSizeMB={100}
+          title="Drag & drop your PDF here, or browse files"
+          subtitle="Supports single or multi-page documents. All processing executes securely in your browser."
+          fileTypeLabel="PDF"
+        />
       )}
 
       {/* Loading Document Indicator */}

@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  UploadCloud,
-  Layers,
+  GripVertical,
   Trash2,
   Download,
   Plus,
@@ -13,11 +12,11 @@ import {
   CheckCircle2,
   AlertCircle,
   FileText,
-  RotateCw,
   Sparkles,
 } from 'lucide-react';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, degrees } from 'pdf-lib';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
@@ -62,13 +61,20 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successInfo, setSuccessInfo] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [draggedDocIdx, setDraggedDocIdx] = useState<number | null>(null);
+  const [dragOverDocIdx, setDragOverDocIdx] = useState<number | null>(null);
+
   const addMoreInputRef = useRef<HTMLInputElement | null>(null);
+  const docsRef = useRef<MergeDocItem[]>([]);
+
+  useEffect(() => {
+    docsRef.current = docs;
+  }, [docs]);
 
   // Clean up engines on unmount
   useEffect(() => {
     return () => {
-      docs.forEach((d) => d.engine.destroy());
+      docsRef.current.forEach((d) => d.engine.destroy());
     };
   }, []);
 
@@ -159,14 +165,21 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
     }
   };
 
+  const reorderDoc = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex || fromIndex < 0 || toIndex < 0 || fromIndex >= docs.length || toIndex >= docs.length) {
+      return;
+    }
+    const copy = [...docs];
+    const [moved] = copy.splice(fromIndex, 1);
+    copy.splice(toIndex, 0, moved);
+    setDocs(copy);
+    setProcessedBytes(null);
+  };
+
   const moveDoc = (index: number, direction: 'up' | 'down') => {
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     if (targetIndex < 0 || targetIndex >= docs.length) return;
-    const copy = [...docs];
-    const [moved] = copy.splice(index, 1);
-    copy.splice(targetIndex, 0, moved);
-    setDocs(copy);
-    setProcessedBytes(null);
+    reorderDoc(index, targetIndex);
   };
 
   const removeDoc = (docId: string) => {
@@ -269,7 +282,7 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
           const rotationOffset = activePages[idx].rotation;
           if (rotationOffset > 0) {
             const current = page.getRotation().angle;
-            page.setRotation(page.getRotation() ? { angle: (current + rotationOffset) % 360 } as any : undefined);
+            page.setRotation(degrees((current + rotationOffset) % 360));
           }
           mergedPdf.addPage(page);
         });
@@ -315,51 +328,39 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
 
         {/* Upload Zone */}
         {docs.length === 0 ? (
-          <div className="mt-8 bg-[#1B1D22] border-2 border-dashed border-slate-700 hover:border-[#D4AF37] rounded-2xl p-10 sm:p-14 text-center transition-all shadow-xl">
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
+          <div className="mt-8 space-y-4">
+            <FileUploadZone
+              onFilesSelected={handleAddFiles}
               accept=".pdf,application/pdf"
-              onChange={(e) => e.target.files && handleAddFiles(e.target.files)}
-              className="hidden"
+              multiple={true}
+              maxFiles={40}
+              maxSizeMB={100}
+              disabled={isLoadingFiles}
+              title={isLoadingFiles ? 'Inspecting PDF documents...' : 'Drag & drop multiple PDFs to merge, or browse files'}
+              subtitle="Rearrange document sequence, exclude unwanted pages, rotate, and compile 100% locally."
+              fileTypeLabel="PDF"
             />
-            <div className="max-w-md mx-auto space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#101114] border border-slate-700 flex items-center justify-center text-[#D4AF37] shadow-md">
-                <Layers className="w-8 h-8" />
+            {isLoadingFiles && (
+              <div className="flex items-center justify-center gap-2 text-xs text-amber-300 font-semibold">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Inspecting PDF pages and generating thumbnails...</span>
               </div>
-              <div>
-                <h2 className="text-xl font-bold text-[#F5F5F5]">Select Multiple PDFs to Merge</h2>
-                <p className="text-sm text-[#B5B8BE] mt-1">
-                  Rearrange document sequence, exclude pages, and compile into one file.
-                </p>
-              </div>
-              <button
-                type="button"
-                disabled={isLoadingFiles}
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-[#D4AF37] hover:bg-[#E6C768] text-[#101114] font-bold rounded-xl transition shadow-lg cursor-pointer flex items-center gap-2 mx-auto disabled:opacity-40"
-              >
-                {isLoadingFiles ? (
-                  <>
-                    <Loader2 className="w-5 h-5 animate-spin text-[#101114]" />
-                    <span>Inspecting Files...</span>
-                  </>
-                ) : (
-                  <>
-                    <UploadCloud className="w-5 h-5" />
-                    <span>Choose PDF Files</span>
-                  </>
-                )}
-              </button>
-              <p className="text-xs text-[#B5B8BE]/80">
-                100% Client-Side • Private & Secure • Unlimited Pages
-              </p>
-            </div>
+            )}
           </div>
         ) : (
           /* Active Document Stack */
           <div className="mt-8 space-y-6">
+            <FileUploadZone
+              compact={true}
+              onFilesSelected={handleAddFiles}
+              accept=".pdf,application/pdf"
+              multiple={true}
+              maxFiles={40}
+              maxSizeMB={100}
+              title="Drag & drop more PDFs here to append, or click to browse"
+              fileTypeLabel="PDF"
+            />
+
             {/* Top Toolbar */}
             <div className="bg-[#1B1D22] border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-3">
@@ -368,7 +369,7 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
                 </span>
                 <span className="text-slate-600">|</span>
                 <span className="text-xs text-[#B5B8BE]">
-                  Drag or use arrows to adjust sequence. Expand documents to manage individual pages.
+                  Drag cards or use arrows to adjust sequence. Expand documents to manage individual pages.
                 </span>
               </div>
 
@@ -378,7 +379,10 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
                   type="file"
                   multiple
                   accept=".pdf,application/pdf"
-                  onChange={(e) => e.target.files && handleAddFiles(e.target.files)}
+                  onChange={(e) => {
+                    if (e.target.files) handleAddFiles(e.target.files);
+                    e.target.value = '';
+                  }}
                   className="hidden"
                 />
                 <button
@@ -408,11 +412,37 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
               {docs.map((doc, docIdx) => (
                 <div
                   key={doc.id}
-                  className="bg-[#1B1D22] border border-slate-800 rounded-2xl overflow-hidden shadow-lg"
+                  draggable
+                  onDragStart={() => setDraggedDocIdx(docIdx)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (draggedDocIdx !== null && draggedDocIdx !== docIdx) {
+                      setDragOverDocIdx(docIdx);
+                    }
+                  }}
+                  onDragLeave={() => setDragOverDocIdx(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedDocIdx !== null) reorderDoc(draggedDocIdx, docIdx);
+                    setDraggedDocIdx(null);
+                    setDragOverDocIdx(null);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedDocIdx(null);
+                    setDragOverDocIdx(null);
+                  }}
+                  className={`bg-[#1B1D22] border rounded-2xl overflow-hidden shadow-lg transition-all ${
+                    dragOverDocIdx === docIdx
+                      ? 'border-amber-400 ring-2 ring-amber-400/60'
+                      : draggedDocIdx === docIdx
+                      ? 'opacity-50 border-amber-500/40'
+                      : 'border-slate-800'
+                  }`}
                 >
                   {/* Document Header Bar */}
-                  <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-[#16181D] border-b border-slate-800/80">
+                  <div className="p-4 sm:p-5 flex flex-wrap items-center justify-between gap-3 bg-[#16181D] border-b border-slate-800/80 cursor-grab active:cursor-grabbing">
                     <div className="flex items-center gap-3">
+                      <GripVertical className="w-4 h-4 text-slate-500 shrink-0" />
                       <span className="w-7 h-7 rounded-lg bg-[#101114] border border-slate-700 flex items-center justify-center font-mono font-bold text-xs text-[#D4AF37]">
                         #{docIdx + 1}
                       </span>

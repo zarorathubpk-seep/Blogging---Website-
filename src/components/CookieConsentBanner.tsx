@@ -21,6 +21,8 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onNavi
   const [advertisingEnabled, setAdvertisingEnabled] = useState<boolean>(false);
 
   useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
     // Check if user already made choices
     const stored = getStoredConsentPreferences();
     if (stored) {
@@ -29,12 +31,11 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onNavi
     } else {
       // If CookieYes is installed or active on the site, suppress fallback banner
       if (!isCookieYesActive() && getCookieYesConsent() === null) {
-        const timer = setTimeout(() => {
+        timer = setTimeout(() => {
           if (!isCookieYesActive()) {
             setIsVisible(true);
           }
         }, 1500);
-        return () => clearTimeout(timer);
       }
     }
 
@@ -51,6 +52,7 @@ export const CookieConsentBanner: React.FC<CookieConsentBannerProps> = ({ onNavi
 
     window.addEventListener('toolcrest_open_cookie_preferences', handleOpenPreferences);
     return () => {
+      if (timer) clearTimeout(timer);
       window.removeEventListener('toolcrest_open_cookie_preferences', handleOpenPreferences);
     };
   }, []);

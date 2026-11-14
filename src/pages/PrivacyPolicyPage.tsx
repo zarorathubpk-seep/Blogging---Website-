@@ -65,13 +65,13 @@ export const PrivacyPolicyPage: React.FC<PrivacyPolicyPageProps> = ({ onNavigate
         <section className="space-y-2">
           <h2 className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
             <ShieldCheck className="w-4 h-4 text-amber-500" />
-            1. Core Principle: 100% Client-Side In-Browser Processing
+            1. Core Principle: In-Browser Processing &amp; AI Transmission Disclosure
           </h2>
           <p>
-            At <strong>ToolCrest</strong> (accessible via toolcrest.site), your document confidentiality and privacy are our highest priority. All PDF manipulation features—including password protection, restriction removal, coordinate redaction, page merging, cropping, watermarking, and PDF/A archival generation—<strong>execute strictly inside your web browser’s local memory</strong> via client-side JavaScript.
+            At <strong>ToolCrest</strong> (accessible via toolcrest.site), your document confidentiality and privacy are our highest priority. All core PDF and image utilities—including password protection, restriction removal, raster redaction, page merging, cropping, watermarking, OCR, visual editing, and PDF/A preparation—<strong>execute strictly inside your web browser’s local memory</strong> via client-side JavaScript.
           </p>
           <p>
-            Your confidential files are <strong>never</strong> transmitted to our servers, uploaded to cloud storage, or reviewed by third parties. Once your browser session ends or the tab is closed, all working memory buffers are immediately purged.
+            For those local browser tools, your files are <strong>never</strong> transmitted to our servers or third parties, and all working memory buffers are cleared when the tab is closed. Only optional AI-powered features (<strong>ToolCrest AI Chatbot</strong> and <strong>Translate PDF</strong>) transmit the submitted chat prompt or extracted text snippet over encrypted HTTPS to our Google Gemini backend endpoint strictly to generate your response; ToolCrest does not permanently store those submitted document snippets.
           </p>
         </section>
 

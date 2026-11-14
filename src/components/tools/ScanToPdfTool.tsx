@@ -1,18 +1,18 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   Camera,
-  UploadCloud,
   FileText,
   Download,
   Trash2,
-  Plus,
   Loader2,
   MoveLeft,
   MoveRight,
   ShieldCheck,
+  GripVertical,
 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
@@ -39,8 +39,10 @@ export const ScanToPdfTool: React.FC<ScanToPdfToolProps> = ({ onNavigate }) => {
   const [orientation, setOrientation] = useState<'portrait' | 'landscape'>('portrait');
   const [processedBytes, setProcessedBytes] = useState<Uint8Array | null>(null);
 
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
   const videoRef = useRef<HTMLVideoElement | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // Stop camera when unmounting
   useEffect(() => {
@@ -111,24 +113,44 @@ export const ScanToPdfTool: React.FC<ScanToPdfToolProps> = ({ onNavigate }) => {
     setProcessedBytes(null);
   };
 
-  const handleUploadImages = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e.target.files) return;
-    const files = Array.from(e.target.files);
-    files.forEach((f, idx) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        if (ev.target?.result) {
-          const newPage: ScannedPage = {
-            id: `upload-${Date.now()}-${idx}-${Math.random()}`,
-            dataUrl: ev.target.result as string,
-            name: f.name,
-          };
-          setPages((prev) => [...prev, newPage]);
-          setProcessedBytes(null);
-        }
-      };
-      reader.readAsDataURL(f);
-    });
+  const handleIncomingPhotoFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+    setErrorMessage(null);
+    const validPages: ScannedPage[] = [];
+    const failedNames: string[] = [];
+
+    for (let idx = 0; idx < files.length; idx++) {
+      const f = files[idx];
+      try {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result || ''));
+          reader.onerror = () => reject(new Error('File read failed'));
+          reader.readAsDataURL(f);
+        });
+        await new Promise<void>((resolve, reject) => {
+          const img = new Image();
+          img.onload = () => resolve();
+          img.onerror = () => reject(new Error('Corrupted image'));
+          img.src = dataUrl;
+        });
+        validPages.push({
+          id: `upload-${Date.now()}-${idx}-${Math.random()}`,
+          dataUrl,
+          name: f.name,
+        });
+      } catch {
+        failedNames.push(f.name);
+      }
+    }
+
+    if (validPages.length > 0) {
+      setPages((prev) => [...prev, ...validPages]);
+      setProcessedBytes(null);
+    }
+    if (failedNames.length > 0) {
+      setErrorMessage(`Could not read corrupted/unsupported image file(s): ${failedNames.join(', ')}`);
+    }
   };
 
   const removePage = (index: number) => {
@@ -245,7 +267,7 @@ export const ScanToPdfTool: React.FC<ScanToPdfToolProps> = ({ onNavigate }) => {
       <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
         {/* Top Control Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-slate-800">
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             {!isCameraActive ? (
               <button
                 type="button"
@@ -264,23 +286,6 @@ export const ScanToPdfTool: React.FC<ScanToPdfToolProps> = ({ onNavigate }) => {
                 Close Camera
               </button>
             )}
-
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="px-4 py-2 border border-amber-500/30 bg-[#080c16] hover:bg-slate-800 text-slate-200 font-bold text-xs rounded-xl transition flex items-center gap-2 cursor-pointer"
-            >
-              <UploadCloud className="w-4 h-4 text-amber-400" />
-              <span>Add From Photos</span>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/*"
-              onChange={handleUploadImages}
-              className="hidden"
-            />
           </div>
 
           {/* Filter options */}
@@ -369,21 +374,62 @@ export const ScanToPdfTool: React.FC<ScanToPdfToolProps> = ({ onNavigate }) => {
             )}
           </div>
 
-          {pages.length === 0 ? (
-            <div className="p-8 text-center border-2 border-dashed border-amber-500/25 rounded-2xl bg-[#070a14]">
-              <p className="text-xs text-slate-400">
-                No pages captured yet. Click &quot;Open Device Camera&quot; or &quot;Add From Photos&quot; to begin.
-              </p>
-            </div>
-          ) : (
+          {/* Drag-and-drop photo upload zone */}
+          <FileUploadZone
+            compact={pages.length > 0}
+            accept="image/*"
+            multiple={true}
+            maxFiles={50}
+            title={
+              pages.length > 0
+                ? 'Drag & drop more photos here or click to append'
+                : 'Drag & drop photos or receipts here (or use Camera above)'
+            }
+            subtitle="Supports JPG, PNG, WebP • Mix camera snapshots with gallery photos"
+            fileTypeLabel="Images (JPG, PNG, WebP)"
+            className="mb-4"
+            onFilesSelected={handleIncomingPhotoFiles}
+          />
+
+          {pages.length > 0 && (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {pages.map((p, idx) => (
                 <div
                   key={p.id}
-                  className="bg-[#070a14] border border-amber-500/25 rounded-xl p-2.5 flex flex-col justify-between group shadow-md"
+                  draggable
+                  onDragStart={() => setDraggedIdx(idx)}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (draggedIdx !== null && draggedIdx !== idx) {
+                      setDragOverIdx(idx);
+                    }
+                  }}
+                  onDragLeave={() => setDragOverIdx((prev) => (prev === idx ? null : prev))}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedIdx !== null && draggedIdx !== idx) {
+                      movePage(draggedIdx, idx);
+                    }
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`bg-[#070a14] border rounded-xl p-2.5 flex flex-col justify-between group shadow-md cursor-grab active:cursor-grabbing transition-all ${
+                    draggedIdx === idx ? 'opacity-40 scale-95' : ''
+                  } ${
+                    dragOverIdx === idx
+                      ? 'border-amber-400 ring-2 ring-amber-400/60'
+                      : 'border-amber-500/25'
+                  }`}
                 >
                   <div className="flex items-center justify-between mb-1.5 text-[11px] font-bold text-amber-300">
-                    <span>Page {idx + 1}</span>
+                    <span className="flex items-center gap-1">
+                      <GripVertical className="w-3 h-3 text-slate-500" />
+                      Page {idx + 1}
+                    </span>
                     <button
                       type="button"
                       onClick={() => removePage(idx)}

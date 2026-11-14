@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: toolcrest-ai-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install --legacy-peer-deps
+    startCommand: npx tsx server.ts
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ALLOWED_ORIGINS
+        value: https://toolcrest.site,https://www.toolcrest.site

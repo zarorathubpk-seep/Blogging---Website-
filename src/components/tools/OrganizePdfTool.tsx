@@ -1,13 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { PDFDocument } from 'pdf-lib';
+import { PDFDocument, degrees } from 'pdf-lib';
 import {
-  UploadCloud,
   Layers,
   RotateCw,
-  Trash2,
-  MoveLeft,
-  MoveRight,
-  Copy,
   Download,
   Loader2,
   FileText,
@@ -15,6 +10,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
@@ -33,6 +29,7 @@ interface PageItem {
   rotation: number;
   label: string;
   thumbnailUrl?: string;
+  status: 'rendering' | 'ready' | 'error';
   width?: number;
   height?: number;
 }
@@ -45,7 +42,8 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
   const [isProcessing, setIsProcessing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [processedBytes, setProcessedBytes] = useState<Uint8Array | null>(null);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const engineRef = useRef<PdfThumbnailEngine | null>(null);
 
   React.useEffect(() => {
@@ -65,7 +63,6 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
 
       const buffer = await selectedFile.arrayBuffer();
       const doc = await PDFDocument.load(buffer, { ignoreEncryption: true });
-      const count = doc.getPageCount();
 
       if (engineRef.current) {
         engineRef.current.destroy();
@@ -81,6 +78,7 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
         originalIndex: idx,
         rotation: 0,
         label: `Page ${idx + 1}`,
+        status: 'rendering',
         width: p.width,
         height: p.height,
       }));
@@ -91,15 +89,24 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
 
       // Render thumbnails asynchronously
       for (const p of summary.pages) {
-        engine.renderPageThumbnail(p.pageNumber, p, 0.45).then((thumb) => {
-          setPages((prev) =>
-            prev.map((item) =>
-              item.originalIndex === p.pageNumber - 1
-                ? { ...item, thumbnailUrl: thumb }
-                : item
-            )
-          );
-        });
+        engine
+          .renderPageThumbnail(p.pageNumber, p, 0.45)
+          .then((thumb) => {
+            setPages((prev) =>
+              prev.map((item) =>
+                item.originalIndex === p.pageNumber - 1
+                  ? { ...item, thumbnailUrl: thumb, status: 'ready' }
+                  : item
+              )
+            );
+          })
+          .catch(() => {
+            setPages((prev) =>
+              prev.map((item) =>
+                item.originalIndex === p.pageNumber - 1 ? { ...item, status: 'error' } : item
+              )
+            );
+          });
       }
     } catch (err: any) {
       setErrorMessage(err?.message || 'Failed to read PDF document.');
@@ -108,14 +115,8 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      handleFile(e.target.files[0]);
-    }
-  };
-
   const movePage = (fromIndex: number, toIndex: number) => {
-    if (toIndex < 0 || toIndex >= pages.length) return;
+    if (toIndex < 0 || toIndex >= pages.length || fromIndex === toIndex) return;
     const updated = [...pages];
     const [moved] = updated.splice(fromIndex, 1);
     updated.splice(toIndex, 0, moved);
@@ -144,28 +145,23 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
     setProcessedBytes(null);
   };
 
-  const duplicatePage = (index: number) => {
-    const pageToDup = pages[index];
-    const newPage: PageItem = {
-      ...pageToDup,
-      id: `page-dup-${Date.now()}-${Math.random()}`,
-      label: `${pageToDup.label} (Copy)`,
-    };
-    const updated = [...pages];
-    updated.splice(index + 1, 0, newPage);
-    setPages(updated);
-    setProcessedBytes(null);
-  };
-
   const resetPages = () => {
     if (!pdfDoc) return;
     const count = pdfDoc.getPageCount();
-    const reset: PageItem[] = Array.from({ length: count }, (_, idx) => ({
-      id: `page-reset-${idx}-${Date.now()}`,
-      originalIndex: idx,
-      rotation: 0,
-      label: `Page ${idx + 1}`,
-    }));
+    const existingByOriginal = new Map(pages.map((p) => [p.originalIndex, p]));
+    const reset: PageItem[] = Array.from({ length: count }, (_, idx) => {
+      const prev = existingByOriginal.get(idx);
+      return {
+        id: `page-reset-${idx}-${Date.now()}`,
+        originalIndex: idx,
+        rotation: 0,
+        label: `Page ${idx + 1}`,
+        thumbnailUrl: prev?.thumbnailUrl,
+        status: prev?.thumbnailUrl ? 'ready' : 'rendering',
+        width: prev?.width,
+        height: prev?.height,
+      };
+    });
     setPages(reset);
     setProcessedBytes(null);
     setErrorMessage(null);
@@ -182,7 +178,7 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
         const [copiedPage] = await targetDoc.copyPages(pdfDoc, [p.originalIndex]);
         if (p.rotation !== 0) {
           const currentRotation = copiedPage.getRotation().angle;
-          copiedPage.setRotation({ type: 0, angle: (currentRotation + p.rotation) % 360 } as any);
+          copiedPage.setRotation(degrees((currentRotation + p.rotation) % 360));
         }
         targetDoc.addPage(copiedPage);
       }
@@ -236,45 +232,30 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
       <ToolHeader tool={organizeTool} onNavigate={onNavigate} />
 
       {!file ? (
-        /* Upload Area (Dark Obsidian & Gold) */
-        <div className="bg-[#0c101d] border-2 border-dashed border-amber-500/35 hover:border-amber-400 rounded-3xl p-10 text-center transition-all duration-300 shadow-2xl hover:bg-amber-500/5">
-          <input
-            ref={fileInputRef}
-            type="file"
+        <div className="space-y-4">
+          <FileUploadZone
             accept=".pdf,application/pdf"
-            onChange={handleFileChange}
-            className="hidden"
+            multiple={false}
+            disabled={isLoading}
+            title="Select or Drag a PDF to Organize Pages"
+            subtitle="Visual thumbnail workspace • Drag cards to reorder, rotate, delete, or retry previews"
+            fileTypeLabel="PDF (.pdf)"
+            onFilesSelected={(files) => {
+              if (files[0]) handleFile(files[0]);
+            }}
           />
-          <div className="max-w-md mx-auto space-y-4">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-[#0e1424] border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg">
-              <Layers className="w-8 h-8" />
+          {isLoading && (
+            <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs flex items-center justify-center gap-2 font-semibold">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              <span>Loading PDF document &amp; generating page previews...</span>
             </div>
-            <div>
-              <h3 className="text-lg font-bold text-white">Select a PDF to Organize Pages</h3>
-              <p className="text-xs text-slate-400 mt-1">
-                Visual thumbnail workspace • Reorder, rotate, delete, or duplicate pages locally
-              </p>
+          )}
+          {errorMessage && (
+            <div className="p-3.5 rounded-2xl bg-rose-950/40 border border-rose-500/40 text-rose-200 text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
+              <span>{errorMessage}</span>
             </div>
-            <button
-              type="button"
-              disabled={isLoading}
-              onClick={() => fileInputRef.current?.click()}
-              className="px-6 py-3 bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:brightness-110 text-slate-950 font-black rounded-xl shadow-lg shadow-amber-500/20 transition flex items-center justify-center gap-2 mx-auto cursor-pointer"
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin text-slate-950" />
-                  <span>Loading Document...</span>
-                </>
-              ) : (
-                <>
-                  <UploadCloud className="w-4 h-4 stroke-[2.5]" />
-                  <span>Choose PDF File</span>
-                </>
-              )}
-            </button>
-            <p className="text-[11px] text-slate-500">100% In-Browser • Zero Cloud Uploads • Max file size: 100MB</p>
-          </div>
+          )}
         </div>
       ) : (
         /* Interactive Page Organization Grid */
@@ -335,36 +316,73 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
             </div>
           )}
 
-          {/* Pages Grid */}
+          {/* Pages Grid with Drag & Drop Reordering */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             {pages.map((item, idx) => (
-              <PdfPageThumbnailCard
+              <div
                 key={item.id}
-                pageNumber={idx + 1}
-                thumbnailUrl={item.thumbnailUrl}
-                status={item.thumbnailUrl ? 'ready' : 'rendering'}
-                isSelected={true}
-                rotation={item.rotation}
-                width={item.width}
-                height={item.height}
-                canMoveLeft={idx > 0}
-                canMoveRight={idx < pages.length - 1}
-                onMoveLeft={() => movePage(idx, idx - 1)}
-                onMoveRight={() => movePage(idx, idx + 1)}
-                onRotate={() => rotatePage(idx)}
-                onRemove={() => deletePage(idx)}
-                onRetry={() => {
-                  if (engineRef.current) {
-                    engineRef.current
-                      .renderPageThumbnail(item.originalIndex + 1, undefined, 0.45)
-                      .then((thumb) =>
-                        setPages((prev) =>
-                          prev.map((p) => (p.id === item.id ? { ...p, thumbnailUrl: thumb } : p))
-                        )
-                      );
+                draggable
+                onDragStart={() => setDraggedIdx(idx)}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  if (draggedIdx !== null && draggedIdx !== idx) {
+                    setDragOverIdx(idx);
                   }
                 }}
-              />
+                onDragLeave={() => setDragOverIdx((prev) => (prev === idx ? null : prev))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  if (draggedIdx !== null && draggedIdx !== idx) {
+                    movePage(draggedIdx, idx);
+                  }
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`rounded-xl transition-all cursor-grab active:cursor-grabbing ${
+                  draggedIdx === idx ? 'opacity-40 scale-95' : ''
+                } ${dragOverIdx === idx ? 'ring-2 ring-[#F3B542] ring-offset-2 ring-offset-[#0c101d]' : ''}`}
+              >
+                <PdfPageThumbnailCard
+                  pageNumber={idx + 1}
+                  thumbnailUrl={item.thumbnailUrl}
+                  status={item.status}
+                  isSelected={true}
+                  rotation={item.rotation}
+                  width={item.width}
+                  height={item.height}
+                  canMoveLeft={idx > 0}
+                  canMoveRight={idx < pages.length - 1}
+                  onMoveLeft={() => movePage(idx, idx - 1)}
+                  onMoveRight={() => movePage(idx, idx + 1)}
+                  onRotate={() => rotatePage(idx)}
+                  onRemove={() => deletePage(idx)}
+                  onRetry={() => {
+                    if (engineRef.current) {
+                      setPages((prev) =>
+                        prev.map((p) => (p.id === item.id ? { ...p, status: 'rendering' } : p))
+                      );
+                      engineRef.current
+                        .renderPageThumbnail(item.originalIndex + 1, undefined, 0.45)
+                        .then((thumb) =>
+                          setPages((prev) =>
+                            prev.map((p) =>
+                              p.id === item.id ? { ...p, thumbnailUrl: thumb, status: 'ready' } : p
+                            )
+                          )
+                        )
+                        .catch(() =>
+                          setPages((prev) =>
+                            prev.map((p) => (p.id === item.id ? { ...p, status: 'error' } : p))
+                          )
+                        );
+                    }
+                  }}
+                />
+              </div>
             ))}
           </div>
 

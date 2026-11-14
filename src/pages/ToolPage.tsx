@@ -15,6 +15,7 @@ import { ImageToPdfTool } from '../components/tools/ImageToPdfTool';
 import { PdfToImageTool } from '../components/tools/PdfToImageTool';
 import { MergePdfTool } from '../components/tools/MergePdfTool';
 import { ImageStudioTool } from '../components/tools/ImageStudioTool';
+import { VisualPdfEditorTool } from '../components/tools/VisualPdfEditorTool';
 import { PlannerType, StoredPlannerState } from '../types/planner';
 import { PlannerPage } from './PlannerPage';
 import { Article } from '../types/article';
@@ -151,6 +152,11 @@ export const ToolPage: React.FC<ToolPageProps> = ({
   // Camera / Document Scanner
   if (tool.id === 'scan-to-pdf' || toolSlug === 'scan-to-pdf') {
     return <ScanToPdfTool onNavigate={onNavigate} />;
+  }
+
+  // Interactive Sejda-Style Visual PDF Editor
+  if (tool.id === 'edit-pdf' || toolSlug === 'edit-pdf') {
+    return <VisualPdfEditorTool onNavigate={onNavigate} />;
   }
 
   // Image Utilities Studio

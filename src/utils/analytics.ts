@@ -216,6 +216,10 @@ export function setDetailedConsent(prefs: { analytics: boolean; advertising: boo
   if (prefs.analytics) {
     window.__toolcrest_consent_already_granted = true;
     sendInitialPageViewAfterConsent();
+  } else {
+    window.__toolcrest_consent_already_granted = false;
+    hasConsentedPageViewFired = false;
+    window.__toolcrest_consented_pv_fired = false;
   }
 }
 
@@ -244,8 +248,19 @@ export function initConsentAndAnalytics(): void {
         ad_personalization: existingCky.ads ? 'granted' : 'denied',
       });
     }
-    if (existingCky.analytics) {
-      window.__toolcrest_consent_already_granted = true;
+    window.__toolcrest_consent_already_granted = existingCky.analytics;
+  } else {
+    const storedPrefs = getStoredConsentPreferences();
+    if (storedPrefs) {
+      if (typeof window.gtag === 'function') {
+        window.gtag('consent', 'update', {
+          analytics_storage: storedPrefs.analytics ? 'granted' : 'denied',
+          ad_storage: storedPrefs.advertising ? 'granted' : 'denied',
+          ad_user_data: storedPrefs.advertising ? 'granted' : 'denied',
+          ad_personalization: storedPrefs.advertising ? 'granted' : 'denied',
+        });
+      }
+      window.__toolcrest_consent_already_granted = Boolean(storedPrefs.analytics);
     }
   }
 
@@ -295,6 +310,10 @@ export function initConsentAndAnalytics(): void {
       if (analyticsGranted) {
         window.__toolcrest_consent_already_granted = true;
         sendInitialPageViewAfterConsent();
+      } else {
+        window.__toolcrest_consent_already_granted = false;
+        hasConsentedPageViewFired = false;
+        window.__toolcrest_consented_pv_fired = false;
       }
     } catch (err) {
       console.warn('[GA4] Error handling cookieyes_consent_update:', err);

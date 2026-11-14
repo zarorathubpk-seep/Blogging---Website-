@@ -1,4 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { PDFDocument, PDFTextField, PDFCheckBox, PDFDropdown } from 'pdf-lib';
+import * as pdfjsLib from 'pdfjs-dist';
+import pdfjsWorkerUrl from 'pdfjs-dist/build/pdf.worker.min.js?url';
 import { ToolItem } from '../../data/toolsData';
 import {
   mergePdfs,
@@ -25,7 +28,6 @@ import {
   convertSlideDeckToPdf,
   convertTableToPdf,
   summarizePdfText,
-  translatePdfText,
   pdfToMarkdownText,
   downloadBytesAsFile,
   downloadTextFile,
@@ -40,49 +42,41 @@ import {
   convertPdfToExcel,
   extractPdfImagesToZip,
   overlayPdfDocuments,
-  editPdfDocument,
   translatePdfDocument,
   performPdfOcr,
+  extractTextAndStructureFromPdf,
+  parseDocxOrTextFile,
+  parsePptxFile,
+  parseSpreadsheetFile,
 } from '../../services/documentConverter';
 import {
-  UploadCloud,
   FileText,
   Trash2,
   Download,
   CheckCircle2,
   AlertCircle,
   Loader2,
-  ArrowRight,
-  ShieldCheck,
-  Zap,
   HelpCircle,
   RotateCw,
-  Stamp,
-  Hash,
-  PenTool,
   Lock,
   Unlock,
   Eye,
   EyeOff,
-  GitCompare,
   Plus,
-  Wrench,
-  Crop,
   Archive,
-  Table,
-  Presentation,
-  CheckSquare,
   Sparkles,
   Languages,
-  FileCode2,
   Copy,
   Check,
   Layers,
+  Zap,
 } from 'lucide-react';
 
 import { AdvancedSplitPdfTool } from './AdvancedSplitPdfTool';
 import { OrganizePdfTool } from './OrganizePdfTool';
 import { ScanToPdfTool } from './ScanToPdfTool';
+import { VisualPdfEditorTool } from './VisualPdfEditorTool';
+import { FileUploadZone } from './FileUploadZone';
 import { PdfDownloadSection } from './PdfDownloadSection';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
@@ -90,10 +84,21 @@ import { FaqSection } from '../FaqSection';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
 import { useTheme } from '../../context/ThemeContext';
 
+if (typeof window !== 'undefined' && pdfjsLib.GlobalWorkerOptions) {
+  pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorkerUrl;
+}
+
 interface PdfToolViewProps {
   tool: ToolItem;
   onNavigate: (path: string) => void;
   onSelectTool: (slug: string) => void;
+}
+
+interface AcroFormFieldEntry {
+  name: string;
+  type: 'text' | 'checkbox' | 'dropdown';
+  value: string | boolean;
+  options?: string[];
 }
 
 export const PdfToolView: React.FC<PdfToolViewProps> = ({
@@ -113,6 +118,9 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   if (tool.id === 'scan-to-pdf') {
     return <ScanToPdfTool onNavigate={onNavigate} />;
   }
+  if (tool.id === 'edit-pdf') {
+    return <VisualPdfEditorTool onNavigate={onNavigate} />;
+  }
 
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -129,9 +137,6 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   const [conversionStatus, setConversionStatus] = useState<string>('');
   const [secondaryOverlayFile, setSecondaryOverlayFile] = useState<File | null>(null);
   const [overlayOpacity, setOverlayOpacity] = useState<number>(0.65);
-  const [editHeaderText, setEditHeaderText] = useState<string>('ToolCrest Verified Document');
-  const [editFooterText, setEditFooterText] = useState<string>('CONFIDENTIAL • ALL RIGHTS RESERVED');
-  const [editStampText, setEditStampText] = useState<string>('APPROVED');
 
   // Standard tool options
   const [splitRange, setSplitRange] = useState<string>('1-2');
@@ -148,13 +153,20 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   const [allowPrintingOption, setAllowPrintingOption] = useState<boolean>(true);
   const [allowCopyingOption, setAllowCopyingOption] = useState<boolean>(true);
 
-  // Redaction parameters
+  // Redaction parameters & visual preview state
   const [redactionPreset, setRedactionPreset] = useState<'custom' | 'header' | 'footer' | 'address-block'>('header');
   const [redactionPage, setRedactionPage] = useState<number>(1);
   const [redactionX, setRedactionX] = useState<number>(50);
   const [redactionY, setRedactionY] = useState<number>(750);
   const [redactionWidth, setRedactionWidth] = useState<number>(240);
   const [redactionHeight, setRedactionHeight] = useState<number>(36);
+  const [redactPreviewUrl, setRedactPreviewUrl] = useState<string | null>(null);
+  const [redactPageSize, setRedactPageSize] = useState<{ width: number; height: number; totalPages: number }>({
+    width: 595,
+    height: 842,
+    totalPages: 1,
+  });
+
   const [customTitle, setCustomTitle] = useState<string>('Document Summary');
   const [customBody, setCustomBody] = useState<string>(
     '# Executive Summary\n\nThis document was generated securely inside the browser via ToolCrest.\n\nAll tools execute locally on your device without transmitting sensitive files to remote servers.'
@@ -181,7 +193,9 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
     ['CDN Bandwidth', 'Networking', '10', '15.00', '150.00'],
   ]);
 
-  // Form fields state
+  // Form fields state (AcroForm inspection + fallback summary fields)
+  const [acroFormFields, setAcroFormFields] = useState<AcroFormFieldEntry[]>([]);
+  const [acroFormInspected, setAcroFormInspected] = useState<boolean>(false);
   const [formFields, setFormFields] = useState({
     fullName: 'Jane Doe',
     email: 'jane@example.com',
@@ -209,33 +223,125 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
   const [hasSignature, setHasSignature] = useState(false);
   const [copiedText, setCopiedText] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // Render live visual redaction preview when file/page changes for redact-pdf
+  useEffect(() => {
+    let cancelled = false;
+    if (tool.id !== 'redact-pdf' || selectedFiles.length === 0) {
+      setRedactPreviewUrl(null);
+      return;
+    }
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const filesArr = Array.from(e.target.files);
-      if (
-        tool.id === 'merge-pdf' ||
-        tool.id === 'images-to-pdf' ||
-        tool.id === 'compare-pdfs'
-      ) {
-        setSelectedFiles((prev) => [...prev, ...filesArr]);
-      } else {
-        setSelectedFiles(filesArr);
+    (async () => {
+      try {
+        const buffer = await selectedFiles[0].arrayBuffer();
+        const task = pdfjsLib.getDocument({ data: new Uint8Array(buffer), useSystemFonts: true });
+        const doc = await task.promise;
+        const clampedPage = Math.max(1, Math.min(redactionPage, doc.numPages));
+        const page = await doc.getPage(clampedPage);
+        const origVp = page.getViewport({ scale: 1.0 });
+        const previewScale = Math.min(1.25, 520 / Math.max(1, origVp.width));
+        const vp = page.getViewport({ scale: previewScale });
+
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.floor(vp.width);
+        canvas.height = Math.floor(vp.height);
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          await page.render({ canvasContext: ctx, viewport: vp }).promise;
+          const url = canvas.toDataURL('image/png');
+          canvas.width = 0;
+          canvas.height = 0;
+          if (!cancelled) {
+            setRedactPreviewUrl(url);
+            setRedactPageSize({
+              width: origVp.width,
+              height: origVp.height,
+              totalPages: doc.numPages,
+            });
+          }
+        }
+        if (typeof doc.destroy === 'function') doc.destroy();
+      } catch {
+        if (!cancelled) setRedactPreviewUrl(null);
       }
-      setProcessedBytes(null);
-      setErrorMessage(null);
-      setSuccessInfo(null);
-      setRepairLogs([]);
-      setSummaryResult(null);
-      setTranslatedContent('');
-      setMarkdownOutput('');
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [tool.id, selectedFiles, redactionPage]);
+
+  const handleFilesSelected = async (filesArr: File[]) => {
+    if (filesArr.length === 0) return;
+
+    if (
+      tool.id === 'merge-pdf' ||
+      tool.id === 'images-to-pdf' ||
+      tool.id === 'compare-pdfs'
+    ) {
+      setSelectedFiles((prev) => [...prev, ...filesArr]);
+    } else {
+      setSelectedFiles(filesArr);
+    }
+
+    setProcessedBytes(null);
+    setErrorMessage(null);
+    setSuccessInfo(null);
+    setRepairLogs([]);
+    setSummaryResult(null);
+    setTranslatedContent('');
+    setMarkdownOutput('');
+    setAcroFormFields([]);
+    setAcroFormInspected(false);
+
+    const primary = filesArr[0];
+    try {
+      if (tool.id === 'word-to-pdf') {
+        const parsed = await parseDocxOrTextFile(primary);
+        setCustomTitle(parsed.title);
+        setCustomBody(parsed.content);
+      } else if (tool.id === 'powerpoint-to-pdf') {
+        const parsed = await parsePptxFile(primary);
+        setCustomTitle(parsed.title);
+        setSlides(parsed.slides);
+      } else if (tool.id === 'excel-to-pdf') {
+        const parsed = await parseSpreadsheetFile(primary);
+        setCustomTitle(parsed.title);
+        setTableHeaders(parsed.headers);
+        setTableRows(parsed.rows);
+      } else if (tool.id === 'pdf-forms') {
+        const buf = await primary.arrayBuffer();
+        const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
+        const form = pdfDoc.getForm();
+        const fields = form.getFields();
+        const detected: AcroFormFieldEntry[] = [];
+        for (const f of fields) {
+          if (f instanceof PDFTextField) {
+            detected.push({ name: f.getName(), type: 'text', value: f.getText() || '' });
+          } else if (f instanceof PDFCheckBox) {
+            detected.push({ name: f.getName(), type: 'checkbox', value: f.isChecked() });
+          } else if (f instanceof PDFDropdown) {
+            detected.push({
+              name: f.getName(),
+              type: 'dropdown',
+              value: f.getSelected()[0] || '',
+              options: f.getOptions(),
+            });
+          }
+        }
+        setAcroFormFields(detected);
+        setAcroFormInspected(true);
+      }
+    } catch (err: any) {
+      setErrorMessage(err?.message || `Could not inspect uploaded file "${primary.name}".`);
     }
   };
 
   const removeFile = (idx: number) => {
     setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));
     setProcessedBytes(null);
+    setAcroFormFields([]);
+    setAcroFormInspected(false);
   };
 
   // Signature drawing handlers
@@ -299,7 +405,11 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         tool.id === 'webpage-to-pdf' ||
         tool.id === 'word-to-pdf' ||
         tool.id === 'powerpoint-to-pdf' ||
-        tool.id === 'excel-to-pdf';
+        tool.id === 'excel-to-pdf' ||
+        tool.id === 'pdf-summarizer' ||
+        tool.id === 'translate-pdf' ||
+        tool.id === 'pdf-to-markdown' ||
+        tool.id === 'pdf-converter';
 
       if (!isContentCreationTool && selectedFiles.length === 0) {
         throw new Error('Please select or upload a document file to proceed.');
@@ -327,9 +437,15 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           const comp = await compressPdf(primaryFile);
           resultBytes = comp.bytes;
           setCompressionResult(comp);
-          setSuccessInfo(
-            `Optimized! Size reduced from ${(comp.originalSize / 1024).toFixed(1)} KB to ${(comp.newSize / 1024).toFixed(1)} KB (${comp.savingsPercent}% savings).`
-          );
+          if (comp.newSize < comp.originalSize) {
+            setSuccessInfo(
+              `Optimized! Size reduced from ${(comp.originalSize / 1024).toFixed(1)} KB to ${(comp.newSize / 1024).toFixed(1)} KB (${comp.savingsPercent}% savings).`
+            );
+          } else {
+            setSuccessInfo(
+              `Rebuilt document (${(comp.originalSize / 1024).toFixed(1)} KB → ${(comp.newSize / 1024).toFixed(1)} KB). This PDF already uses compact streams and cannot be reduced further losslessly.`
+            );
+          }
           break;
         }
 
@@ -350,31 +466,48 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           if (!primaryFile) throw new Error('Please select a PDF file to convert to PDF/A.');
           resultBytes = await pdfToPdfA(primaryFile);
           setCurrentTargetExt('pdf');
-          setSuccessInfo('Converted into ISO-19005-1b archival compliant PDF/A format.');
+          setSuccessInfo(
+            'Prepared PDF/A-1b metadata, sRGB OutputIntent, and uncompressed streams. Note: formal ISO 19005-1b compliance has NOT been established or validated (an external validator such as veraPDF is required).'
+          );
           break;
         }
 
         case 'word-to-pdf': {
-          const textToConvert = primaryFile
-            ? await primaryFile.text()
-            : customBody;
-          resultBytes = await convertDocToPdf(customTitle, textToConvert);
+          let docTitle = customTitle;
+          let textToConvert = customBody;
+          if (primaryFile) {
+            const parsed = await parseDocxOrTextFile(primaryFile);
+            docTitle = customTitle || parsed.title;
+            textToConvert = customBody || parsed.content;
+          }
+          if (!textToConvert.trim()) {
+            throw new Error('Please upload a .docx/.txt file or enter document text to convert.');
+          }
+          resultBytes = await convertDocToPdf(docTitle, textToConvert);
           setCurrentTargetExt('pdf');
-          setSuccessInfo('Word document converted to styled PDF.');
+          setSuccessInfo('Document converted to styled PDF.');
           break;
         }
 
-        case 'powerpoint-to-pdf':
+        case 'powerpoint-to-pdf': {
+          if (slides.length === 0) {
+            throw new Error('Please add at least one slide or upload a .pptx file.');
+          }
           resultBytes = await convertSlideDeckToPdf(customTitle, slides);
           setCurrentTargetExt('pdf');
-          setSuccessInfo('Presentation converted to 16:9 widescreen PDF slide deck.');
+          setSuccessInfo(`Presentation (${slides.length} slides) converted to 16:9 PDF slide deck.`);
           break;
+        }
 
-        case 'excel-to-pdf':
+        case 'excel-to-pdf': {
+          if (tableHeaders.length === 0) {
+            throw new Error('Please upload an Excel/CSV file or define table columns.');
+          }
           resultBytes = await convertTableToPdf(customTitle, tableHeaders, tableRows);
           setCurrentTargetExt('pdf');
-          setSuccessInfo('Spreadsheet data converted into paginated PDF table.');
+          setSuccessInfo(`Spreadsheet data (${tableRows.length} rows) converted into paginated PDF table.`);
           break;
+        }
 
         case 'pdf-to-word': {
           if (!primaryFile) throw new Error('Please select a PDF file to convert to Microsoft Word.');
@@ -448,42 +581,58 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           break;
         }
 
-        case 'edit-pdf': {
-          if (!primaryFile) throw new Error('Please select a PDF file to edit.');
-          resultBytes = await editPdfDocument(primaryFile, {
-            headerText: editHeaderText,
-            footerText: editFooterText,
-            stampText: editStampText,
-          });
-          setCurrentTargetExt('pdf');
-          setSuccessInfo('Headers, footers, and annotations stamped onto PDF.');
-          break;
-        }
-
         case 'pdf-summarizer': {
-          const sample = customBody.length > 50 ? customBody : 'Comprehensive executive documentation reviewing deliverables and timelines.';
-          const summary = summarizePdfText(sample);
+          let textToSummarize = '';
+          if (primaryFile) {
+            const extracted = await extractTextAndStructureFromPdf(primaryFile);
+            textToSummarize = extracted.fullText.trim();
+            if (!textToSummarize) {
+              throw new Error(
+                'No selectable text found in this PDF (it may be a scanned image). Run OCR PDF first or paste text below.'
+              );
+            }
+          } else {
+            textToSummarize = customBody.trim();
+            if (!textToSummarize) {
+              throw new Error('Please upload a PDF document or paste text to summarize.');
+            }
+          }
+          const summary = summarizePdfText(textToSummarize);
           setSummaryResult(summary);
           setCurrentTargetExt('pdf');
-          setSuccessInfo('Executive summary generated from document content.');
+          setSuccessInfo(
+            `Extractive summary generated from ${primaryFile ? primaryFile.name : 'entered text'} (${summary.metrics.wordCount} words analyzed locally).`
+          );
           break;
         }
 
         case 'translate-pdf': {
-          if (!primaryFile) throw new Error('Please select a PDF file to translate.');
-          const tr = await translatePdfDocument(primaryFile, targetLanguage);
+          const langLabel =
+            SUPPORTED_LANGUAGES.find((l) => l.code === targetLanguage)?.label || targetLanguage;
+          const tr = await translatePdfDocument(primaryFile || null, langLabel, customBody);
           setTranslatedContent(tr.translatedText);
           resultBytes = tr.pdfBytes;
           setCurrentTargetExt('pdf');
-          setSuccessInfo(`Document text extracted and translated into ${targetLanguage}.`);
+          setSuccessInfo(`Extracted ${tr.sourceExtractedChars} characters and translated into ${langLabel}.`);
           break;
         }
 
         case 'pdf-to-markdown': {
-          const md = pdfToMarkdownText(primaryFile?.name || customTitle, customBody);
+          let sourceText = customBody;
+          if (primaryFile) {
+            const extracted = await extractTextAndStructureFromPdf(primaryFile);
+            if (!extracted.fullText.trim()) {
+              throw new Error('No extractable text found in this PDF. Try OCR PDF first or enter text manually.');
+            }
+            sourceText = extracted.fullText;
+          }
+          if (!sourceText.trim()) {
+            throw new Error('Please upload a PDF document or enter text to convert to Markdown.');
+          }
+          const md = pdfToMarkdownText(primaryFile?.name || customTitle, sourceText);
           setMarkdownOutput(md);
           downloadTextFile(md, `${(primaryFile?.name || 'document').replace(/\.pdf$/i, '')}.md`, 'text/markdown');
-          setSuccessInfo('Converted into clean GitHub-flavored Markdown (.md).');
+          setSuccessInfo('Converted extracted document text into GitHub-flavored Markdown (.md).');
           break;
         }
 
@@ -496,9 +645,12 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           const pagesToRemove = splitRange
             .split(',')
             .map((p) => parseInt(p.trim(), 10))
-            .filter((p) => !isNaN(p));
+            .filter((p) => !isNaN(p) && p > 0);
+          if (pagesToRemove.length === 0) {
+            throw new Error('Please enter valid page numbers to remove (e.g., 2, 4).');
+          }
           resultBytes = await removePdfPages(primaryFile, pagesToRemove);
-          setSuccessInfo(`Removed ${pagesToRemove.length} selected pages.`);
+          setSuccessInfo(`Removed ${pagesToRemove.length} selected page${pagesToRemove.length === 1 ? '' : 's'}.`);
           break;
         }
 
@@ -581,12 +733,12 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         case 'redact-pdf': {
           let zones: RedactionZone[] = [];
           if (redactionPreset === 'header') {
-            zones = [{ page: redactionPage, x: 40, y: 770, width: 515, height: 45, label: 'Header Margin' }];
+            zones = [{ page: redactionPage, x: 40, y: Math.max(0, redactPageSize.height - 72), width: Math.max(100, redactPageSize.width - 80), height: 48, label: 'Header Margin' }];
           } else if (redactionPreset === 'footer') {
-            zones = [{ page: redactionPage, x: 40, y: 30, width: 515, height: 45, label: 'Footer Margin' }];
+            zones = [{ page: redactionPage, x: 40, y: 24, width: Math.max(100, redactPageSize.width - 80), height: 48, label: 'Footer Margin' }];
           } else if (redactionPreset === 'address-block') {
             zones = [
-              { page: redactionPage, x: 48, y: 680, width: 240, height: 60, label: 'Address & Contact Block' },
+              { page: redactionPage, x: 48, y: Math.max(0, redactPageSize.height - 165), width: 240, height: 65, label: 'Address & Contact Block' },
             ];
           } else {
             zones = [
@@ -601,15 +753,42 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             ];
           }
           resultBytes = await redactPdf(primaryFile, zones);
-          setSuccessInfo(`Permanently blacked out ${zones.length} zone(s) on Page ${redactionPage} from the PDF streams.`);
+          setSuccessInfo(`Permanently raster-blacked out ${zones.length} zone(s) on Page ${redactionPage} with underlying text streams eradicated.`);
           break;
         }
 
         case 'pdf-forms': {
-          // Fill form text into structured document
-          const formText = `Form Submission Records:\nName: ${formFields.fullName}\nEmail: ${formFields.email}\nTerms Accepted: ${formFields.agreeTerms ? 'Yes' : 'No'}\nNotes: ${formFields.comments}`;
-          resultBytes = await convertDocToPdf(`Form - ${primaryFile?.name || 'Filled Contract'}`, formText);
-          setSuccessInfo('Interactive form filled and flattened into PDF.');
+          if (acroFormFields.length > 0 && primaryFile) {
+            const buf = await primaryFile.arrayBuffer();
+            const pdfDoc = await PDFDocument.load(buf, { ignoreEncryption: true });
+            const form = pdfDoc.getForm();
+            for (const entry of acroFormFields) {
+              try {
+                if (entry.type === 'text') {
+                  form.getTextField(entry.name).setText(String(entry.value || ''));
+                } else if (entry.type === 'checkbox') {
+                  const cb = form.getCheckBox(entry.name);
+                  if (entry.value) cb.check();
+                  else cb.uncheck();
+                } else if (entry.type === 'dropdown' && entry.value) {
+                  form.getDropdown(entry.name).select(String(entry.value));
+                }
+              } catch {
+                // ignore field write mismatch for unsupported sub-widgets
+              }
+            }
+            form.flatten();
+            resultBytes = await pdfDoc.save();
+            setSuccessInfo(`Updated and flattened ${acroFormFields.length} AcroForm fields directly inside ${primaryFile.name}.`);
+          } else {
+            const formText = `Form Submission Summary Sheet:\nReference File: ${primaryFile?.name || 'Manual Entry'}\nName: ${formFields.fullName}\nEmail: ${formFields.email}\nTerms Accepted: ${formFields.agreeTerms ? 'Yes' : 'No'}\nNotes: ${formFields.comments}`;
+            resultBytes = await convertDocToPdf(`Form - ${primaryFile?.name || 'Submission Sheet'}`, formText);
+            setSuccessInfo(
+              primaryFile
+                ? 'Uploaded PDF contained no interactive AcroForm fields; generated a separate Form Submission Summary PDF instead.'
+                : 'Form Submission Summary PDF generated.'
+            );
+          }
           break;
         }
 
@@ -673,52 +852,50 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             : 'bg-white border-slate-200/90 shadow-sm text-slate-900'
         }`}
       >
-        {/* Upload Zone */}
-        {tool.id !== 'create-pdf' &&
-          tool.id !== 'webpage-to-pdf' &&
-          tool.id !== 'powerpoint-to-pdf' &&
-          tool.id !== 'excel-to-pdf' && (
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className={`border-2 border-dashed rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all group ${
-                isDark
-                  ? 'border-amber-500/35 hover:border-amber-400 bg-[#070a14]/90 hover:bg-amber-500/5'
-                  : 'border-amber-300 hover:border-amber-500 bg-amber-50/40 hover:bg-amber-50/80'
-              }`}
-            >
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple={
-                  tool.id === 'merge-pdf' ||
-                  tool.id === 'images-to-pdf' ||
-                  tool.id === 'compare-pdfs'
-                }
-                accept={tool.id === 'images-to-pdf' ? 'image/*' : '.pdf,application/pdf,.docx,.txt'}
-                onChange={handleFileChange}
-                className="hidden"
-              />
-              <div
-                className={`w-16 h-16 rounded-2xl border shadow-md flex items-center justify-center mx-auto mb-4 transition ${
-                  isDark
-                    ? 'bg-[#0e1424] border-amber-500/30 group-hover:border-amber-400 text-amber-400'
-                    : 'bg-amber-100 border-amber-300 group-hover:border-amber-400 text-amber-800'
-                }`}
-              >
-                <UploadCloud className="w-8 h-8 group-hover:scale-105 transition" />
-              </div>
-              <h3 className={`text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                {tool.id === 'images-to-pdf'
-                  ? 'Choose or drag pictures (JPG, PNG, WEBP)'
-                  : tool.id === 'merge-pdf' || tool.id === 'compare-pdfs'
-                  ? 'Choose multiple PDF files to combine or compare'
-                  : 'Select or drop your document here'}
-              </h3>
-              <p className={`text-xs mt-1.5 ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                100% Client-Side Processing • Zero Cloud Uploads • Max file size: 100MB
-              </p>
-            </div>
-          )}
+        {/* Drag-and-Drop Upload Zone */}
+        {tool.id !== 'create-pdf' && tool.id !== 'webpage-to-pdf' && (
+          <FileUploadZone
+            accept={
+              tool.id === 'images-to-pdf'
+                ? 'image/*,.jpg,.jpeg,.png,.webp'
+                : tool.id === 'word-to-pdf'
+                ? '.docx,.txt,.md,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain'
+                : tool.id === 'powerpoint-to-pdf'
+                ? '.pptx,application/vnd.openxmlformats-officedocument.presentationml.presentation'
+                : tool.id === 'excel-to-pdf'
+                ? '.xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv'
+                : '.pdf,application/pdf'
+            }
+            multiple={
+              tool.id === 'merge-pdf' ||
+              tool.id === 'images-to-pdf' ||
+              tool.id === 'compare-pdfs'
+            }
+            fileTypeLabel={
+              tool.id === 'word-to-pdf'
+                ? 'DOCX (.docx), Plain Text (.txt, .md)'
+                : tool.id === 'powerpoint-to-pdf'
+                ? 'PowerPoint (.pptx)'
+                : tool.id === 'excel-to-pdf'
+                ? 'Excel (.xlsx, .xls) or CSV (.csv)'
+                : tool.id === 'images-to-pdf'
+                ? 'Images (JPG, PNG, WebP)'
+                : 'PDF (.pdf)'
+            }
+            title={
+              tool.id === 'word-to-pdf'
+                ? 'Drag & drop .docx / .txt file (or type content below)'
+                : tool.id === 'powerpoint-to-pdf'
+                ? 'Drag & drop .pptx presentation (or build slides below)'
+                : tool.id === 'excel-to-pdf'
+                ? 'Drag & drop .xlsx / .csv file (or edit table below)'
+                : tool.id === 'merge-pdf' || tool.id === 'compare-pdfs'
+                ? 'Choose or drag multiple PDF files here'
+                : 'Choose or drag your PDF document here'
+            }
+            onFilesSelected={handleFilesSelected}
+          />
+        )}
 
         {/* Selected Files List */}
         {selectedFiles.length > 0 && (
@@ -815,12 +992,12 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             <div className="p-3.5 bg-[#0c111e] rounded-xl border border-amber-500/25 text-xs text-slate-300 space-y-2">
               <div className="font-bold text-amber-300 flex items-center gap-2">
                 <Archive className="w-4 h-4 text-amber-400" />
-                <span>ISO-19005-1b Archival Compliance Specifications:</span>
+                <span>PDF/A-1b Archival Preparation Notice:</span>
               </div>
               <ul className="list-disc list-inside space-y-1 text-slate-400 text-[11px]">
-                <li>Standard DeviceRGB color intent embedment</li>
-                <li>XMP schema compliance for perpetual electronic preservation</li>
-                <li>Uncompressed dictionary streams for long-term machine readability</li>
+                <li>Embeds XMP PDF/A-1b identification metadata and standard sRGB OutputIntent dictionary</li>
+                <li>Serializes uncompressed PDF object streams (useObjectStreams: false) for archival compatibility</li>
+                <li className="text-amber-300/90">Important disclosure: ISO 19005-1b archival compliance has NOT been established or validated by this browser tool. Always run an external validator (such as veraPDF) before submitting regulated archival records.</li>
               </ul>
             </div>
           )}
@@ -943,6 +1120,9 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
           {/* TRANSLATE PDF LANGUAGE SELECTOR */}
           {tool.id === 'translate-pdf' && (
             <div className="space-y-3">
+              <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-200 leading-relaxed">
+                <strong>AI Backend Disclosure:</strong> Extracted document text (up to 12,000 characters) is transmitted securely to the ToolCrest AI backend (<code className="font-mono">/api/translate</code>) for translation. If a PDF is uploaded above, its extracted text will be translated automatically; otherwise, the text box below is translated.
+              </div>
               <div>
                 <label className="block text-xs font-bold text-amber-200 mb-1">
                   Target Language
@@ -962,7 +1142,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
 
               <div>
                 <label className="block text-xs font-bold text-amber-200 mb-1">
-                  Text to Translate
+                  Fallback / Direct Text to Translate {selectedFiles.length > 0 && '(Uploaded PDF takes priority)'}
                 </label>
                 <textarea
                   rows={4}
@@ -1004,24 +1184,22 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                 Superimpose a letterhead, watermark background, or secondary PDF template onto every page of your primary document.
               </p>
               <div>
-                <label className="block text-xs font-bold text-amber-200 mb-1">
+                <label className="block text-xs font-bold text-amber-200 mb-1.5">
                   Secondary PDF File (Overlay Template)
                 </label>
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setSecondaryOverlayFile(e.target.files[0]);
-                    }
+                <FileUploadZone
+                  compact
+                  accept=".pdf,application/pdf"
+                  multiple={false}
+                  title={
+                    secondaryOverlayFile
+                      ? `Overlay Selected: ${secondaryOverlayFile.name} (${(secondaryOverlayFile.size / 1024).toFixed(1)} KB)`
+                      : 'Drag & drop or click to select Overlay PDF Template'
+                  }
+                  onFilesSelected={(files) => {
+                    if (files[0]) setSecondaryOverlayFile(files[0]);
                   }}
-                  className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-amber-500/20 file:text-amber-300 hover:file:bg-amber-500/30 cursor-pointer"
                 />
-                {secondaryOverlayFile && (
-                  <p className="text-[11px] text-emerald-400 font-mono mt-1">
-                    Selected overlay: {secondaryOverlayFile.name} ({(secondaryOverlayFile.size / 1024).toFixed(1)} KB)
-                  </p>
-                )}
               </div>
               <div>
                 <label className="block text-xs font-bold text-amber-200 mb-1">
@@ -1040,81 +1218,107 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             </div>
           )}
 
-          {/* EDIT PDF ANNOTATION CONTROLS */}
-          {tool.id === 'edit-pdf' && (
-            <div className="p-4 bg-[#0c111e] rounded-2xl border border-amber-500/25 space-y-3">
-              <div className="flex items-center gap-2 text-amber-300 font-bold text-xs">
-                <PenTool className="w-4 h-4 text-amber-400" />
-                <span>Document Header, Footer & Stamp Annotations</span>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-amber-200 mb-1">Running Header Text</label>
-                  <input
-                    type="text"
-                    value={editHeaderText}
-                    onChange={(e) => setEditHeaderText(e.target.value)}
-                    className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-medium focus:border-amber-400"
-                    placeholder="e.g. Project Proposal 2026"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-amber-200 mb-1">Running Footer Text</label>
-                  <input
-                    type="text"
-                    value={editFooterText}
-                    onChange={(e) => setEditFooterText(e.target.value)}
-                    className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-medium focus:border-amber-400"
-                    placeholder="e.g. Confidential • All Rights Reserved"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-amber-200 mb-1">Approval / Status Stamp</label>
-                <input
-                  type="text"
-                  value={editStampText}
-                  onChange={(e) => setEditStampText(e.target.value)}
-                  className="w-full text-xs bg-[#070a14] border border-amber-500/30 text-white rounded-xl px-3 py-2 font-bold text-amber-300 focus:border-amber-400"
-                  placeholder="e.g. APPROVED, CONFIDENTIAL, DRAFT"
-                />
-              </div>
-            </div>
-          )}
-
           {/* PDF FORMS FILLER */}
           {tool.id === 'pdf-forms' && (
             <div className="space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-bold text-amber-200 mb-1">Full Name</label>
-                  <input
-                    type="text"
-                    value={formFields.fullName}
-                    onChange={(e) => setFormFields((prev) => ({ ...prev, fullName: e.target.value }))}
-                    className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
-                  />
+              {acroFormInspected && acroFormFields.length > 0 ? (
+                <div className="space-y-3">
+                  <div className="p-2.5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-emerald-200 text-xs">
+                    Detected <strong>{acroFormFields.length}</strong> interactive AcroForm field(s) inside {selectedFiles[0]?.name}. Edit values below to fill and flatten directly into the PDF:
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {acroFormFields.map((field, idx) => (
+                      <div key={field.name + idx} className="bg-[#0c111e] border border-amber-500/25 rounded-xl p-3 space-y-1.5">
+                        <label className="block text-[11px] font-bold text-amber-200 truncate" title={field.name}>
+                          {field.name} ({field.type})
+                        </label>
+                        {field.type === 'checkbox' ? (
+                          <label className="flex items-center gap-2 text-xs text-slate-200 cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={Boolean(field.value)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setAcroFormFields((prev) =>
+                                  prev.map((f, i) => (i === idx ? { ...f, value: checked } : f))
+                                );
+                              }}
+                              className="w-4 h-4 accent-amber-400"
+                            />
+                            <span>{field.value ? 'Checked' : 'Unchecked'}</span>
+                          </label>
+                        ) : field.type === 'dropdown' && field.options && field.options.length > 0 ? (
+                          <select
+                            value={String(field.value || '')}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setAcroFormFields((prev) =>
+                                prev.map((f, i) => (i === idx ? { ...f, value: val } : f))
+                              );
+                            }}
+                            className="w-full text-xs bg-[#070a14] border border-slate-700 text-white rounded-lg px-2.5 py-1.5"
+                          >
+                            <option value="">Select option...</option>
+                            {field.options.map((opt) => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <input
+                            type="text"
+                            value={String(field.value || '')}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setAcroFormFields((prev) =>
+                                prev.map((f, i) => (i === idx ? { ...f, value: val } : f))
+                              );
+                            }}
+                            className="w-full text-xs bg-[#070a14] border border-slate-700 text-white rounded-lg px-2.5 py-1.5"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-bold text-amber-200 mb-1">Email Address</label>
-                  <input
-                    type="email"
-                    value={formFields.email}
-                    onChange={(e) => setFormFields((prev) => ({ ...prev, email: e.target.value }))}
-                    className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
-                  />
-                </div>
-              </div>
+              ) : (
+                <div className="space-y-3">
+                  {acroFormInspected && acroFormFields.length === 0 && (
+                    <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs">
+                      <strong>No interactive AcroForm fields detected</strong> in {selectedFiles[0]?.name}. You can either use the Visual PDF Editor to type text directly onto the flat PDF pages, or generate a Form Submission Summary Sheet below.
+                    </div>
+                  )}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-xs font-bold text-amber-200 mb-1">Full Name</label>
+                      <input
+                        type="text"
+                        value={formFields.fullName}
+                        onChange={(e) => setFormFields((prev) => ({ ...prev, fullName: e.target.value }))}
+                        className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-amber-200 mb-1">Email Address</label>
+                      <input
+                        type="email"
+                        value={formFields.email}
+                        onChange={(e) => setFormFields((prev) => ({ ...prev, email: e.target.value }))}
+                        className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl px-3 py-2 focus:border-amber-400"
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <label className="block text-xs font-bold text-amber-200 mb-1">Form Remarks</label>
-                <textarea
-                  rows={2}
-                  value={formFields.comments}
-                  onChange={(e) => setFormFields((prev) => ({ ...prev, comments: e.target.value }))}
-                  className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl p-2.5 focus:border-amber-400"
-                />
-              </div>
+                  <div>
+                    <label className="block text-xs font-bold text-amber-200 mb-1">Form Remarks</label>
+                    <textarea
+                      rows={2}
+                      value={formFields.comments}
+                      onChange={(e) => setFormFields((prev) => ({ ...prev, comments: e.target.value }))}
+                      className="w-full text-xs bg-[#0c111e] border border-amber-500/30 text-white rounded-xl p-2.5 focus:border-amber-400"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -1451,8 +1655,47 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
                   </div>
                 </div>
               )}
+
+              {/* Live Visual Coordinate Preview */}
+              {redactPreviewUrl && (() => {
+                const zone =
+                  redactionPreset === 'header'
+                    ? { x: 40, y: Math.max(0, redactPageSize.height - 72), width: Math.max(100, redactPageSize.width - 80), height: 48 }
+                    : redactionPreset === 'footer'
+                    ? { x: 40, y: 24, width: Math.max(100, redactPageSize.width - 80), height: 48 }
+                    : redactionPreset === 'address-block'
+                    ? { x: 48, y: Math.max(0, redactPageSize.height - 165), width: 240, height: 65 }
+                    : { x: redactionX, y: redactionY, width: redactionWidth, height: redactionHeight };
+
+                const leftPct = (zone.x / Math.max(1, redactPageSize.width)) * 100;
+                const topPct = ((redactPageSize.height - zone.y - zone.height) / Math.max(1, redactPageSize.height)) * 100;
+                const widthPct = (zone.width / Math.max(1, redactPageSize.width)) * 100;
+                const heightPct = (zone.height / Math.max(1, redactPageSize.height)) * 100;
+
+                return (
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Visual Zone Preview (Page {Math.min(redactionPage, redactPageSize.totalPages)} of {redactPageSize.totalPages})</span>
+                      <span className="font-mono">{Math.round(redactPageSize.width)}×{Math.round(redactPageSize.height)} pt</span>
+                    </div>
+                    <div className="relative w-full max-w-md mx-auto border border-slate-700 rounded-xl overflow-hidden bg-white shadow-lg">
+                      <img src={redactPreviewUrl} alt="Redaction Page Preview" className="w-full h-auto block" />
+                      <div
+                        className="absolute bg-rose-600/45 border-2 border-rose-500 pointer-events-none"
+                        style={{
+                          left: `${Math.max(0, Math.min(100, leftPct))}%`,
+                          top: `${Math.max(0, Math.min(100, topPct))}%`,
+                          width: `${Math.max(1, Math.min(100, widthPct))}%`,
+                          height: `${Math.max(1, Math.min(100, heightPct))}%`,
+                        }}
+                      />
+                    </div>
+                  </div>
+                );
+              })()}
+
               <p className="text-[11px] text-slate-400 leading-relaxed">
-                Redaction permanently overwrites the page content stream with solid blackout boxes. The underlying text and images in the designated zone are irrecoverable.
+                Target pages are rasterized at 2x DPI before burning solid blackout pixels into the pixel buffer, permanently eradicating underlying text and vector streams inside the redacted zone.
               </p>
             </div>
           )}
@@ -1496,7 +1739,7 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2 text-amber-300 font-bold text-sm">
                 <Sparkles className="w-4 h-4 text-amber-400" />
-                <span>Executive AI Summary</span>
+                <span>Executive Extractive Summary</span>
               </div>
               <button
                 type="button"
@@ -1729,7 +1972,10 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         faqs={[
           {
             q: 'Is my PDF uploaded to any external server?',
-            a: 'No. ToolCrest processes all documents 100% locally in your browser using WebAssembly and client-side JavaScript. Your files never leave your machine.',
+            a:
+              tool.id === 'translate-pdf'
+                ? 'PDF parsing runs locally in your browser; only the extracted text snippet (up to 12,000 characters) is sent over encrypted HTTPS to the ToolCrest backend for Gemini AI translation and is not permanently stored.'
+                : 'No. ToolCrest processes this document locally in your browser using client-side JavaScript and WebAssembly. Your file never leaves your device.',
           },
           {
             q: 'Is there any file size or page limit?',

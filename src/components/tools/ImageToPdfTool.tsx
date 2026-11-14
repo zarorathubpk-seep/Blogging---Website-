@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
-  UploadCloud,
-  FileImage,
+  GripVertical,
   Trash2,
   Download,
   RotateCw,
@@ -18,6 +17,7 @@ import {
 } from 'lucide-react';
 import { PDFDocument } from 'pdf-lib';
 import { ToolHeader } from './ToolHeader';
+import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
@@ -50,41 +50,83 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successInfo, setSuccessInfo] = useState<string | null>(null);
 
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const addMoreInputRef = useRef<HTMLInputElement | null>(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
 
-  // Clean up object URLs on unmount
+  const addMoreInputRef = useRef<HTMLInputElement | null>(null);
+  const activeUrlsRef = useRef<Set<string>>(new Set());
+
+  // Clean up all remaining object URLs on unmount
   useEffect(() => {
+    const urlSet = activeUrlsRef.current;
     return () => {
-      images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+      urlSet.forEach((url) => URL.revokeObjectURL(url));
+      urlSet.clear();
     };
   }, []);
+
+  const getImageDimensions = (url: string): Promise<{ width: number; height: number } | null> => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        if (img.naturalWidth > 0 && img.naturalHeight > 0) {
+          resolve({ width: img.naturalWidth, height: img.naturalHeight });
+        } else {
+          resolve(null);
+        }
+      };
+      img.onerror = () => resolve(null);
+      img.src = url;
+    });
+  };
 
   const handleAddFiles = async (fileList: FileList | File[]) => {
     setErrorMessage(null);
     setProcessedBytes(null);
     setSuccessInfo(null);
 
-    const validFiles: File[] = [];
-    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/bmp', 'image/svg+xml'];
+    const incoming = Array.from(fileList);
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/bmp'];
+    const invalidNames: string[] = [];
+    const candidateFiles: File[] = [];
 
-    for (let i = 0; i < fileList.length; i++) {
-      const f = fileList[i];
-      if (f.type.startsWith('image/') || validTypes.some((t) => f.name.toLowerCase().endsWith(t.replace('image/', '')))) {
-        validFiles.push(f);
+    for (const f of incoming) {
+      const lowerName = f.name.toLowerCase();
+      const isSupported =
+        f.type.startsWith('image/') ||
+        validTypes.some((t) => lowerName.endsWith(`.${t.replace('image/', '')}`)) ||
+        lowerName.endsWith('.jpg') ||
+        lowerName.endsWith('.jpeg');
+      if (isSupported && !lowerName.endsWith('.svg')) {
+        candidateFiles.push(f);
+      } else {
+        invalidNames.push(f.name);
       }
     }
 
-    if (validFiles.length === 0) {
-      setErrorMessage('Please select valid image files (JPG, PNG, WebP, BMP).');
+    if (candidateFiles.length === 0) {
+      setErrorMessage(
+        invalidNames.length > 0
+          ? `Unsupported file(s): ${invalidNames.join(', ')}. Please select JPG, JPEG, PNG, WebP, or BMP images.`
+          : 'Please select valid image files (JPG, PNG, WebP, BMP).'
+      );
       return;
     }
 
-    const newItems: ImageItem[] = await Promise.all(
-      validFiles.map(async (file, idx) => {
+    const loadedItems: ImageItem[] = [];
+    const corruptNames: string[] = [];
+
+    await Promise.all(
+      candidateFiles.map(async (file, idx) => {
         const previewUrl = URL.createObjectURL(file);
         const dims = await getImageDimensions(previewUrl);
-        return {
+        if (!dims) {
+          URL.revokeObjectURL(previewUrl);
+          corruptNames.push(file.name);
+          return;
+        }
+        activeUrlsRef.current.add(previewUrl);
+        loadedItems.push({
           id: `img-${Date.now()}-${idx}-${Math.random().toString(36).slice(2, 6)}`,
           file,
           previewUrl,
@@ -92,20 +134,20 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
           height: dims.height,
           rotation: 0,
           isSelected: true,
-        };
+        });
       })
     );
 
-    setImages((prev) => [...prev, ...newItems]);
-  };
+    if (loadedItems.length > 0) {
+      setImages((prev) => [...prev, ...loadedItems]);
+    }
 
-  const getImageDimensions = (url: string): Promise<{ width: number; height: number }> => {
-    return new Promise((resolve) => {
-      const img = new Image();
-      img.onload = () => resolve({ width: img.naturalWidth || 800, height: img.naturalHeight || 600 });
-      img.onerror = () => resolve({ width: 800, height: 600 });
-      img.src = url;
-    });
+    const allSkipped = [...invalidNames, ...corruptNames];
+    if (allSkipped.length > 0) {
+      setErrorMessage(
+        `Could not load unreadable or unsupported image(s): ${allSkipped.join(', ')}.`
+      );
+    }
   };
 
   const toggleSelect = (id: string) => {
@@ -137,7 +179,10 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
   const removeImage = (id: string) => {
     setImages((prev) => {
       const target = prev.find((img) => img.id === id);
-      if (target) URL.revokeObjectURL(target.previewUrl);
+      if (target) {
+        URL.revokeObjectURL(target.previewUrl);
+        activeUrlsRef.current.delete(target.previewUrl);
+      }
       return prev.filter((img) => img.id !== id);
     });
     setProcessedBytes(null);
@@ -149,6 +194,17 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
     const copy = [...images];
     const [moved] = copy.splice(index, 1);
     copy.splice(targetIndex, 0, moved);
+    setImages(copy);
+    setProcessedBytes(null);
+  };
+
+  const reorderImage = (fromIdx: number, toIdx: number) => {
+    if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= images.length || toIdx >= images.length) {
+      return;
+    }
+    const copy = [...images];
+    const [moved] = copy.splice(fromIdx, 1);
+    copy.splice(toIdx, 0, moved);
     setImages(copy);
     setProcessedBytes(null);
   };
@@ -303,41 +359,33 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
 
         {/* Upload Zone / Empty State */}
         {images.length === 0 ? (
-          <div className="mt-8 bg-[#1B1D22] border-2 border-dashed border-slate-700 hover:border-[#D4AF37] rounded-2xl p-10 sm:p-14 text-center transition-all shadow-xl">
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              accept="image/jpeg,image/png,image/webp,image/bmp"
-              onChange={(e) => e.target.files && handleAddFiles(e.target.files)}
-              className="hidden"
+          <div className="mt-8">
+            <FileUploadZone
+              onFilesSelected={handleAddFiles}
+              accept="image/jpeg,image/png,image/webp,image/bmp,.jpg,.jpeg,.png,.webp,.bmp"
+              multiple={true}
+              maxFiles={50}
+              maxSizeMB={50}
+              title="Drag & drop images here, or click to browse"
+              subtitle="Supports JPG, JPEG, PNG, WebP, and BMP. 100% private in-browser conversion."
+              fileTypeLabel="JPG, PNG, WebP, BMP"
             />
-            <div className="max-w-md mx-auto space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-2xl bg-[#101114] border border-slate-700 flex items-center justify-center text-[#D4AF37] shadow-md">
-                <FileImage className="w-8 h-8" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-[#F5F5F5]">Upload Images to Convert to PDF</h2>
-                <p className="text-sm text-[#B5B8BE] mt-1">
-                  Supports JPG, PNG, WebP, and BMP. Select multiple files at once.
-                </p>
-              </div>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="px-6 py-3 bg-[#D4AF37] hover:bg-[#E6C768] text-[#101114] font-bold rounded-xl transition shadow-lg cursor-pointer flex items-center gap-2 mx-auto"
-              >
-                <UploadCloud className="w-5 h-5" />
-                <span>Choose Images</span>
-              </button>
-              <p className="text-xs text-[#B5B8BE]/80">
-                100% Private in-browser conversion • Zero file uploads to servers
-              </p>
-            </div>
           </div>
         ) : (
           /* Active Image Workspace */
           <div className="mt-8 space-y-6">
+            {/* Compact Drag-and-Drop Add More Zone */}
+            <FileUploadZone
+              compact={true}
+              onFilesSelected={handleAddFiles}
+              accept="image/jpeg,image/png,image/webp,image/bmp,.jpg,.jpeg,.png,.webp,.bmp"
+              multiple={true}
+              maxFiles={50}
+              maxSizeMB={50}
+              title="Drag & drop more images here, or click to add"
+              fileTypeLabel="JPG, PNG, WebP, BMP"
+            />
+
             {/* Action Bar */}
             <div className="bg-[#1B1D22] border border-slate-800 rounded-2xl p-4 sm:p-5 flex flex-wrap items-center justify-between gap-4 shadow-lg">
               <div className="flex items-center gap-3">
@@ -369,7 +417,10 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
                   type="file"
                   multiple
                   accept="image/jpeg,image/png,image/webp,image/bmp"
-                  onChange={(e) => e.target.files && handleAddFiles(e.target.files)}
+                  onChange={(e) => {
+                    if (e.target.files) handleAddFiles(e.target.files);
+                    e.target.value = '';
+                  }}
                   className="hidden"
                 />
                 <button
@@ -383,7 +434,10 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
                 <button
                   type="button"
                   onClick={() => {
-                    images.forEach((img) => URL.revokeObjectURL(img.previewUrl));
+                    images.forEach((img) => {
+                      URL.revokeObjectURL(img.previewUrl);
+                      activeUrlsRef.current.delete(img.previewUrl);
+                    });
                     setImages([]);
                     setProcessedBytes(null);
                   }}
@@ -394,31 +448,62 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
               </div>
             </div>
 
-            {/* Images Grid */}
+            {/* Images Grid with Drag-and-Drop Reordering */}
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {images.map((item, idx) => (
                 <div
                   key={item.id}
-                  className={`group relative rounded-xl border transition-all duration-200 flex flex-col justify-between overflow-hidden ${
-                    item.isSelected
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedIdx(idx);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (draggedIdx !== null && draggedIdx !== idx) {
+                      setDragOverIdx(idx);
+                    }
+                  }}
+                  onDragLeave={() => setDragOverIdx(null)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (draggedIdx !== null) {
+                      reorderImage(draggedIdx, idx);
+                    }
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`group relative rounded-xl border transition-all duration-200 flex flex-col justify-between overflow-hidden cursor-grab active:cursor-grabbing ${
+                    dragOverIdx === idx
+                      ? 'border-amber-300 ring-2 ring-amber-400 scale-[1.02]'
+                      : draggedIdx === idx
+                      ? 'opacity-40 border-amber-500/40'
+                      : item.isSelected
                       ? 'bg-[#1B1D22] border-[#D4AF37] ring-1 ring-[#D4AF37]/50 shadow-md shadow-[#D4AF37]/5'
                       : 'bg-[#141519] border-slate-800 opacity-60'
                   }`}
                 >
                   {/* Card Header: Position & Selection */}
                   <div className="flex items-center justify-between p-2 bg-[#101114]/90 border-b border-slate-800/60 z-10">
-                    <button
-                      type="button"
-                      onClick={() => toggleSelect(item.id)}
-                      className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors cursor-pointer ${
-                        item.isSelected
-                          ? 'bg-[#D4AF37] text-[#101114]'
-                          : 'bg-[#101114] border border-slate-600 hover:border-[#D4AF37]'
-                      }`}
-                      title={item.isSelected ? 'Unselect' : 'Select'}
-                    >
-                      {item.isSelected && <CheckSquare className="w-3.5 h-3.5 stroke-[3]" />}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <GripVertical className="w-3.5 h-3.5 text-slate-500" />
+                      <button
+                        type="button"
+                        onClick={() => toggleSelect(item.id)}
+                        className={`w-5 h-5 rounded-md flex items-center justify-center transition-colors cursor-pointer ${
+                          item.isSelected
+                            ? 'bg-[#D4AF37] text-[#101114]'
+                            : 'bg-[#101114] border border-slate-600 hover:border-[#D4AF37]'
+                        }`}
+                        title={item.isSelected ? 'Unselect' : 'Select'}
+                      >
+                        {item.isSelected && <CheckSquare className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+                    </div>
 
                     <div className="flex items-center gap-1">
                       <span className="text-[10px] font-mono font-bold text-[#D4AF37] px-1.5 py-0.5 rounded bg-[#101114] border border-slate-800">
@@ -451,6 +536,7 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
                     <img
                       src={item.previewUrl}
                       alt={item.file.name}
+                      draggable={false}
                       className="max-h-full max-w-full object-contain rounded shadow-xs transition-transform duration-200"
                       style={{ transform: `rotate(${item.rotation}deg)` }}
                     />
