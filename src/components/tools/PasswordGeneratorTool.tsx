@@ -13,6 +13,7 @@ import {
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 
 interface PasswordGeneratorToolProps {
@@ -408,6 +409,14 @@ export const PasswordGeneratorTool: React.FC<PasswordGeneratorToolProps> = ({ on
           </div>
         )}
       </div>
+
+      <ToolGuideSection
+        toolId="password-generator"
+        toolName="Secure Password Generator"
+        onNavigate={onNavigate}
+        hideSteps
+        hideFaq
+      />
 
       {/* 3. HOW TO USE GUIDE */}
       <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">

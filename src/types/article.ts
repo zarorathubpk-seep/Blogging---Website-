@@ -12,4 +12,5 @@ export interface Article {
   isPublished: boolean;
   order: number;
   imageUrl?: string;
+  imageAlt?: string;
 }

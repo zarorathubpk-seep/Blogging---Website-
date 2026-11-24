@@ -12,6 +12,7 @@ import {
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
@@ -426,6 +427,14 @@ export const OrganizePdfTool: React.FC<OrganizePdfToolProps> = ({ onNavigate }) 
           </div>
         </div>
       )}
+
+      {/* Per-tool Guide, Specs & Limitations */}
+      <ToolGuideSection
+        toolId="organize-pdf"
+        toolName="Organize PDF"
+        onNavigate={onNavigate}
+        hideFaq
+      />
 
       {/* FAQs */}
       <FaqSection faqs={faqs} />

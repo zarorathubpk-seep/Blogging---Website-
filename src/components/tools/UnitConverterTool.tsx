@@ -20,6 +20,7 @@ import {
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 
 interface UnitConverterToolProps {
@@ -426,6 +427,14 @@ export const UnitConverterTool: React.FC<UnitConverterToolProps> = ({ onNavigate
           </div>
         </div>
       </div>
+
+      {/* Per-tool Guide, Specs & Limitations */}
+      <ToolGuideSection
+        toolId="unit-converter"
+        toolName="Unit Converter"
+        onNavigate={onNavigate}
+        hideFaq
+      />
 
       {/* FAQs */}
       <FaqSection faqs={unitFaqs} />

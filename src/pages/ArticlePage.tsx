@@ -37,14 +37,15 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
   const isDark = theme === 'dark';
   const [copied, setCopied] = useState(false);
 
-  // Extract headings for Table of Contents
+  // Extract H2 and H3 headings for Table of Contents
   const headings = article.content
     .split('\n')
-    .filter((line) => line.startsWith('### ') || line.startsWith('**Step ') || line.startsWith('**1. ') || line.startsWith('**Your Sunday routine'))
+    .filter((line) => line.startsWith('## ') || line.startsWith('### ') || line.startsWith('**Step '))
     .map((line, idx) => {
-      const cleanText = line.replace(/###\s*|\*\*/g, '').trim();
+      const level = line.startsWith('## ') ? 2 : 3;
+      const cleanText = line.replace(/^#{2,3}\s*|\*\*/g, '').trim();
       const id = `section-${idx}`;
-      return { text: cleanText, id };
+      return { text: cleanText, id, level };
     });
 
   const handleCopyLink = () => {
@@ -75,7 +76,82 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
     window.location.href = `mailto:?subject=${subject}&body=${body}`;
   };
 
-  // Render markdown with nice headings, tables, and lists
+  // Safe inline markdown renderer (links, **bold**, *italic*, `code`)
+  const renderInlineText = (text: string): React.ReactNode[] => {
+    const tokenRegex = /(\[[^\]]+\]\([^)]+\)|\*\*[^*]+\*\*|`[^`]+`|\*[^*]+\*)/g;
+    const parts = text.split(tokenRegex);
+
+    return parts.map((part, i) => {
+      if (!part) return null;
+
+      const linkMatch = part.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if (linkMatch) {
+        const [, label, href] = linkMatch;
+        if (href.startsWith('/')) {
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onNavigate(href)}
+              className={`font-semibold underline underline-offset-2 cursor-pointer transition ${
+                isDark ? 'text-amber-300 hover:text-amber-200' : 'text-amber-700 hover:text-amber-900'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        }
+        return (
+          <a
+            key={i}
+            href={href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className={`font-semibold underline underline-offset-2 transition ${
+              isDark ? 'text-amber-300 hover:text-amber-200' : 'text-amber-700 hover:text-amber-900'
+            }`}
+          >
+            {label}
+          </a>
+        );
+      }
+
+      if (part.startsWith('**') && part.endsWith('**') && part.length > 4) {
+        return (
+          <strong key={i} className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
+            {part.slice(2, -2)}
+          </strong>
+        );
+      }
+
+      if (part.startsWith('`') && part.endsWith('`') && part.length > 2) {
+        return (
+          <code
+            key={i}
+            className={`px-1.5 py-0.5 rounded-md font-mono text-xs border ${
+              isDark
+                ? 'bg-slate-900 text-amber-300 border-amber-500/25'
+                : 'bg-slate-100 text-amber-900 border-slate-200'
+            }`}
+          >
+            {part.slice(1, -1)}
+          </code>
+        );
+      }
+
+      if (part.startsWith('*') && part.endsWith('*') && part.length > 2) {
+        return (
+          <em key={i} className="italic">
+            {part.slice(1, -1)}
+          </em>
+        );
+      }
+
+      return <React.Fragment key={i}>{part}</React.Fragment>;
+    });
+  };
+
+  // Render markdown with H2, H3, tables, inline formatting, and lists
   const renderFormattedContent = (content: string) => {
     const lines = content.split('\n');
     const elements: React.ReactNode[] = [];
@@ -100,7 +176,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                 <tr>
                   {headers.map((h, i) => (
                     <th key={i} className={`p-3 border-b ${isDark ? 'border-amber-500/20' : 'border-slate-200'}`}>
-                      {h}
+                      {renderInlineText(h)}
                     </th>
                   ))}
                 </tr>
@@ -115,7 +191,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
                     <tr key={rIdx} className={`transition ${isDark ? 'hover:bg-amber-500/5' : 'hover:bg-amber-50/50'}`}>
                       {cells.map((cell, cIdx) => (
                         <td key={cIdx} className={`p-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-                          {cell}
+                          {renderInlineText(cell)}
                         </td>
                       ))}
                     </tr>
@@ -140,7 +216,25 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
         flushTable();
       }
 
-      // Headings
+      // H2 Headings
+      if (line.startsWith('## ')) {
+        const text = line.replace('## ', '').trim();
+        const hid = `section-${headingCounter++}`;
+        elements.push(
+          <h2
+            key={idx}
+            id={hid}
+            className={`text-xl sm:text-2xl font-black mt-9 mb-3 pb-2 border-b scroll-mt-24 ${
+              isDark ? 'text-white border-amber-500/20' : 'text-slate-900 border-slate-200'
+            }`}
+          >
+            {text}
+          </h2>
+        );
+        return;
+      }
+
+      // H3 Headings
       if (line.startsWith('### ')) {
         const text = line.replace('### ', '').trim();
         const hid = `section-${headingCounter++}`;
@@ -148,22 +242,23 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           <h3
             key={idx}
             id={hid}
-            className={`text-lg sm:text-xl font-bold mt-8 mb-3 scroll-mt-24 flex items-center gap-2 ${
-              isDark ? 'text-white' : 'text-slate-900'
+            className={`text-base sm:text-lg font-bold mt-6 mb-2.5 scroll-mt-24 flex items-center gap-2 ${
+              isDark ? 'text-amber-200' : 'text-slate-900'
             }`}
           >
-            <span className="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 shrink-0" />
             <span>{text}</span>
           </h3>
         );
         return;
       }
 
-      // Bold lead / Steps
-      if (line.startsWith('**') && line.endsWith('**')) {
+      // Standalone Bold Step Headers
+      if (line.startsWith('**Step ') && line.endsWith('**')) {
         const boldText = line.replace(/\*\*/g, '');
+        const hid = `section-${headingCounter++}`;
         elements.push(
-          <p key={idx} className={`font-bold mt-4 mb-2 ${isDark ? 'text-amber-200' : 'text-amber-900'}`}>
+          <p id={hid} key={idx} className={`font-bold mt-4 mb-2 scroll-mt-24 ${isDark ? 'text-amber-200' : 'text-amber-900'}`}>
             {boldText}
           </p>
         );
@@ -172,10 +267,10 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
 
       // Bullet lists
       if (line.trim().startsWith('- ')) {
-        const bulletText = line.trim().replace('- ', '');
+        const bulletText = line.trim().slice(2);
         elements.push(
-          <li key={idx} className={`leading-relaxed text-sm sm:text-base ml-4 list-disc mb-1.5 marker:text-amber-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-            {bulletText}
+          <li key={idx} className={`leading-relaxed text-sm sm:text-base ml-5 list-disc mb-2 marker:text-amber-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+            {renderInlineText(bulletText)}
           </li>
         );
         return;
@@ -184,8 +279,8 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       // Numbered lists
       if (/^\d+\.\s/.test(line.trim())) {
         elements.push(
-          <li key={idx} className={`leading-relaxed text-sm sm:text-base ml-4 list-decimal mb-1.5 marker:text-amber-500 font-medium ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-            {line.trim().replace(/^\d+\.\s/, '')}
+          <li key={idx} className={`leading-relaxed text-sm sm:text-base ml-5 list-decimal mb-2 marker:text-amber-500 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
+            {renderInlineText(line.trim().replace(/^\d+\.\s/, ''))}
           </li>
         );
         return;
@@ -199,7 +294,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
       // Standard paragraphs
       elements.push(
         <p key={idx} className={`leading-relaxed text-sm sm:text-base my-3 ${isDark ? 'text-slate-300' : 'text-slate-700'}`}>
-          {line}
+          {renderInlineText(line)}
         </p>
       );
     });
@@ -209,7 +304,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
     return elements;
   };
 
-  const relatedArticles = allArticles.filter((a) => a.id !== article.id).slice(0, 3);
+  const relatedArticles = allArticles.filter((a) => a.id !== article.id && a.isPublished !== false).slice(0, 3);
 
   return (
     <div className={`min-h-screen py-10 transition-colors duration-200 ${isDark ? 'bg-[#0B0F19] text-slate-100' : 'bg-[#F8FAFC] text-slate-900'}`}>
@@ -241,7 +336,7 @@ export const ArticlePage: React.FC<ArticlePageProps> = ({
           <div className="w-full h-64 sm:h-80 md:h-96 overflow-hidden bg-slate-900">
             <AppImage
               src={resolveArticleImage(article.slug, article.imageUrl)}
-              alt={article.title}
+              alt={article.imageAlt || article.title}
               className="w-full h-full object-cover object-center"
             />
           </div>

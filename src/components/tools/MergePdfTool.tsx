@@ -18,6 +18,7 @@ import { PDFDocument, degrees } from 'pdf-lib';
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
 import {
@@ -624,6 +625,14 @@ export const MergePdfTool: React.FC<MergePdfToolProps> = ({ onNavigate }) => {
 
         {/* Informational SEO and FAQ Sections */}
         <div className="mt-16 space-y-12">
+          <ToolGuideSection
+            toolId="merge-pdf"
+            toolName="Merge PDF"
+            onNavigate={onNavigate}
+            hideSteps
+            hideFaq
+          />
+
           <div className="bg-[#1B1D22] border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4">
             <h3 className="text-lg font-bold text-[#F5F5F5]">
               How to Merge PDF Files Online for Free

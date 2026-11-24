@@ -4,9 +4,10 @@ import { StoredPlannerState, Currency, PlannerType } from './types/planner';
 import { Article } from './types/article';
 import { INITIAL_ARTICLES } from './data/defaultArticles';
 import { subscribeArticles } from './services/articleService';
-import { updatePageSeo } from './utils/seo';
+import { updatePageSeo, SITE_DOMAIN, DEFAULT_OG_IMAGE } from './utils/seo';
 import { trackPageView } from './utils/analytics';
 import { TOOLS_DATA } from './data/toolsData';
+import { TOOL_GUIDES } from './data/toolGuides';
 
 // Components & Pages
 import { Header } from './components/Header';
@@ -44,16 +45,7 @@ export default function App() {
     return path || '/';
   });
 
-  // Auto-prompt visitor to pick a tool on first homepage visit
-  useEffect(() => {
-    const dismissed = localStorage.getItem('toolcrest_welcome_popup_dismissed_v1');
-    if (!dismissed && (currentPath === '/' || currentPath === '')) {
-      const timer = setTimeout(() => {
-        setIsToolSelectorOpen(true);
-      }, 1200);
-      return () => clearTimeout(timer);
-    }
-  }, [currentPath]);
+  // Tool selector opens via header search button or Cmd+K / Ctrl+K shortcut
 
   // Global keyboard shortcut: Cmd+K / Ctrl+K
   useEffect(() => {
@@ -131,21 +123,47 @@ export default function App() {
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
-  // Update dynamic SEO on path change
+  // Update dynamic SEO & Schema.org JSON-LD on path change
   useEffect(() => {
     if (currentPath === '/' || currentPath === '') {
       updatePageSeo({
-        title: 'ToolCrest — All Your Essential Online Tools in One Place',
+        title: 'ToolCrest — Essential Online PDF, Image & Productivity Tools',
         description:
-          'Free browser tools for PDF merge, split, compress, sign, QR code generation, unit conversions, and productivity planners. 100% private, no sign-up.',
+          `Free browser tools (${TOOLS_DATA.length} utilities) for PDF merging, splitting, compression, OCR, image optimization, QR codes, unit conversion, and planning.`,
         canonicalPath: '/',
+        jsonLd: [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: 'ToolCrest',
+            url: `${SITE_DOMAIN}/`,
+            description:
+              'Free browser-based utilities for PDFs, images, QR codes, conversions, financial calculations, and daily planners.',
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'Organization',
+            name: 'ToolCrest',
+            url: `${SITE_DOMAIN}/`,
+            logo: DEFAULT_OG_IMAGE,
+          },
+        ],
       });
     } else if (currentPath === '/planner') {
       updatePageSeo({
         title: 'Free Weekly & Budget Planner Generator | ToolCrest',
         description:
-          'Build a free weekly, budget, work, study, or project planner in seconds. Customize it, print it, or save it as a PDF.',
+          'Build a free weekly, budget, work, study, meal, or habit planner in seconds. Customize locally, print, or save as PDF.',
         canonicalPath: '/planner',
+        jsonLd: {
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          name: 'ToolCrest Planner Generator',
+          url: `${SITE_DOMAIN}/planner`,
+          applicationCategory: 'ProductivityApplication',
+          operatingSystem: 'All',
+          offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+        },
       });
     } else if (
       currentPath.startsWith('/tools/') ||
@@ -154,7 +172,8 @@ export default function App() {
           '/' + t.slug === currentPath ||
           '/' + t.id === currentPath ||
           (currentPath === '/image-to-pdf' && t.id === 'images-to-pdf') ||
-          (currentPath === '/pdf-to-image' && t.id === 'pdf-to-images')
+          (currentPath === '/pdf-to-image' && t.id === 'pdf-to-images') ||
+          (currentPath === '/pdf-to-jpg' && t.id === 'pdf-to-images')
       )
     ) {
       const slug = currentPath.startsWith('/tools/')
@@ -163,47 +182,118 @@ export default function App() {
       const tool =
         TOOLS_DATA.find((t) => t.slug === slug || t.id === slug) ||
         (slug === 'image-to-pdf' ? TOOLS_DATA.find((t) => t.id === 'images-to-pdf') : undefined) ||
-        (slug === 'pdf-to-image' ? TOOLS_DATA.find((t) => t.id === 'pdf-to-images') : undefined);
+        ((slug === 'pdf-to-image' || slug === 'pdf-to-jpg')
+          ? TOOLS_DATA.find((t) => t.id === 'pdf-to-images')
+          : undefined);
+
       if (tool) {
+        const guide = TOOL_GUIDES[tool.id];
+        const schemas: Record<string, unknown>[] = [
+          {
+            '@context': 'https://schema.org',
+            '@type': 'SoftwareApplication',
+            name: tool.name,
+            url: `${SITE_DOMAIN}/tools/${tool.slug}`,
+            description: tool.longDesc || tool.shortDesc,
+            applicationCategory: 'UtilitiesApplication',
+            operatingSystem: 'All',
+            offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+          },
+          {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_DOMAIN}/` },
+              { '@type': 'ListItem', position: 2, name: tool.name, item: `${SITE_DOMAIN}/tools/${tool.slug}` },
+            ],
+          },
+        ];
+        if (guide && guide.faqs.length > 0) {
+          schemas.push({
+            '@context': 'https://schema.org',
+            '@type': 'FAQPage',
+            mainEntity: guide.faqs.map((f) => ({
+              '@type': 'Question',
+              name: f.q,
+              acceptedAnswer: { '@type': 'Answer', text: f.a },
+            })),
+          });
+        }
         updatePageSeo({
           title: `${tool.name} — Free Online Tool | ToolCrest`,
           description: tool.shortDesc,
+          canonicalPath: `/tools/${tool.slug}`,
+          jsonLd: schemas,
+        });
+      } else {
+        updatePageSeo({
+          title: 'Tool Not Found | ToolCrest',
+          description: 'The requested tool page could not be found on ToolCrest.',
           canonicalPath: currentPath,
+          noindex: true,
         });
       }
     } else if (currentPath === '/blog') {
       updatePageSeo({
-        title: 'ToolCrest Blog & Productivity Guides',
+        title: 'ToolCrest Blog & Workflow Guides',
         description:
-          'Practical guides on weekly planning, PDF workflows, 50/30/20 budget method, office work schedules, and Sunday review routines.',
+          'Practical guides on weekly planning, PDF merging and OCR workflows, 50/30/20 budgeting, office work schedules, and document security.',
         canonicalPath: '/blog',
       });
     } else if (currentPath.startsWith('/blog/')) {
       const slug = currentPath.replace('/blog/', '');
-      const found = articles.find((a) => a.slug === slug);
+      const found = articles.find((a) => a.slug === slug && a.isPublished !== false);
       if (found) {
         updatePageSeo({
           title: `${found.title} | ToolCrest`,
           description: found.subtitle || found.title,
           canonicalPath: `/blog/${slug}`,
+          ogType: 'article',
+          jsonLd: [
+            {
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: found.title,
+              description: found.subtitle || found.title,
+              author: { '@type': 'Organization', name: found.author || 'ToolCrest Editorial Team' },
+              publisher: { '@type': 'Organization', name: 'ToolCrest', url: `${SITE_DOMAIN}/` },
+              mainEntityOfPage: `${SITE_DOMAIN}/blog/${slug}`,
+            },
+            {
+              '@context': 'https://schema.org',
+              '@type': 'BreadcrumbList',
+              itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_DOMAIN}/` },
+                { '@type': 'ListItem', position: 2, name: 'Blog', item: `${SITE_DOMAIN}/blog` },
+                { '@type': 'ListItem', position: 3, name: found.title, item: `${SITE_DOMAIN}/blog/${slug}` },
+              ],
+            },
+          ],
+        });
+      } else {
+        updatePageSeo({
+          title: 'Article Not Found | ToolCrest',
+          description: 'The requested article could not be found on ToolCrest.',
+          canonicalPath: currentPath,
+          noindex: true,
         });
       }
     } else if (currentPath === '/privacy-policy' || currentPath === '/privacy') {
       updatePageSeo({
         title: 'Privacy Policy | ToolCrest',
-        description: 'ToolCrest privacy policy. Client-side processing, zero server file retention, and GDPR compliance.',
+        description: 'ToolCrest privacy policy covering browser-local processing, optional AI features, and consent preferences.',
         canonicalPath: '/privacy-policy',
       });
     } else if (currentPath === '/about-us' || currentPath === '/about') {
       updatePageSeo({
         title: 'About Us | ToolCrest',
-        description: 'About ToolCrest online tools and productivity blogging platform.',
+        description: 'About ToolCrest online tools, maintenance standards, and editorial guides.',
         canonicalPath: '/about-us',
       });
     } else if (currentPath === '/contact-us' || currentPath === '/contact') {
       updatePageSeo({
         title: 'Contact Us | ToolCrest',
-        description: 'Get in touch with ToolCrest technical and editorial support team.',
+        description: 'Get in touch with ToolCrest for bug reports, feature requests, or editorial questions.',
         canonicalPath: '/contact-us',
       });
     } else if (currentPath === '/terms-and-conditions' || currentPath === '/terms') {
@@ -243,6 +333,13 @@ export default function App() {
         description: 'Pilot the Crest-V golden interceptor in 3D through the cyber canyon. High-speed Three.js flight runner with live Firestore leaderboard.',
         canonicalPath: '/arcade',
       });
+    } else {
+      updatePageSeo({
+        title: 'Page Not Found | ToolCrest',
+        description: 'The requested page could not be found on ToolCrest.',
+        canonicalPath: currentPath,
+        noindex: true,
+      });
     }
   }, [currentPath, articles]);
 
@@ -258,14 +355,13 @@ export default function App() {
   const renderCurrentView = () => {
     // 1. Tool Page (Supports both /tools/:slug and direct URLs like /image-to-pdf, /merge-pdf, etc.)
     const directSlug = currentPath.replace(/^\//, '');
-    const isDirectTool =
-      TOOLS_DATA.some(
-        (t) =>
-          t.slug === directSlug ||
-          t.id === directSlug ||
-          (directSlug === 'image-to-pdf' && t.id === 'images-to-pdf') ||
-          (directSlug === 'pdf-to-image' && t.id === 'pdf-to-images')
-      );
+    const isDirectTool = TOOLS_DATA.some(
+      (t) =>
+        t.slug === directSlug ||
+        t.id === directSlug ||
+        (directSlug === 'image-to-pdf' && t.id === 'images-to-pdf') ||
+        ((directSlug === 'pdf-to-image' || directSlug === 'pdf-to-jpg') && t.id === 'pdf-to-images')
+    );
 
     if (currentPath.startsWith('/tools/') || isDirectTool) {
       const slug = currentPath.startsWith('/tools/')
@@ -286,10 +382,36 @@ export default function App() {
     // 2. Blog Single Article
     if (currentPath.startsWith('/blog/')) {
       const slug = currentPath.replace('/blog/', '');
-      const currentArticle =
-        articles.find((a) => a.slug === slug) ||
-        articles[0] ||
-        INITIAL_ARTICLES[0];
+      const currentArticle = articles.find((a) => a.slug === slug && a.isPublished !== false);
+      if (!currentArticle) {
+        return (
+          <div className="min-h-[60vh] flex items-center justify-center px-4 py-16">
+            <div className={`max-w-lg w-full rounded-3xl p-8 border text-center space-y-4 shadow-xl ${isDark ? 'bg-[#0c101d] border-amber-500/25 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className="text-xs font-mono font-bold uppercase tracking-wider text-amber-500">404 • Article Not Found</div>
+              <h1 className="text-2xl font-black">Guide Not Found</h1>
+              <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                The article slug “{slug}” is unavailable or unpublished. Browse all current tutorials in our Knowledge Center.
+              </p>
+              <div className="flex flex-wrap justify-center gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/blog')}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs cursor-pointer"
+                >
+                  Browse All Articles
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate('/')}
+                  className={`px-5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+                >
+                  Back to Home
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
       return (
         <ArticlePage
           article={currentArticle}
@@ -320,18 +442,19 @@ export default function App() {
           onResetPlanner={handleResetPlanner}
           articles={articles}
           onSelectArticle={(slug) => navigate(`/blog/${slug}`)}
+          onNavigate={navigate}
         />
       );
     }
 
-    // 5. Monetization & Legal Pages
-    if (currentPath === '/privacy-policy') {
+    // 5. Monetization & Legal Pages (including short aliases)
+    if (currentPath === '/privacy-policy' || currentPath === '/privacy') {
       return <PrivacyPolicyPage onNavigate={navigate} />;
     }
-    if (currentPath === '/about-us') {
+    if (currentPath === '/about-us' || currentPath === '/about') {
       return <AboutUsPage onNavigate={navigate} />;
     }
-    if (currentPath === '/contact-us') {
+    if (currentPath === '/contact-us' || currentPath === '/contact') {
       return <ContactUsPage onNavigate={navigate} />;
     }
     if (currentPath === '/terms-and-conditions' || currentPath === '/terms') {
@@ -370,13 +493,43 @@ export default function App() {
       );
     }
 
-    // Default: Homepage (Tool selection first)
+    // 8. Homepage vs Explicit 404 Not Found
+    if (currentPath === '/' || currentPath === '') {
+      return (
+        <HomePage
+          onNavigate={navigate}
+          onSelectTool={(slug) => navigate(`/tools/${slug}`)}
+          articles={articles}
+        />
+      );
+    }
+
     return (
-      <HomePage
-        onNavigate={navigate}
-        onSelectTool={(slug) => navigate(`/tools/${slug}`)}
-        articles={articles}
-      />
+      <div className="min-h-[60vh] flex items-center justify-center px-4 py-16">
+        <div className={`max-w-lg w-full rounded-3xl p-8 border text-center space-y-4 shadow-xl ${isDark ? 'bg-[#0c101d] border-amber-500/25 text-slate-100' : 'bg-white border-slate-200 text-slate-900'}`}>
+          <div className="text-xs font-mono font-bold uppercase tracking-wider text-amber-500">404 • Page Not Found</div>
+          <h1 className="text-2xl font-black">Page Not Found</h1>
+          <p className={`text-xs sm:text-sm ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+            The path “{currentPath}” does not match any active page or utility on ToolCrest.
+          </p>
+          <div className="flex flex-wrap justify-center gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => navigate('/')}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs cursor-pointer"
+            >
+              Go to Homepage
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate('/sitemap')}
+              className={`px-5 py-2.5 rounded-xl border text-xs font-bold cursor-pointer ${isDark ? 'bg-slate-900 border-slate-700 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-800'}`}
+            >
+              Browse Sitemap
+            </button>
+          </div>
+        </div>
+      </div>
     );
   };
 

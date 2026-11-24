@@ -70,9 +70,9 @@ export const TermsPage: React.FC<TermsPageProps> = ({ onNavigate }) => {
         </section>
 
         <section className="space-y-2">
-          <h2 className={`text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>2. Free Permitted Use</h2>
+          <h2 className={`text-base font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>2. Free Permitted Use &amp; Processing Scope</h2>
           <p>
-            ToolCrest grants you a personal, worldwide, royalty-free, non-exclusive license to use our online software tools, PDF processors, calculators, converters, planners, and blog tutorials for personal, educational, or commercial workflow purposes. All document processing takes place directly on your client device.
+            ToolCrest grants you a personal, worldwide, royalty-free, non-exclusive license to use our online software tools, PDF processors, calculators, converters, planners, and guides for personal, educational, or commercial workflow purposes. Core file operations execute directly on your client device, while optional AI features (ToolCrest AI Chatbot and Translate PDF) send only the submitted prompt or text excerpt over HTTPS to generate your requested output without permanent storage.
           </p>
         </section>
 

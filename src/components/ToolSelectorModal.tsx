@@ -148,7 +148,7 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
               What would you like to do today?
             </h2>
             <p className={`text-xs sm:text-sm max-w-xl ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-              Choose from 39+ instant client-side tools. Fast, private, and zero server file uploads.
+              Choose from {TOOLS_DATA.length} browser-based utilities for documents, images, conversions, and planning.
             </p>
           </div>
 
@@ -202,6 +202,7 @@ export const ToolSelectorModal: React.FC<ToolSelectorModalProps> = ({
             {[
               { id: 'all' as ToolCategory, label: 'All Tools' },
               { id: 'pdf' as ToolCategory, label: 'PDF Suite' },
+              { id: 'image' as ToolCategory, label: 'Image Tools' },
               { id: 'qr' as ToolCategory, label: 'QR Generator' },
               { id: 'converters' as ToolCategory, label: 'Converters' },
               { id: 'calculators' as ToolCategory, label: 'Calculators' },

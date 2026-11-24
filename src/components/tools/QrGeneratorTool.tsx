@@ -17,6 +17,7 @@ import {
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { sanitizeFileName, ensureFileExtension } from '../../utils/fileNaming';
 
@@ -537,6 +538,14 @@ export const QrGeneratorTool: React.FC<QrGeneratorToolProps> = ({ onNavigate }) 
           </div>
         </div>
       </div>
+
+      <ToolGuideSection
+        toolId="qr-generator"
+        toolName="QR Code Generator"
+        onNavigate={onNavigate}
+        hideSteps
+        hideFaq
+      />
 
       {/* 3. HOW TO USE THIS TOOL */}
       <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-slate-100">

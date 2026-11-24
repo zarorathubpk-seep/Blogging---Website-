@@ -277,7 +277,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             }`}
           >
             <span className="w-2 h-2 rounded-full bg-amber-400 shadow-[0_0_8px_#f59e0b]" />
-            <span>TOOLCREST • 39+ High-Precision Client-Side Tools</span>
+            <span>TOOLCREST • {TOOLS_DATA.length} Browser-Based Document &amp; Productivity Tools</span>
           </div>
 
           {/* Main Headline with Gold Gradient */}
@@ -304,7 +304,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               isDark ? 'text-slate-300' : 'text-slate-600'
             }`}
           >
-            Ultra-fast, private, and 100% free browser-based tools for PDFs, QR codes, file conversions, units, financial calculators, and daily planners. Zero cloud uploads.
+            Fast, private, free browser utilities for PDFs, images, QR codes, unit conversions, financial calculators, and daily planners—with core processing running locally on your device.
           </p>
 
           {/* Prominent Golden Search Bar */}
@@ -404,7 +404,7 @@ export const HomePage: React.FC<HomePageProps> = ({
               }`}
             >
               <Lock className="w-4 h-4 text-amber-500" />
-              Zero Cloud Uploads
+              Local File Processing
             </span>
             <span
               className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border shadow-sm ${
@@ -558,12 +558,12 @@ export const HomePage: React.FC<HomePageProps> = ({
                     <span>Complete PDF Tools Suite</span>
                   </h2>
                   <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                    33 high-precision in-browser utilities organized into 7 distinct visual workflow cards.
+                    {TOOLS_DATA.filter((t) => t.category === 'pdf').length} browser utilities organized into {getPdfGroups().length} structured document workflows.
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className={`text-xs font-bold px-3 py-1 rounded-full border shadow-xs ${isDark ? 'bg-amber-500/10 text-amber-300 border-amber-500/30' : 'bg-amber-100/80 text-amber-900 border-amber-300'}`}>
-                    100% Client-Side Processing
+                    Client-Side Engine
                   </span>
                 </div>
               </div>
@@ -816,6 +816,67 @@ export const HomePage: React.FC<HomePageProps> = ({
               >
                 Open Planner Generator <ArrowRight className="w-4 h-4 stroke-[2.5]" />
               </button>
+            </div>
+          </div>
+        </section>
+
+        {/* 3B. EDITORIAL PLATFORM GUIDE & WORKFLOW OVERVIEW */}
+        <section
+          className={`rounded-2xl p-6 sm:p-8 border space-y-6 transition-colors duration-200 ${
+            isDark
+              ? 'bg-[#0c101d] border-amber-500/20 text-slate-200'
+              : 'bg-white border-slate-200/90 text-slate-800 shadow-sm'
+          }`}
+        >
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b pb-4 border-amber-500/15">
+            <div className="space-y-1.5 max-w-3xl">
+              <span className={`text-xs font-bold uppercase tracking-wider ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
+                How ToolCrest Works
+              </span>
+              <h2 className={`text-xl sm:text-2xl font-black tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                Practical Browser Utilities Built for Everyday Work
+              </h2>
+              <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                ToolCrest brings {TOOLS_DATA.length} single-purpose document, image, conversion, financial, and planning tools together without software installs, watermarks, or forced accounts. Every tool page includes step-by-step instructions, expected formats, honest scope notes, and practical examples.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => onNavigate('/about-us')}
+              className={`text-xs font-bold flex items-center gap-1 shrink-0 cursor-pointer hover:underline ${
+                isDark ? 'text-amber-300' : 'text-amber-800'
+              }`}
+            >
+              Read About ToolCrest <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+            <div className={`p-5 rounded-2xl border space-y-2 ${isDark ? 'bg-[#080c16] border-slate-800' : 'bg-slate-50/80 border-slate-200'}`}>
+              <h3 className={`text-sm font-bold ${isDark ? 'text-amber-200' : 'text-slate-900'}`}>
+                Local Browser Execution
+              </h3>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                Core PDF merging, splitting, compression, redaction, image resizing, QR generation, and calculations run directly in your browser using JavaScript, PDF-lib, PDF.js, and Canvas APIs—meaning sensitive records stay on your device.
+              </p>
+            </div>
+
+            <div className={`p-5 rounded-2xl border space-y-2 ${isDark ? 'bg-[#080c16] border-slate-800' : 'bg-slate-50/80 border-slate-200'}`}>
+              <h3 className={`text-sm font-bold ${isDark ? 'text-amber-200' : 'text-slate-900'}`}>
+                Transparent AI Boundaries
+              </h3>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                Only optional AI features—such as the ToolCrest AI assistant and Translate PDF—send your submitted prompt or extracted text excerpt over HTTPS to generate output, and nothing is permanently archived by ToolCrest.
+              </p>
+            </div>
+
+            <div className={`p-5 rounded-2xl border space-y-2 ${isDark ? 'bg-[#080c16] border-slate-800' : 'bg-slate-50/80 border-slate-200'}`}>
+              <h3 className={`text-sm font-bold ${isDark ? 'text-amber-200' : 'text-slate-900'}`}>
+                Actionable Guides &amp; Planners
+              </h3>
+              <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
+                Pair technical utilities with original tutorials covering PDF optimization, OCR vs. text extraction, contract preparation, weekly time blocking, and 50/30/20 household budgeting.
+              </p>
             </div>
           </div>
         </section>

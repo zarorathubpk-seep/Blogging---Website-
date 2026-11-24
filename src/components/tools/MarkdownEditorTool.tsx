@@ -19,6 +19,7 @@ import {
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { sanitizeFileName, ensureFileExtension } from '../../utils/fileNaming';
 
@@ -293,6 +294,14 @@ Feel free to edit this text or paste your own README documentation!
           </button>
         </div>
       </div>
+
+      <ToolGuideSection
+        toolId="markdown-previewer"
+        toolName="Markdown Live Editor"
+        onNavigate={onNavigate}
+        hideSteps
+        hideFaq
+      />
 
       {/* 3. HOW TO USE GUIDE */}
       <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">

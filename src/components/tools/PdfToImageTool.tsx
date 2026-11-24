@@ -17,6 +17,7 @@ import JSZip from 'jszip';
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import {
   PdfThumbnailEngine,
@@ -525,6 +526,14 @@ export const PdfToImageTool: React.FC<PdfToImageToolProps> = ({ onNavigate }) =>
 
         {/* Informational SEO and FAQ Sections */}
         <div className="mt-16 space-y-12">
+          <ToolGuideSection
+            toolId="pdf-to-images"
+            toolName="PDF to Images"
+            onNavigate={onNavigate}
+            hideSteps
+            hideFaq
+          />
+
           <div className="bg-[#1B1D22] border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4">
             <h3 className="text-lg font-bold text-[#F5F5F5]">
               How to Convert PDF to PNG or JPG Images

@@ -29,6 +29,9 @@ import { Theme } from '../context/ThemeContext';
 import { auth } from '../firebase';
 import { onAuthStateChanged, User } from 'firebase/auth';
 import { signInWithGoogle, logOutUser } from '../services/userService';
+import { TOOLS_DATA } from '../data/toolsData';
+
+const PDF_TOOLS_COUNT = TOOLS_DATA.filter((t) => t.category === 'pdf').length;
 
 interface HeaderProps {
   currentPath: string;
@@ -282,7 +285,7 @@ export const Header: React.FC<HeaderProps> = ({
                         }}
                         className="w-full text-center py-2 px-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:brightness-105 text-slate-950 font-bold transition flex items-center justify-center gap-1.5 shadow-md shadow-amber-500/20"
                       >
-                        <span>Browse All 33 PDF Tools</span>
+                        <span>Browse All {PDF_TOOLS_COUNT} PDF Tools</span>
                         <ChevronDown className="w-3.5 h-3.5 -rotate-90" />
                       </button>
                     </div>
@@ -617,22 +620,6 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   onClick={onToggleTheme}
                   aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
-                  className={`p-2 rounded-xl transition cursor-pointer ${
-                    isDark
-                      ? 'text-amber-400 hover:bg-slate-900 border border-slate-800'
-                      : 'text-amber-700 hover:bg-amber-100 border border-amber-300/70'
-                  }`}
-                >
-                  {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-amber-700" />}
-                </button>
-              )}
-
-              {/* Mobile Theme Toggle Button */}
-              {onToggleTheme && (
-                <button
-                  type="button"
-                  onClick={onToggleTheme}
-                  aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
                   title={`Switch to ${isDark ? 'light' : 'dark'} mode`}
                   className={`p-2 rounded-xl transition cursor-pointer flex items-center justify-center ${
                     isDark
@@ -640,11 +627,7 @@ export const Header: React.FC<HeaderProps> = ({
                       : 'text-amber-700 hover:text-amber-900 hover:bg-amber-100/70 border border-amber-300/80 shadow-xs'
                   }`}
                 >
-                  {isDark ? (
-                    <Sun className="w-4 h-4 text-amber-400" />
-                  ) : (
-                    <Moon className="w-4 h-4 text-amber-700" />
-                  )}
+                  {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-amber-700" />}
                 </button>
               )}
 
@@ -731,7 +714,7 @@ export const Header: React.FC<HeaderProps> = ({
                     : 'bg-amber-200/60 text-amber-950 border-amber-400'
                 }`}
               >
-                All 33 PDF Tools →
+                All {PDF_TOOLS_COUNT} PDF Tools →
               </button>
             </div>
 

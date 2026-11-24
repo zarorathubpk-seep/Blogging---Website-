@@ -29,6 +29,7 @@ import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import {
   getPdfDocumentSummary,
@@ -838,6 +839,14 @@ export const AdvancedSplitPdfTool: React.FC<AdvancedSplitPdfToolProps> = ({
           )}
         </div>
       )}
+
+      <ToolGuideSection
+        toolId="split-pdf"
+        toolName="Split PDF"
+        onNavigate={onNavigate}
+        hideSteps
+        hideFaq
+      />
 
       {/* 3. HOW TO USE ADVANCED SPLIT PDF (Dark & Gold) */}
       <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-slate-100">

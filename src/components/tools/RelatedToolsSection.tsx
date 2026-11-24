@@ -60,7 +60,7 @@ export const RelatedToolsSection: React.FC<RelatedToolsSectionProps> = ({
           }}
           className="text-xs font-bold text-amber-400 hover:text-amber-300 flex items-center gap-1 self-start sm:self-auto transition cursor-pointer"
         >
-          <span>Explore All 39+ Tools</span>
+          <span>Explore All {TOOLS_DATA.length} Tools</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </button>
       </div>

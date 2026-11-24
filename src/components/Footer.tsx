@@ -37,7 +37,7 @@ export const Footer: React.FC<FooterProps> = ({
               <ToolCrestLogo size="md" theme={isDark ? 'dark' : 'light'} showTagline={true} />
             </button>
             <p className={`text-xs leading-relaxed max-w-sm ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              ToolCrest delivers fast, private, and 100% free online browser tools. Convert documents, merge PDFs, build schedules, and calculate finances without sending files to external servers.
+              ToolCrest delivers fast, free browser-based utilities for PDFs, images, planners, and calculators—processing core files locally without permanent document storage.
             </p>
             <div className="space-y-1.5 pt-1 text-xs">
               <div className="flex items-center">
@@ -54,7 +54,7 @@ export const Footer: React.FC<FooterProps> = ({
               </div>
             </div>
             <div className={`flex items-center gap-1.5 text-xs font-bold pt-1 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
-              <ShieldCheck className="w-3.5 h-3.5" /> 100% Client-Side Privacy Architecture
+              <ShieldCheck className="w-3.5 h-3.5" /> Client-Side Privacy Architecture
             </div>
           </div>
 
@@ -281,7 +281,7 @@ export const Footer: React.FC<FooterProps> = ({
         {/* Bottom Bar: Copyright & Compliance */}
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div>
-            © {new Date().getFullYear()} ToolCrest. All tools execute locally in your web browser. Free for personal and commercial use.
+            © {new Date().getFullYear()} ToolCrest. Browser-based tools with zero permanent file storage.
           </div>
           <div className="flex items-center gap-3">
             <button

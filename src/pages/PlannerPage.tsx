@@ -13,6 +13,7 @@ import { ToolTipsBox } from '../components/ToolTipsBox';
 import { BlogSidebar } from '../components/BlogSidebar';
 import { FaqSection } from '../components/FaqSection';
 import { AuthorBox } from '../components/AuthorBox';
+import { ToolGuideSection } from '../components/tools/ToolGuideSection';
 import {
   DEFAULT_WEEKLY_PLANNER,
   DEFAULT_DAILY_PLANNER,
@@ -40,6 +41,7 @@ interface PlannerPageProps {
   onResetPlanner: (all?: boolean) => void;
   articles: Article[];
   onSelectArticle: (slug: string) => void;
+  onNavigate?: (path: string) => void;
 }
 
 export const PlannerPage: React.FC<PlannerPageProps> = ({
@@ -48,6 +50,7 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
   onResetPlanner,
   articles,
   onSelectArticle,
+  onNavigate,
 }) => {
   const [activeType, setActiveType] = useState<PlannerType>(state?.activeType || 'weekly');
 
@@ -192,6 +195,24 @@ export const PlannerPage: React.FC<PlannerPageProps> = ({
               activeType={activeType}
             />
           </div>
+        </div>
+
+        {/* Active Planner Guide, Specs & Limitations */}
+        <div className="mt-12">
+          <ToolGuideSection
+            toolId={`${activeType}-planner`}
+            toolName={activeCardConfig.title}
+            onNavigate={(path) => {
+              if (onNavigate) {
+                onNavigate(path);
+              } else if (path.startsWith('/blog/')) {
+                onSelectArticle(path.replace('/blog/', ''));
+              } else {
+                window.location.href = path;
+              }
+            }}
+            hideFaq
+          />
         </div>
 
         {/* Author Box under tool */}

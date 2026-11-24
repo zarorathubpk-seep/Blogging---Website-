@@ -297,9 +297,9 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({ onNavigate }) => {
                 <Clock className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                 <div>
                   <span className={`font-bold block ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                    Support Hours
+                    Response Window
                   </span>
-                  <span>Monday – Friday, 9:00 AM – 6:00 PM (EST / GMT)</span>
+                  <span>Email &amp; contact form inquiries are typically reviewed within 1–2 business days.</span>
                 </div>
               </div>
 
@@ -307,9 +307,9 @@ export const ContactUsPage: React.FC<ContactUsPageProps> = ({ onNavigate }) => {
                 <MapPin className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
                 <div>
                   <span className={`font-bold block ${isDark ? 'text-white' : 'text-slate-800'}`}>
-                    International Reach
+                    Service Availability
                   </span>
-                  <span>United States, United Kingdom, Pakistan &amp; Global Users</span>
+                  <span>Online web platform accessible worldwide</span>
                 </div>
               </div>
             </div>

@@ -1,4 +1,5 @@
 export const SITE_DOMAIN = 'https://toolcrest.site';
+export const DEFAULT_OG_IMAGE = `${SITE_DOMAIN}/apple-touch-icon.png`;
 
 export interface SeoConfig {
   title: string;
@@ -6,7 +7,19 @@ export interface SeoConfig {
   canonicalPath?: string;
   canonicalUrl?: string;
   ogType?: string;
+  ogImage?: string;
   noindex?: boolean;
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+}
+
+function upsertMetaTag(attrName: 'name' | 'property', attrValue: string, content: string) {
+  let tag = document.querySelector(`meta[${attrName}="${attrValue}"]`);
+  if (!tag) {
+    tag = document.createElement('meta');
+    tag.setAttribute(attrName, attrValue);
+    document.head.appendChild(tag);
+  }
+  tag.setAttribute('content', content);
 }
 
 export function updatePageSeo(config: SeoConfig) {
@@ -14,26 +27,9 @@ export function updatePageSeo(config: SeoConfig) {
   document.title = config.title;
 
   // 2. Meta Description
-  let metaDesc = document.querySelector('meta[name="description"]');
-  if (!metaDesc) {
-    metaDesc = document.createElement('meta');
-    metaDesc.setAttribute('name', 'description');
-    document.head.appendChild(metaDesc);
-  }
-  metaDesc.setAttribute('content', config.description);
+  upsertMetaTag('name', 'description', config.description);
 
-  // 3. OpenGraph Title & Description
-  let ogTitle = document.querySelector('meta[property="og:title"]');
-  if (ogTitle) {
-    ogTitle.setAttribute('content', config.title);
-  }
-
-  let ogDesc = document.querySelector('meta[property="og:description"]');
-  if (ogDesc) {
-    ogDesc.setAttribute('content', config.description);
-  }
-
-  // 4. Canonical URL (Strictly using https://toolcrest.site)
+  // 3. Canonical URL (Strictly using https://toolcrest.site)
   const canonicalHref = config.canonicalUrl
     ? config.canonicalUrl
     : config.canonicalPath
@@ -48,21 +44,34 @@ export function updatePageSeo(config: SeoConfig) {
   }
   canonicalLink.setAttribute('href', canonicalHref);
 
-  // 5. OpenGraph URL
-  let ogUrl = document.querySelector('meta[property="og:url"]');
-  if (!ogUrl) {
-    ogUrl = document.createElement('meta');
-    ogUrl.setAttribute('property', 'og:url');
-    document.head.appendChild(ogUrl);
-  }
-  ogUrl.setAttribute('content', canonicalHref);
+  // 4. OpenGraph & Twitter Cards
+  const ogImage = config.ogImage || DEFAULT_OG_IMAGE;
+  upsertMetaTag('property', 'og:type', config.ogType || 'website');
+  upsertMetaTag('property', 'og:title', config.title);
+  upsertMetaTag('property', 'og:description', config.description);
+  upsertMetaTag('property', 'og:url', canonicalHref);
+  upsertMetaTag('property', 'og:image', ogImage);
 
-  // 6. Robots Tag (noindex for non-public or admin views)
-  let metaRobots = document.querySelector('meta[name="robots"]');
-  if (!metaRobots) {
-    metaRobots = document.createElement('meta');
-    metaRobots.setAttribute('name', 'robots');
-    document.head.appendChild(metaRobots);
+  upsertMetaTag('name', 'twitter:card', 'summary_large_image');
+  upsertMetaTag('name', 'twitter:title', config.title);
+  upsertMetaTag('name', 'twitter:description', config.description);
+  upsertMetaTag('name', 'twitter:image', ogImage);
+
+  // 5. Robots Tag (noindex for admin, draft, or 404 views)
+  upsertMetaTag('name', 'robots', config.noindex ? 'noindex, nofollow' : 'index, follow');
+
+  // 6. Structured Data (Schema.org JSON-LD)
+  const scriptId = 'toolcrest-jsonld';
+  let jsonLdScript = document.getElementById(scriptId) as HTMLScriptElement | null;
+  if (config.jsonLd) {
+    if (!jsonLdScript) {
+      jsonLdScript = document.createElement('script');
+      jsonLdScript.id = scriptId;
+      jsonLdScript.type = 'application/ld+json';
+      document.head.appendChild(jsonLdScript);
+    }
+    jsonLdScript.textContent = JSON.stringify(config.jsonLd);
+  } else if (jsonLdScript) {
+    jsonLdScript.remove();
   }
-  metaRobots.setAttribute('content', config.noindex ? 'noindex, nofollow' : 'index, follow');
 }

@@ -15,7 +15,7 @@ import {
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
-import { FaqSection } from '../FaqSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { TOOLS_DATA, ToolItem } from '../../data/toolsData';
 
 export type ImageStudioMode = 'compress' | 'resize' | 'convert' | 'rotate';
@@ -535,52 +535,12 @@ export const ImageStudioTool: React.FC<ImageStudioToolProps> = ({
           </div>
         )}
 
-        {/* Informational SEO and FAQ Sections */}
+        {/* Per-tool Guide, Specifications, Limitations, FAQs & Related Blogs */}
         <div className="mt-16 space-y-12">
-          <div className="bg-[#1B1D22] border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4">
-            <h3 className="text-lg font-bold text-[#F5F5F5]">
-              How to Optimize and Transform Images Online
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-              <div className="space-y-1.5">
-                <div className="text-xs font-mono font-bold text-[#D4AF37]">01. UPLOAD IMAGE</div>
-                <h4 className="text-sm font-semibold text-[#F5F5F5]">Load File</h4>
-                <p className="text-xs text-[#B5B8BE]">
-                  Select any JPG, PNG, or WebP file from your computer or smartphone.
-                </p>
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-xs font-mono font-bold text-[#D4AF37]">02. CUSTOMIZE</div>
-                <h4 className="text-sm font-semibold text-[#F5F5F5]">Set Parameters</h4>
-                <p className="text-xs text-[#B5B8BE]">
-                  Adjust quality slider, input target pixel dimensions, or rotate and flip.
-                </p>
-              </div>
-              <div className="space-y-1.5">
-                <div className="text-xs font-mono font-bold text-[#D4AF37]">03. SAVE</div>
-                <h4 className="text-sm font-semibold text-[#F5F5F5]">Instant Download</h4>
-                <p className="text-xs text-[#B5B8BE]">
-                  Download your optimized file with zero loss of private metadata.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <FaqSection
-            faqs={[
-              {
-                q: 'How does in-browser image compression work?',
-                a: 'ToolCrest uses the HTML5 Canvas API and modern browser image encoders to re-compress images directly in your device RAM without uploading files to external cloud servers.',
-              },
-              {
-                q: 'What is the best format for web images?',
-                a: 'WebP provides 25-35% smaller file sizes than traditional JPEG while maintaining comparable visual clarity. PNG is recommended when transparent backgrounds are needed.',
-              },
-              {
-                q: 'Will my image quality degrade?',
-                a: 'You have full control over the quality slider. Setting quality to 80-85% typically reduces file size by 50-70% with virtually zero perceptible visual loss.',
-              },
-            ]}
+          <ToolGuideSection
+            toolId={toolSlug}
+            toolName={TOOLS_DATA.find((t) => t.slug === toolSlug)?.name || 'Image Studio'}
+            onNavigate={onNavigate}
           />
 
           <RelatedToolsSection

@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Article } from '../types/article';
-import { SUGGESTED_NEXT_ARTICLES } from '../data/defaultArticles';
 import { AuthorBox } from '../components/AuthorBox';
 import { AppImage } from '../components/AppImage';
 import { resolveArticleImage } from '../utils/assets';
@@ -13,6 +12,45 @@ interface BlogListPageProps {
   onNavigate: (path: string) => void;
 }
 
+const WORKFLOW_HUB_LINKS = [
+  {
+    title: 'Merge, Split & Compress PDF Packets',
+    tag: 'PDF Suite',
+    path: '/tools/merge-pdf',
+    desc: 'Combine statements, rearrange pages, or shrink attachment weights directly in your browser.',
+  },
+  {
+    title: 'Convert Scans With Built-In PDF OCR',
+    tag: 'Document Text',
+    path: '/tools/pdf-ocr',
+    desc: 'Recognize text from photographed paperwork or export clean Word and plain-text copies.',
+  },
+  {
+    title: 'Annotate, Sign & Redact Contracts',
+    tag: 'Document Security',
+    path: '/tools/edit-pdf',
+    desc: 'Place transparent signatures, add diagonal review stamps, or permanently redact sensitive numbers.',
+  },
+  {
+    title: 'Build Weekly, Budget & Project Plans',
+    tag: 'Planner Suite',
+    path: '/planner',
+    desc: 'Switch between weekly schedules, 50/30/20 budgets, meal logs, and habit trackers with print export.',
+  },
+  {
+    title: 'Compare Loans, Mortgages & Currencies',
+    tag: 'Financial Math',
+    path: '/tools/loan-calculator',
+    desc: 'Model amortization schedules year by year and export CSV breakdowns for household budgeting.',
+  },
+  {
+    title: 'Generate Print-Ready Vector QR Codes',
+    tag: 'QR & Sharing',
+    path: '/tools/qr-generator',
+    desc: 'Create Wi-Fi, vCard, SMS, or website QR graphics in crisp PNG and scalable SVG.',
+  },
+];
+
 export const BlogListPage: React.FC<BlogListPageProps> = ({
   articles,
   onSelectArticle,
@@ -23,16 +61,17 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const categories = [
-    'All',
-    'Weekly Planning',
-    'Planning Systems',
-    'Money & Budget',
-    'Work & Productivity',
-    'Mindset & Habits',
-  ];
+  const publishedArticles = useMemo(
+    () => articles.filter((art) => art.isPublished !== false),
+    [articles]
+  );
 
-  const filtered = articles.filter((art) => {
+  const categories = useMemo(() => {
+    const uniqueCats = Array.from(new Set(publishedArticles.map((a) => a.category).filter(Boolean)));
+    return ['All', ...uniqueCats];
+  }, [publishedArticles]);
+
+  const filtered = publishedArticles.filter((art) => {
     const matchesCat = selectedCategory === 'All' || art.category === selectedCategory;
     const matchesSearch =
       art.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -159,7 +198,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
                   <div className="w-full h-44 overflow-hidden bg-slate-900 relative">
                     <AppImage
                       src={resolvedImg}
-                      alt={article.title}
+                      alt={article.imageAlt || article.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
                     />
                     <div className="absolute top-3 left-3">
@@ -222,7 +261,7 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
           </div>
         )}
 
-        {/* Suggested Next Articles */}
+        {/* Interactive Tool & Workflow Spotlights */}
         <div
           className={`border rounded-2xl p-6 shadow-2xl space-y-4 ${
             isDark ? 'bg-[#0c101d] border-amber-500/25' : 'bg-white border-slate-200/90 shadow-sm'
@@ -232,30 +271,35 @@ export const BlogListPage: React.FC<BlogListPageProps> = ({
             <Sparkles className="w-5 h-5 text-amber-500" />
             <div>
               <h3 className={`font-extrabold text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                Suggested Next Articles & Coming Topics
+                Put These Guides Into Practice
               </h3>
               <p className={`text-xs ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-                Topics currently being prepared by the editorial desk
+                Jump straight into the matching browser utility or planner workspace
               </p>
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
-            {SUGGESTED_NEXT_ARTICLES.map((sug) => (
-              <div
-                key={sug.title}
-                className={`border rounded-xl p-3.5 transition ${
+            {WORKFLOW_HUB_LINKS.map((item) => (
+              <button
+                key={item.title}
+                type="button"
+                onClick={() => onNavigate(item.path)}
+                className={`border rounded-xl p-3.5 text-left transition cursor-pointer group ${
                   isDark
-                    ? 'border-amber-500/20 bg-[#070a14] hover:border-amber-400/40'
-                    : 'border-slate-200 bg-slate-50/70 hover:border-amber-300 hover:bg-amber-50/30'
+                    ? 'border-amber-500/20 bg-[#070a14] hover:border-amber-400/50'
+                    : 'border-slate-200 bg-slate-50/70 hover:border-amber-300 hover:bg-amber-50/40'
                 }`}
               >
                 <span className={`text-[10px] font-bold uppercase tracking-wider block mb-1 ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>
-                  {sug.tag}
+                  {item.tag}
                 </span>
-                <h4 className={`text-xs font-bold mb-1 ${isDark ? 'text-amber-100' : 'text-slate-900'}`}>{sug.title}</h4>
-                <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{sug.desc}</p>
-              </div>
+                <h4 className={`text-xs font-bold mb-1 flex items-center justify-between gap-2 ${isDark ? 'text-amber-100 group-hover:text-amber-300' : 'text-slate-900 group-hover:text-amber-800'}`}>
+                  <span>{item.title}</span>
+                  <ArrowRight className="w-3.5 h-3.5 shrink-0 opacity-70 group-hover:translate-x-0.5 transition-transform" />
+                </h4>
+                <p className={`text-[11px] leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>{item.desc}</p>
+              </button>
             ))}
           </div>
         </div>

@@ -13,6 +13,7 @@ import {
 import { TOOLS_DATA } from '../../data/toolsData';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { sanitizeFileName, ensureFileExtension } from '../../utils/fileNaming';
 
@@ -383,6 +384,14 @@ export const LoanCalculatorTool: React.FC<LoanCalculatorToolProps> = ({ onNaviga
           </p>
         )}
       </div>
+
+      <ToolGuideSection
+        toolId="loan-calculator"
+        toolName="Loan & EMI Calculator"
+        onNavigate={onNavigate}
+        hideSteps
+        hideFaq
+      />
 
       {/* 4. HOW TO USE GUIDE */}
       <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4">

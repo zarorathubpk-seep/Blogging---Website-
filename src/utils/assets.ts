@@ -57,6 +57,12 @@ export function resolveArticleImage(slug?: string, customUrl?: string): string {
       return sundayReview;
     case 'a-10-minute-weekly-review-routine':
       return completeCollection;
+    case 'how-to-merge-split-and-compress-pdfs-safely-in-your-browser':
+      return officeWork;
+    case 'scanned-vs-searchable-pdfs-ocr-pdfa-text-extraction':
+      return studentStudy;
+    case 'preparing-clean-pdfs-for-contracts-signing-redaction-protection':
+      return heroWorkspace;
     default:
       return heroWorkspace;
   }

@@ -9,14 +9,14 @@ export const AuthorBox: React.FC = () => {
           <Users className="w-6 h-6 text-slate-950" />
         </div>
         <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <h4 className="font-extrabold text-sm text-white">ToolCrest Team</h4>
+          <div className="flex flex-wrap items-center gap-2">
+            <h4 className="font-extrabold text-sm text-white">ToolCrest Editorial Team</h4>
             <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-300 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
-              <CheckCircle2 className="w-3 h-3 text-amber-400" /> Editorial & Technical Staff
+              <CheckCircle2 className="w-3 h-3 text-amber-400" /> Guides &amp; Documentation
             </span>
           </div>
           <p className="text-xs text-slate-300 leading-relaxed">
-            ToolCrest offers free online browser tools, document utilities, and in-depth guides to help you organize your week, your work, and your documents. Everything executes 100% locally in your web browser.
+            ToolCrest maintains browser-based PDF, image, converter, calculator, and planning utilities alongside practical step-by-step guides. Core document and image processing executes locally in your browser; only optional AI chat and translation features transmit submitted text to an encrypted API endpoint.
           </p>
         </div>
       </div>

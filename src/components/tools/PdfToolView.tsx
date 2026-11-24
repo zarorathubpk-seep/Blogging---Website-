@@ -56,7 +56,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
-  HelpCircle,
   RotateCw,
   Lock,
   Unlock,
@@ -80,7 +79,7 @@ import { FileUploadZone } from './FileUploadZone';
 import { PdfDownloadSection } from './PdfDownloadSection';
 import { ToolHeader } from './ToolHeader';
 import { RelatedToolsSection } from './RelatedToolsSection';
-import { FaqSection } from '../FaqSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -1929,63 +1928,10 @@ export const PdfToolView: React.FC<PdfToolViewProps> = ({
         )}
       </div>
 
-      {/* Step by step Instructions */}
-      <div className="bg-[#0c101d] border border-amber-500/25 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-4 text-slate-100">
-        <h3 className="text-base font-black text-white flex items-center gap-2">
-          <HelpCircle className="w-4 h-4 text-amber-400" />
-          <span>How to Use {tool.name} (3 Simple Steps)</span>
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-1">
-          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-1.5">
-            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center">
-              1
-            </span>
-            <h4 className="font-bold text-xs text-white">Upload or Select Document</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Drag your file directly into the box or choose documents from your device.
-            </p>
-          </div>
-          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-1.5">
-            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center">
-              2
-            </span>
-            <h4 className="font-bold text-xs text-white">Configure Options</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Adjust compression levels, angles, margin crops, page numbers, or watermark options.
-            </p>
-          </div>
-          <div className="p-4 bg-[#070a14] border border-amber-500/20 rounded-2xl space-y-1.5">
-            <span className="w-6 h-6 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-black flex items-center justify-center">
-              3
-            </span>
-            <h4 className="font-bold text-xs text-white">Process & Download</h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Wait a split second for instant client-side execution, then download your processed file.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <FaqSection
-        title={`Frequently Asked Questions: ${tool.name}`}
-        subtitle="Learn more about document privacy, browser capabilities, and output quality."
-        faqs={[
-          {
-            q: 'Is my PDF uploaded to any external server?',
-            a:
-              tool.id === 'translate-pdf'
-                ? 'PDF parsing runs locally in your browser; only the extracted text snippet (up to 12,000 characters) is sent over encrypted HTTPS to the ToolCrest backend for Gemini AI translation and is not permanently stored.'
-                : 'No. ToolCrest processes this document locally in your browser using client-side JavaScript and WebAssembly. Your file never leaves your device.',
-          },
-          {
-            q: 'Is there any file size or page limit?',
-            a: 'ToolCrest supports documents up to 100MB and hundreds of pages directly in your browser without throttling or scan limits.',
-          },
-          {
-            q: 'Can I rename the output file before downloading?',
-            a: 'Yes. Every tool features an editable file name input field before downloading, automatically sanitized with proper file extensions.',
-          },
-        ]}
+      <ToolGuideSection
+        toolId={tool.id}
+        toolName={tool.name}
+        onNavigate={onNavigate}
       />
 
       <RelatedToolsSection

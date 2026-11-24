@@ -14,6 +14,7 @@ import { PDFDocument } from 'pdf-lib';
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
@@ -513,6 +514,13 @@ export const ScanToPdfTool: React.FC<ScanToPdfToolProps> = ({ onNavigate }) => {
           </div>
         )}
       </div>
+
+      <ToolGuideSection
+        toolId="scan-to-pdf"
+        toolName="Scan to PDF"
+        onNavigate={onNavigate}
+        hideFaq
+      />
 
       <FaqSection faqs={faqs} />
 

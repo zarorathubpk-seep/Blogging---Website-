@@ -38,7 +38,66 @@ export const ToolPage: React.FC<ToolPageProps> = ({
   onResetPlanner,
   articles,
 }) => {
-  const tool = TOOLS_DATA.find((t) => t.slug === toolSlug) || TOOLS_DATA[0];
+  const normalizedSlug =
+    toolSlug === 'image-to-pdf'
+      ? 'images-to-pdf'
+      : toolSlug === 'pdf-to-image' || toolSlug === 'pdf-to-jpg'
+      ? 'pdf-to-images'
+      : toolSlug;
+
+  const tool = TOOLS_DATA.find((t) => t.slug === normalizedSlug || t.id === normalizedSlug);
+
+  if (!tool) {
+    return (
+      <div className="min-h-[65vh] flex items-center justify-center px-4 py-16">
+        <div className="max-w-xl w-full bg-[#0c101d] border border-amber-500/25 rounded-3xl p-8 text-center space-y-5 text-slate-100 shadow-2xl">
+          <div className="text-xs font-mono font-bold uppercase tracking-wider text-amber-400">
+            404 • Tool Not Found
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-black text-white">
+            We could not find “{toolSlug}”
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            The requested tool link may be outdated or misspelled. Browse all {TOOLS_DATA.length} utilities on the homepage or jump directly to a popular tool below.
+          </p>
+          <div className="flex flex-wrap justify-center gap-2 pt-1">
+            {[
+              { label: 'Merge PDF', slug: 'merge-pdf' },
+              { label: 'Split PDF', slug: 'split-pdf' },
+              { label: 'Edit PDF', slug: 'edit-pdf' },
+              { label: 'QR Generator', slug: 'qr-generator' },
+            ].map((item) => (
+              <button
+                key={item.slug}
+                type="button"
+                onClick={() => onNavigate(`/tools/${item.slug}`)}
+                className="px-3 py-1.5 rounded-xl bg-slate-900 border border-amber-500/25 hover:border-amber-400 text-xs font-bold text-amber-300 cursor-pointer transition"
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div className="pt-2 flex flex-wrap justify-center gap-3">
+            <button
+              type="button"
+              onClick={() => onNavigate('/')}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 text-slate-950 font-black text-xs flex items-center gap-1.5 cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to Homepage
+            </button>
+            <button
+              type="button"
+              onClick={() => onNavigate('/sitemap')}
+              className="px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-slate-200 font-bold text-xs cursor-pointer hover:border-amber-400/50"
+            >
+              View Full Sitemap
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // If it's a planner tool, map to PlannerPage with the relevant active planner type
   if (tool.category === 'productivity' && tool.id.includes('-planner')) {
@@ -63,6 +122,7 @@ export const ToolPage: React.FC<ToolPageProps> = ({
         onResetPlanner={onResetPlanner}
         articles={articles}
         onSelectArticle={(slug) => onNavigate(`/blog/${slug}`)}
+        onNavigate={onNavigate}
       />
     );
   }
@@ -80,6 +140,7 @@ export const ToolPage: React.FC<ToolPageProps> = ({
         onResetPlanner={onResetPlanner}
         articles={articles}
         onSelectArticle={(slug) => onNavigate(`/blog/${slug}`)}
+        onNavigate={onNavigate}
       />
     );
   }

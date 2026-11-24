@@ -90,7 +90,13 @@ export function getSitemapEntries(customArticles?: Article[]): SitemapEntry[] {
   articlesList
     .filter((article) => article.isPublished !== false)
     .forEach((article) => {
-      const articleDate = formatIsoDate(article.publishedAt || article.order ? `2026-10-${String(Math.min(28, (article.order || 1) + 1)).padStart(2, '0')}` : undefined);
+      const articleDate = formatIsoDate(
+        article.updatedAt ||
+          article.publishedAt ||
+          (article.order
+            ? `2026-10-${String(Math.min(28, article.order + 1)).padStart(2, '0')}`
+            : undefined)
+      );
       entries.push({
         loc: `${CANONICAL_DOMAIN}/blog/${article.slug}`,
         lastmod: articleDate,

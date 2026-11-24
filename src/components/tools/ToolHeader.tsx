@@ -124,33 +124,44 @@ export const ToolHeader: React.FC<ToolHeaderProps> = ({
             </div>
           </div>
 
-          {/* Privacy & Instant Processing Badges */}
-          <div
-            className={`flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 ${
-              isDark ? 'border-slate-800' : 'border-slate-200'
-            }`}
-          >
-            <div
-              className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-xl border shadow-xs ${
-                isDark
-                  ? 'text-amber-200 bg-slate-950/80 border-amber-500/30'
-                  : 'text-amber-900 bg-amber-50 border-amber-300/80'
-              }`}
-            >
-              <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
-              <span>100% Client-Side • Private &amp; Secure</span>
-            </div>
-            <div
-              className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-xl border ${
-                isDark
-                  ? 'text-slate-300 bg-slate-950/80 border-slate-800'
-                  : 'text-slate-700 bg-slate-50 border-slate-200'
-              }`}
-            >
-              <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
-              <span>Instant Local Processing</span>
-            </div>
-          </div>
+          {/* Privacy & Processing Mode Badges */}
+          {(() => {
+            const isHybridAi = tool.id === 'translate-pdf';
+            return (
+              <div
+                className={`flex flex-col sm:flex-row lg:flex-col gap-2 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 ${
+                  isDark ? 'border-slate-800' : 'border-slate-200'
+                }`}
+              >
+                <div
+                  className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-xl border shadow-xs ${
+                    isDark
+                      ? 'text-amber-200 bg-slate-950/80 border-amber-500/30'
+                      : 'text-amber-900 bg-amber-50 border-amber-300/80'
+                  }`}
+                >
+                  <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span>
+                    {isHybridAi
+                      ? 'Local PDF Parsing + Encrypted AI API'
+                      : '100% Client-Side • Private & Secure'}
+                  </span>
+                </div>
+                <div
+                  className={`flex items-center gap-2 text-xs font-semibold px-3.5 py-1.5 rounded-xl border ${
+                    isDark
+                      ? 'text-slate-300 bg-slate-950/80 border-slate-800'
+                      : 'text-slate-700 bg-slate-50 border-slate-200'
+                  }`}
+                >
+                  <Zap className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                  <span>
+                    {isHybridAi ? 'Zero Permanent Storage' : 'Instant Local Processing'}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
         </div>
       </div>
     </div>

@@ -91,7 +91,7 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onNavigate }) => {
             </div>
             <h3 className={`font-bold text-xs ${isDark ? 'text-white' : 'text-slate-900'}`}>Privacy by Architecture</h3>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Files are processed locally in your web browser. Your private documents never touch our servers.
+              Core PDF, image, converter, and planner tools process files locally in your browser. Only optional AI translation and assistant prompts use an encrypted backend API without permanent file storage.
             </p>
           </div>
 
@@ -109,7 +109,7 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onNavigate }) => {
             </div>
             <h3 className={`font-bold text-xs ${isDark ? 'text-white' : 'text-slate-900'}`}>Zero Friction</h3>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              No sign-up barriers, no credit cards, and no download waiting queues. Open the page and work immediately.
+              No sign-up barriers, no credit cards, and no download waiting queues. Open the page and start working immediately.
             </p>
           </div>
 
@@ -125,9 +125,9 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onNavigate }) => {
             >
               <Award className="w-4 h-4" />
             </div>
-            <h3 className={`font-bold text-xs ${isDark ? 'text-white' : 'text-slate-900'}`}>Editorial Integrity</h3>
+            <h3 className={`font-bold text-xs ${isDark ? 'text-white' : 'text-slate-900'}`}>Clear Scope &amp; Documentation</h3>
             <p className={`text-xs leading-relaxed ${isDark ? 'text-slate-400' : 'text-slate-600'}`}>
-              Our productivity guides, PDF tutorials, and budgeting guides are written by real practitioners with practical experience.
+              Every tool includes practical usage instructions, expected inputs and outputs, and transparent scope notes so you know what each engine handles.
             </p>
           </div>
         </div>
@@ -135,13 +135,13 @@ export const AboutUsPage: React.FC<AboutUsPageProps> = ({ onNavigate }) => {
         <section className="space-y-3 pt-2">
           <h2 className={`text-base font-bold flex items-center gap-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
             <Heart className="w-4 h-4 text-amber-500" />
-            The Editorial Team
+            How ToolCrest Is Maintained
           </h2>
           <p>
-            Our content and software tools are maintained by the <strong className={isDark ? 'text-white' : 'text-slate-900'}>ToolCrest Engineering & Editorial Team</strong>. Our contributors include frontend engineers, document workflow specialists, and productivity researchers serving users globally.
+            ToolCrest is built and maintained by the <strong className={isDark ? 'text-white' : 'text-slate-900'}>ToolCrest Maintenance &amp; Editorial Team</strong>. We focus on clear, dependable web utilities and plain-language tutorials covering document handling, time management, and personal organization.
           </p>
           <p>
-            We continually update our guides to provide actionable tutorials on time management, document manipulation standards, and personal finance organizers.
+            Whenever you spot a broken workflow, file edge case, or unclear guide, please reach out through our Contact page—user feedback directly shapes fixes and new documentation.
           </p>
           <div className={`pt-3 border-t flex flex-wrap gap-4 text-xs ${isDark ? 'border-slate-800 text-slate-400' : 'border-slate-100 text-slate-600'}`}>
             <span>Email: <a href="mailto:info@toolcrest.site" className={`font-semibold hover:underline ${isDark ? 'text-amber-400' : 'text-amber-700'}`}>info@toolcrest.site</a></span>

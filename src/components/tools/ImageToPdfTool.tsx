@@ -19,6 +19,7 @@ import { PDFDocument } from 'pdf-lib';
 import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { downloadBytesAsFile } from '../../services/pdfEngine';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
@@ -711,6 +712,14 @@ export const ImageToPdfTool: React.FC<ImageToPdfToolProps> = ({ onNavigate }) =>
 
         {/* Informational SEO and FAQ Sections */}
         <div className="mt-16 space-y-12">
+          <ToolGuideSection
+            toolId="images-to-pdf"
+            toolName="Images to PDF"
+            onNavigate={onNavigate}
+            hideSteps
+            hideFaq
+          />
+
           {/* How It Works */}
           <div className="bg-[#1B1D22] border border-slate-800 rounded-2xl p-6 sm:p-8 space-y-4">
             <h3 className="text-lg font-bold text-[#F5F5F5]">

@@ -35,6 +35,7 @@ import { ToolHeader } from './ToolHeader';
 import { FileUploadZone } from './FileUploadZone';
 import { PdfDownloadSection } from './PdfDownloadSection';
 import { RelatedToolsSection } from './RelatedToolsSection';
+import { ToolGuideSection } from './ToolGuideSection';
 import { FaqSection } from '../FaqSection';
 import { TOOLS_DATA, ToolItem } from '../../data/toolsData';
 import { getSuggestedDefaultFileName } from '../../utils/fileNaming';
@@ -1700,6 +1701,15 @@ export const VisualPdfEditorTool: React.FC<VisualPdfEditorToolProps> = ({ onNavi
             </div>
           </div>
         )}
+
+        <div className="mt-10">
+          <ToolGuideSection
+            toolId="edit-pdf"
+            toolName="Edit PDF"
+            onNavigate={onNavigate}
+            hideFaq
+          />
+        </div>
 
         <FaqSection
           title="Visual PDF Editor — Questions & Capabilities"

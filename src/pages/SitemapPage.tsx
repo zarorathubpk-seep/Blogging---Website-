@@ -61,7 +61,7 @@ export const SitemapPage: React.FC<SitemapPageProps> = ({
             </h1>
           </div>
           <p className={`text-xs sm:text-sm leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
-            Complete index of 35+ online tools, PDF manipulation engines, planners, published articles, and legal documents.
+            Complete index of {TOOLS_DATA.length} online utilities, PDF manipulation engines, interactive planners, published guides, and policy pages.
           </p>
         </div>
         <a
@@ -167,7 +167,7 @@ export const SitemapPage: React.FC<SitemapPageProps> = ({
           Productivity & Planning Articles (/blog)
         </h2>
         <div className={`divide-y ${isDark ? 'divide-slate-800/80' : 'divide-slate-100'}`}>
-          {articles.map((art) => (
+          {articles.filter((art) => art.isPublished !== false).map((art) => (
             <div
               key={art.id}
               onClick={() => onSelectArticle(art.slug)}

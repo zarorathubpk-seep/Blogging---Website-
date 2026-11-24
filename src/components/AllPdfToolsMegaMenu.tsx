@@ -1,5 +1,5 @@
 import React from 'react';
-import { getPdfGroups, ToolItem } from '../data/toolsData';
+import { getPdfGroups, TOOLS_DATA } from '../data/toolsData';
 import {
   Layers,
   Split,
@@ -138,7 +138,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
                   isDark ? 'text-white' : 'text-slate-900'
                 }`}
               >
-                All 33 PDF Tools
+                All {TOOLS_DATA.filter((t) => t.category === 'pdf').length} PDF Tools
               </h2>
             </div>
 
@@ -150,7 +150,7 @@ export const AllPdfToolsMegaMenu: React.FC<AllPdfToolsMegaMenuProps> = ({
                     : 'text-amber-900 bg-amber-50 border-amber-300/80 shadow-2xs'
                 }`}
               >
-                100% In-Browser &amp; Private • Zero Cloud Uploads
+                In-Browser PDF Engine • Zero Permanent Storage
               </span>
               <button
                 type="button"
